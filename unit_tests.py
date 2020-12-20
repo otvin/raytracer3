@@ -1,4 +1,5 @@
 import tuple
+import canvas
 import math
 
 
@@ -164,3 +165,81 @@ def test_cross1():
     b = tuple.Vector(2, 3, 4)
     assert tuple.cross(a, b) == tuple.Vector(-1, 2, -1)
     assert tuple.cross(b, a) == tuple.Vector(1, -2, 1)
+
+
+def test_color1():
+    # Adding colors
+    c1 = tuple.Color(0.9, 0.6, 0.75)
+    c2 = tuple.Color(0.7, 0.1, 0.25)
+    assert c1 + c2 == tuple.Color(1.6, 0.7, 1.0)
+
+
+def test_color2():
+    # Subtracting colors
+    c1 = tuple.Color(0.9, 0.6, 0.75)
+    c2 = tuple.Color(0.7, 0.1, 0.25)
+    assert c1 - c2 == tuple.Color(0.2, 0.5, 0.5)
+
+
+def test_color3():
+    # Multiplying a color by a scalar
+    c = tuple.Color(0.2, 0.3, 0.4)
+    assert c * 2 == tuple.Color(0.4, 0.6, 0.8)
+
+
+def test_color4():
+    # Mutiplying colors
+    c1 = tuple.Color(1, 0.2, 0.4)
+    c2 = tuple.Color(0.9, 1, 0.1)
+    assert c1 * c2 == tuple.Color(0.9, 0.2, 0.04)
+
+
+def test_canvas1():
+    # Creating a canvas
+    canvas.init_canvas(10, 20)
+    assert canvas.CANVASWIDTH == 10
+    assert canvas.CANVASHEIGHT == 20
+    black = tuple.Color(0, 0, 0)
+    for w in range(10):
+        for h in range(20):
+            assert canvas.pixel_at(w, h) == black
+
+
+def test_canvas2():
+    # Writing pixels to a canvas
+    canvas.init_canvas(10, 20)
+    red = tuple.Color(1, 0, 0)
+    canvas.write_pixel(2, 3, red)
+    assert canvas.pixel_at(2, 3) == red
+
+
+def test_canvas3():
+    # This is the final exercise from chapter 2; will test the ppm generated against a "good" ppm.
+    # Note I use different variables, etc, but still get the parabola.
+    canvas.init_canvas(900, 550)
+    gravity = tuple.Vector(0, -0.1, 0)
+    wind = tuple.Vector(-0.01, 0, 0)
+    velocity = tuple.normalize(tuple.Vector(1, 1.8, 0)) * 11.25
+    red = tuple.Color(1, 0, 0)
+    position = tuple.Point(0, 1, 0)
+
+    while 0 <= position.x <= 900 and 0 <= position.y <= 550:
+        canvas.write_pixel(int(position.x), int(position.y), red)
+        position += velocity
+        velocity = velocity + (gravity + wind)  # parens stop Pycharm from complaining about wrong type for gravity.
+
+    canvas.canvas_to_ppm('test_canvas3.ppm')
+
+    # now compare the file we wrote here to the good file that is saved locally
+    f = open('test_canvas3.ppm', 'r')
+    f1 = open('test_canvas3_success.ppm', 'r')
+
+    fline = f.readline()
+    f1line = f1.readline()
+    linenumber = 1
+
+    while fline != '' or f1line != '':
+        assert fline == f1line, "file difference in line {}".format(linenumber)
+        fline = f.readline()
+        f1line = f1.readline()
+        linenumber += 1

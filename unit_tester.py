@@ -5,6 +5,7 @@ def run_tests():
     for name, val in unit_tests.__dict__.items():
         if name[:5] == 'test_':
             val()
+            print ('{} complete'.format(name))
             count += 1
     print ('{} tests completed.'.format(count))
 

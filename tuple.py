@@ -48,6 +48,10 @@ class RT_Tuple:
         res.arr = -self.arr
         return res
 
+    def __iadd__(self, other):
+        self.arr = self.arr + other.arr
+        return self
+
     def __add__(self, other):
         res = RT_Tuple()
         res.arr = self.arr + other.arr
@@ -94,6 +98,35 @@ class Vector(RT_Tuple):
         sqrlenarr = self.arr * self.arr
         sqrlensum = np.sum(sqrlenarr[:3])
         return math.sqrt(sqrlensum)
+
+
+class Color(RT_Tuple):
+    def __init__(self, r=0.0, g=0.0, b=0.0):
+        super().__init__(r, g, b, 0.0)
+
+    @property
+    def r(self):
+        return self.arr[0]
+
+    @r.setter
+    def r(self, r):
+        self.arr[0] = r
+
+    @property
+    def g(self):
+        return self.arr[1]
+
+    @g.setter
+    def g(self, g):
+        self.arr[1] = g
+
+    @property
+    def b(self):
+        return self.arr[2]
+
+    @b.setter
+    def b(self, b):
+        self.arr[2] = b
 
 
 def normalize(vec):

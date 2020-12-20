@@ -1,5 +1,5 @@
 import tuple
-
+import canvas
 
 def render():
     pass
