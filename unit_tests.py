@@ -1,6 +1,7 @@
 import tuple
 import canvas
 import math
+import numpy as np
 
 
 def test_point1():
@@ -243,3 +244,57 @@ def test_canvas3():
         fline = f.readline()
         f1line = f1.readline()
         linenumber += 1
+
+
+def test_matrix1():
+    # A matrix mutliplied by a tuple
+    A = np.array([[1, 2, 3, 4], [2, 4, 4, 2], [8, 6, 4, 1], [0, 0, 0, 1]])
+    b = tuple.RT_Tuple(1, 2, 3, 1)
+    assert tuple.matrix_mult_tuple(A, b) == tuple.RT_Tuple(18, 24, 33, 1)
+
+
+def test_numpy():
+    # These are tests of core numpy methods, mostly here as a reference for me
+
+    A = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
+    B = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
+    assert np.allclose(A, B)
+
+    A = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
+    B = np.array([[2, 3, 4, 5], [6, 7, 8, 9], [8, 7, 6, 5], [4, 3, 2, 1]])
+    assert (not np.allclose(A, B))
+
+    A = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
+    B = np.array([[-2, 1, 2, 3], [3, 2, 1, -1], [4, 3, 6, 5], [1, 2, 7, 8]])
+    res = np.array([[20, 22, 50, 48], [44, 54, 114, 108], [40, 58, 110, 102], [16, 26, 46, 42]])
+    assert np.allclose(np.matmul(A, B), res)
+
+    A = np.array([[0, 1, 2, 4], [1, 2, 4, 8], [2, 4, 8, 16], [4, 8, 16, 32]])
+    assert np.allclose(np.matmul(A, np.identity(4)), A)
+
+    A = np.array([[0, 9, 3, 0], [9, 8, 0, 8], [1, 8, 5, 3], [0, 0, 5, 8]])
+    AT = np.array([[0, 9, 1, 0], [9, 8, 8, 0], [3, 0, 5, 5], [0, 8, 3, 8]])
+    assert np.allclose(np.matrix.transpose(A), AT)
+
+    A = np.array([[6, 4, 4, 4], [5, 5, 7, 6], [4, -9, 3, -7], [9, 1, 7, -6]])
+    assert math.isclose(np.linalg.det(A), -2120)
+
+    A = np.array([[-4, 2, -2, -3], [9, 6, 2, 6], [0, -5, 1, -5], [0, 0, 0, 0]])
+    assert math.isclose(np.linalg.det(A), 0)
+
+    A = np.array([[-5, 2, 6, -8], [1, -5, 1, 8], [7, 7, -6, -7], [1, -3, 7, 4]])
+    res = np.array([[0.21805, 0.45113, 0.24060, -0.04511],
+                    [-0.80827, -1.45677, -0.44361, 0.52068],
+                    [-0.07895, -0.22368, -0.05263, 0.19737],
+                    [-0.52256, -0.81391, -0.30075, 0.30639]])
+    B = np.linalg.inv(A)
+    assert math.isclose(np.linalg.det(A), 532)
+    assert np.allclose(B, res, 1e-05, 1e-05)  # need to override the default atol for allclose() to match the book
+    assert math.isclose(B[3, 2], -160.0/532.0)
+    assert math.isclose(B[2, 3], 105.0/532.0)
+    assert np.allclose(np.matmul(A, B), np.identity(4))
+
+    A = np.array([[3, -9, 7, 3], [3, -8, 2, -9], [-4, 4, 4, 1], [-6, 5, -1, 1]])
+    B = np.array([[8, 2, 2, 2], [3, -1, 7, 0], [7, 0, 5, 4], [6, -2, 0, 5]])
+    C = np.matmul(A, B)
+    assert np.allclose(np.matmul(C, np.linalg.inv(B)), A)

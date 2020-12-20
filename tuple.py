@@ -147,3 +147,10 @@ def cross(vec1, vec2):
     res = Vector()
     res.arr[:3] = np.cross(vec1.arr[:3], vec2.arr[:3])
     return res
+
+
+def matrix_mult_tuple(matrix, tup):
+    # matrix must be a 4x4
+    res = RT_Tuple()
+    res.arr = np.matmul(matrix, tup.arr)
+    return res
