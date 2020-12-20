@@ -1,6 +1,6 @@
 import raytracer3 as rt
 import math
-import time
+
 
 def test_point1():
     # A tuple with w=1.0 is a point
@@ -83,19 +83,57 @@ def test_scalarmult1():
     assert a * 3.5 == rt.RT_Tuple(3.5, -7, 10.5, -14)
 
 
-def run_tests():
-    test_point1()
-    test_vector1()
-    test_point2()
-    test_vector2()
-    test_add1()
-    test_sub1()
-    test_sub2()
-    test_sub3()
-    test_negation1()
-    test_negation2()
-    test_scalarmult1()
+def test_scalarmult2():
+    # Multiplying a tuple by a fraction
+    a = rt.RT_Tuple(1, -2, 3, -4)
+    assert a * 0.5 == rt.RT_Tuple(0.5, -1, 1.5, -2)
 
-if __name__ == '__main__':
-    run_tests()
-    print('Success!')
+
+def test_tuplemult1():
+    # Multiplying a tuple by a tuple
+    a = rt.RT_Tuple(2, 3, 4, 5)
+    b = rt.RT_Tuple(0.5, 4, -1.2, 1.5)
+    assert a * b == rt.RT_Tuple(1, 12, -4.8, 7.5)
+
+
+def test_scalardiv1():
+    # Dividing a tuple by a scalar
+    a = rt.RT_Tuple(1, -2, 3, -4)
+    assert a / 2 == rt.RT_Tuple(0.5, -1, 1.5, -2)
+
+
+def test_tuplediv1():
+    # Dividing a tuple by a tuple
+    a = rt.RT_Tuple(3, 4, 5, 6)
+    b = rt.RT_Tuple(1, 2, -2.5, 4)
+    assert a / b == rt.RT_Tuple(3, 2, -2, 1.5)
+
+
+def test_magnitude1():
+    # Computing the magnitude of vector (1,0,0)
+    v = rt.Vector(1, 0, 0)
+    assert v.magnitude() == 1
+
+
+def test_magnitude2():
+    # Computing the magnitude of vector (0,1,0)
+    v = rt.Vector(0, 1, 0)
+    assert v.magnitude() == 1
+
+
+def test_magnitude3():
+    # Computing the magnitude of vector (0,0,1)
+    v = rt.Vector(0, 0, 1)
+    assert v.magnitude() == 1
+
+
+def test_magnitude4():
+    # Computing the magnitude of vector (1,2,3)
+    v = rt.Vector(1, 2, 3)
+    assert v.magnitude() == math.sqrt(14)
+
+
+def test_magnitude5():
+    # Computing the magnitude of vector (-1, -2, -3)
+    v = rt.Vector(-1, -2, -3)
+    assert v.magnitude() == math.sqrt(14)

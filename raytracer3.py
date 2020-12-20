@@ -66,6 +66,14 @@ class RT_Tuple:
             res.arr = self.arr * other
         return res
 
+    def __truediv__(self, other):
+        res = RT_Tuple()
+        if isinstance(other, RT_Tuple):
+            res.arr = self.arr / other.arr
+        else:
+            res.arr = self.arr / other
+        return res
+
     def ispoint(self):
         return math.isclose(self.w, 1.0)
 
@@ -84,6 +92,11 @@ class Point(RT_Tuple):
 class Vector(RT_Tuple):
     def __init__(self, x=0.0, y=0.0, z=0.0):
         super().__init__(x, y, z, 0.0)
+
+    def magnitude(self):
+        sqrlenarr = self.arr * self.arr
+        sqrlensum = np.sum(sqrlenarr[:3])
+        return math.sqrt(sqrlensum)
 
 
 def render():
