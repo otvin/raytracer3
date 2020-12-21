@@ -1,7 +1,27 @@
-import tuple
-import canvas
 import math
 import numpy as np
+import tuple
+import canvas
+import transformations
+
+
+def compare_ppms(file1, file2):
+    # now compare the file we wrote here to the good file that is saved locally
+    f = open(file1, 'r')
+    f1 = open(file2, 'r')
+
+    fline = f.readline()
+    f1line = f1.readline()
+    linenumber = 1
+
+    while fline != '' or f1line != '':
+        assert fline == f1line, "file difference in line {}".format(linenumber)
+        fline = f.readline()
+        f1line = f1.readline()
+        linenumber += 1
+
+    f.close()
+    f1.close()
 
 
 def test_point1():
@@ -230,20 +250,7 @@ def test_canvas3():
         velocity = velocity + (gravity + wind)  # parens stop Pycharm from complaining about wrong type for gravity.
 
     canvas.canvas_to_ppm('test_canvas3.ppm')
-
-    # now compare the file we wrote here to the good file that is saved locally
-    f = open('test_canvas3.ppm', 'r')
-    f1 = open('test_canvas3_success.ppm', 'r')
-
-    fline = f.readline()
-    f1line = f1.readline()
-    linenumber = 1
-
-    while fline != '' or f1line != '':
-        assert fline == f1line, "file difference in line {}".format(linenumber)
-        fline = f.readline()
-        f1line = f1.readline()
-        linenumber += 1
+    compare_ppms('test_canvas3.ppm', 'test_canvas3_success.ppm')
 
 
 def test_matrix1():
@@ -298,3 +305,153 @@ def test_numpy():
     B = np.array([[8, 2, 2, 2], [3, -1, 7, 0], [7, 0, 5, 4], [6, -2, 0, 5]])
     C = np.matmul(A, B)
     assert np.allclose(np.matmul(C, np.linalg.inv(B)), A)
+
+
+def test_translation1():
+    # Multiplying by a translation matrix
+    trans = transformations.translation(5, -3, 2)
+    p = tuple.Point(-3, 4, 5)
+    assert transformations.transform(trans, p) == tuple.Point(2, 1, 7)
+
+
+def test_translation2():
+    # Multiplying by the inverse of a translation matrix
+    trans = transformations.translation(5, -3, 2)
+    inv = np.linalg.inv(trans)
+    p = tuple.Point(-3, 4, 5)
+    assert transformations.transform(inv, p) == tuple.Point(-8, 7, 3)
+
+
+def test_translation3():
+    # Translation does not affect vectors
+    trans = transformations.translation(5, -3, 2)
+    v = tuple.Vector(-3, 4, 5)
+    assert transformations.transform(trans, v) == v
+
+
+def test_scaling1():
+    # A scaling matrix applied to a point
+    trans = transformations.scaling(2, 3, 4)
+    p = tuple.Point(-4, 6, 8)
+    assert transformations.transform(trans, p) == tuple.Point(-8, 18, 32)
+
+
+def test_scaling2():
+    # A scaling matrix applied to a vector
+    trans = transformations.scaling(2, 3, 4)
+    v = tuple.Vector(-4, 6, 8)
+    assert transformations.transform(trans, v) == tuple.Vector(-8, 18, 32)
+
+
+def test_scaling3():
+    # Multiplying by the inverse of a scaling matrix
+    trans = transformations.scaling(2, 3, 4)
+    inv = np.linalg.inv(trans)
+    v = tuple.Vector(-4, 6, 8)
+    assert transformations.transform(inv, v) == tuple.Vector(-2, 2, 2)
+
+
+def test_reflection1():
+    # Reflection is scaling by a negative value
+    trans = transformations.reflection(True, False, False)
+    p = tuple.Point(2, 3, 4)
+    assert transformations.transform(trans, p) == tuple.Point(-2, 3, 4)
+
+
+def test_rotation1():
+    # Rotating a point around the x axis
+    p = tuple.Point(0, 1, 0)
+    half_quarter = transformations.rotation_x(math.pi / 4)
+    full_quarter = transformations.rotation_x(math.pi / 2)
+    assert transformations.transform(half_quarter, p) == tuple.Point(0, math.sqrt(2)/2, math.sqrt(2)/2)
+    assert transformations.transform(full_quarter, p) == tuple.Point(0, 0, 1)
+
+
+def test_rotation2():
+    # The inverse of a rotation rotates in the opposite direction
+    p = tuple.Point(0, 1, 0)
+    half_quarter = transformations.rotation_x(math.pi / 4)
+    inv = np.linalg.inv(half_quarter)
+    assert transformations.transform(inv, p) == tuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2)
+
+
+def test_rotation3():
+    # Rotating a point around the y axis
+    p = tuple.Point(0, 0, 1)
+    half_quarter = transformations.rotation_y(math.pi / 4)
+    full_quarter = transformations.rotation_y(math.pi / 2)
+    assert transformations.transform(half_quarter, p) == tuple.Point(math.sqrt(2)/2, 0, math.sqrt(2)/2)
+    assert transformations.transform(full_quarter, p) == tuple.Point(1, 0, 0)
+
+
+def test_rotation4():
+    # Rotating a point around the z axis
+    p = tuple.Point(0, 1, 0)
+    half_quarter = transformations.rotation_z(math.pi / 4)
+    full_quarter = transformations.rotation_z(math.pi / 2)
+    assert transformations.transform(half_quarter, p) == tuple.Point(-math.sqrt(2)/2, math.sqrt(2)/2, 0)
+    assert transformations.transform(full_quarter, p) == tuple.Point(-1, 0, 0)
+
+
+def test_skew1():
+    # A shearing transformation moves x in proportion to y
+    trans = transformations.skew(1, 0, 0, 0, 0, 0)
+    p = tuple.Point(2, 3, 4)
+    assert transformations.transform(trans, p) == tuple.Point(5, 3, 4)
+
+
+def test_skew2():
+    # Several other shearing transformations
+    p = tuple.Point(2, 3, 4)
+    trans1 = transformations.skew(0, 1, 0, 0, 0, 0)
+    trans2 = transformations.skew(0, 0, 1, 0, 0, 0)
+    trans3 = transformations.skew(0, 0, 0, 1, 0, 0)
+    trans4 = transformations.skew(0, 0, 0, 0, 1, 0)
+    trans5 = transformations.skew(0, 0, 0, 0, 0, 1)
+    assert transformations.transform(trans1, p) == tuple.Point(6, 3, 4)
+    assert transformations.transform(trans2, p) == tuple.Point(2, 5, 4)
+    assert transformations.transform(trans3, p) == tuple.Point(2, 7, 4)
+    assert transformations.transform(trans4, p) == tuple.Point(2, 3, 6)
+    assert transformations.transform(trans5, p) == tuple.Point(2, 3, 7)
+
+
+def test_transformchain1():
+    # Individual transformations are applied in sequence
+    p = tuple.Point(1, 0, 1)
+    A = transformations.rotation_x(math.pi / 2)
+    B = transformations.scaling(5, 5, 5)
+    C = transformations.translation(10, 5, 7)
+    p2 = transformations.transform(A, p)
+    assert p2 == tuple.Point(1, -1, 0)
+    p3 = transformations.transform(B, p2)
+    assert p3 == tuple.Point(5, -5, 0)
+    p4 = transformations.transform(C, p3)
+    assert p4 == tuple.Point(15, 0, 7)
+
+
+def test_transformchain2():
+    # CHained transformations must be applied in reverse order
+    p = tuple.Point(1, 0, 1)
+    A = transformations.rotation_x(math.pi / 2)
+    B = transformations.scaling(5, 5, 5)
+    C = transformations.translation(10, 5, 7)
+    T = np.matmul(np.matmul(C, B), A)
+    assert transformations.transform(T, p) == tuple.Point(15, 0, 7)
+
+
+def test_transformchain3():
+    # This is the final exercise from chapter 4.
+    halfcanvas = 12
+    canvas.init_canvas(2 * halfcanvas, 2 * halfcanvas)
+    clockradius = int(0.75 * halfcanvas)
+    trans = transformations.rotation_y(math.pi / 6)
+
+    gold = tuple.Color(1, 0.84314, 0)
+    p = tuple.RT_Tuple(0, 0, 1)  # start at 12 o'clock
+    for i in range(13):
+        dot = p * clockradius
+        canvas.write_pixel(int(dot.x) + halfcanvas, int(dot.z) + halfcanvas, gold)
+        p = transformations.transform(trans, p)
+
+    canvas.canvas_to_ppm('test_transformchain3.ppm')
+    compare_ppms('test_transformchain3.ppm', 'test_transformchain3_success.ppm')
