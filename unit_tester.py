@@ -4,8 +4,8 @@ def run_tests():
     count = 0
 
     # some tests take longer and we can skip unless we're explicitly testing a change to that feature.
-    # tests_to_skip = ['test_canvas3']
-    tests_to_skip = []
+    tests_to_skip = ['test_canvas3']
+    # tests_to_skip = []
 
     for name, val in unit_tests.__dict__.items():
         if name[:5] == 'test_':

@@ -129,6 +129,15 @@ class Color(RT_Tuple):
         self.arr[2] = b
 
 
+class Ray:
+    def __init__(self, origin=Point(), direction=Vector()):
+        self.origin = origin
+        self.direction = direction
+
+    def at(self, t=0.0):
+        return self.origin + (self.direction * t)
+
+
 def normalize(vec):
     # returns a vector which is the normalized version of self
     res = Vector()
@@ -151,6 +160,8 @@ def cross(vec1, vec2):
 
 def matrix_mult_tuple(matrix, tup):
     # matrix must be a 4x4
+    # TODO: Duplicate code with transformations.transform().  If this is only used for the unit test
+    # test_matrix1() then fix the unit test and remove this code
     res = RT_Tuple()
     res.arr = np.matmul(matrix, tup.arr)
     return res

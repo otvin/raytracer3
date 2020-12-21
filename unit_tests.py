@@ -3,6 +3,7 @@ import numpy as np
 import tuple
 import canvas
 import transformations
+import objects
 
 
 def compare_ppms(file1, file2):
@@ -455,3 +456,125 @@ def test_transformchain3():
 
     canvas.canvas_to_ppm('test_transformchain3.ppm')
     compare_ppms('test_transformchain3.ppm', 'test_transformchain3_success.ppm')
+
+
+def test_ray1():
+    # Creating and querying a ray
+    origin = tuple.Point(1, 2, 3)
+    direction = tuple.Vector(4, 5, 6)
+    r = tuple.Ray(origin, direction)
+    assert r.origin == origin
+    assert r.direction == direction
+
+
+def test_ray2():
+    # Computing a point from a distance
+    r = tuple.Ray(tuple.Point(2, 3, 4), tuple.Vector(1, 0, 0))
+    assert r.at(0) == tuple.Point(2, 3, 4)
+    assert r.at(1) == tuple.Point(3, 3, 4)
+    assert r.at(-1) == tuple.Point(1, 3, 4)
+    assert r.at(2.5) == tuple.Point(4.5, 3, 4)
+
+
+def test_sphereintersect1():
+    # A ray intersects a sphere at two points
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert math.isclose(xs[0].t, 4.0)
+    assert math.isclose(xs[1].t, 6.0)
+
+
+def test_sphereintersect2():
+    # A ray intersects a sphere at a tangent
+    r = tuple.Ray(tuple.Point(0, 1, -5), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert math.isclose(xs[0].t, 5.0)
+    assert math.isclose(xs[1].t, 5.0)
+
+
+def test_sphereintersect3():
+    # A ray misses a sphere
+    r = tuple.Ray(tuple.Point(0, 2, -5), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 0
+
+
+def test_sphereintersect4():
+    # A ray originates inside a sphere
+    r = tuple.Ray(tuple.Point(0, 0, 0), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert math.isclose(xs[0].t, -1.0)
+    assert math.isclose(xs[1].t, 1.0)
+
+
+def test_sphereintersect5():
+    # A sphere is behind a ray
+    r = tuple.Ray(tuple.Point(0, 0, 5), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert math.isclose(xs[0].t, -6.0)
+    assert math.isclose(xs[1].t, -4.0)
+
+
+def test_intersection1():
+    # An intersection encapsulates t and object
+    s = objects.Sphere()
+    i = objects.Intersection(s, 3.5)
+    assert math.isclose(i.t, 3.5)
+    assert i.objhit is s
+
+
+def test_intersection2():
+    # Intersect sets the object on the intersection
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert xs[0].objhit is s
+    assert xs[1].objhit is s
+
+
+def test_hit1():
+    # The hit, when all intersections have positive t
+    s = objects.Sphere()
+    i1 = objects.Intersection(s, 1)
+    i2 = objects.Intersection(s, 2)
+    xs = [i1, i2]
+    assert objects.hit(xs) is i1
+
+
+def test_hit2():
+    # The hit, when some intersections have negative t
+    s = objects.Sphere()
+    i1 = objects.Intersection(s, -1)
+    i2 = objects.Intersection(s, 1)
+    xs = [i1, i2]
+    assert objects.hit(xs) is i2
+
+
+def test_hit3():
+    # The hit, when all intersections have negative t
+    s = objects.Sphere()
+    i1 = objects.Intersection(s, -2)
+    i2 = objects.Intersection(s, -1)
+    xs = [i1, i2]
+    assert objects.hit(xs) is None
+
+
+def test_hit4():
+    # The hit is always the lowest nonnegative intersection
+    s = objects.Sphere()
+    i1 = objects.Intersection(s, 5)
+    i2 = objects.Intersection(s, 7)
+    i3 = objects.Intersection(s, -3)
+    i4 = objects.Intersection(s, 2)
+    xs = [i1, i2, i3, i4]
+    assert objects.hit(xs) is i4
