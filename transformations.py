@@ -5,9 +5,15 @@ import tuple
 
 def transform(mat, tup):
     # returns the result of multiplying a transformation matrix by a tuple.  Result will be a tuple
-    res = tuple.RT_Tuple();
+    res = tuple.RT_Tuple()
     res.arr = np.matmul(mat, tup.arr)
     return res
+
+
+def transformray(mat, ray):
+    neworigin = transform(mat, ray.origin)
+    newdirection = transform(mat, ray.direction)
+    return tuple.Ray(neworigin, newdirection)
 
 
 def translation(x, y, z):
@@ -20,7 +26,7 @@ def scaling(x, y, z):
     return np.array([[x, 0.0, 0, 0], [0, y, 0, 0], [0, 0, z, 0], [0, 0, 0, 1]])
 
 
-def reflection(acrossx = False, acrossy = False, acrossz = False):
+def reflection(acrossx=False, acrossy=False, acrossz=False):
     scalex = 1.0
     scaley = 1.0
     scalez = 1.0

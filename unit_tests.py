@@ -578,3 +578,56 @@ def test_hit4():
     i4 = objects.Intersection(s, 2)
     xs = [i1, i2, i3, i4]
     assert objects.hit(xs) is i4
+
+
+def test_raytransform1():
+    # Translating a ray
+    r = tuple.Ray(tuple.Point(1, 2, 3), tuple.Vector(0, 1, 0))
+    m = transformations.translation(3, 4, 5)
+    r2 = transformations.transformray(m, r)
+    assert r2.origin == tuple.Point(4, 6, 8)
+    assert r2.direction == tuple.Vector(0, 1, 0)
+
+
+def test_raytransform2():
+    # Scaling a ray
+    r = tuple.Ray(tuple.Point(1, 2, 3), tuple.Vector(0, 1, 0))
+    m = transformations.scaling(2, 3, 4)
+    r2 = transformations.transformray(m, r)
+    assert r2.origin == tuple.Point(2, 6, 12)
+    assert r2.direction == tuple.Vector(0, 3, 0)
+
+
+def test_spheretransform1():
+    # A sphere's default transformation
+    s = objects.Sphere()
+    assert np.allclose(s.transform, np.identity(4))
+
+
+def test_spheretransform2():
+    # Changing a sphere's transformation
+    t = transformations.translation(2, 3, 4)
+    s = objects.Sphere(t)
+    assert np.allclose(s.transform, t)
+
+
+def test_sphereintersect6():
+    # Intersecting a scaled sphere with a ray
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    t = transformations.scaling(2, 2, 2)
+    s = objects.Sphere(t)
+    xs = s.intersect(r)
+    assert len(xs) == 2
+    assert math.isclose(xs[0].t, 3.0)
+    assert math.isclose(xs[1].t, 7.0)
+
+
+def test_sphereintersect7():
+    # Intersecting a translated sphere with a ray
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    t = transformations.translation(5, 0, 0)
+    s = objects.Sphere(t)
+    xs = s.intersect(r)
+    assert len(xs) == 0
+
+

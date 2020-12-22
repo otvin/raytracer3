@@ -1,5 +1,7 @@
 import math
+import numpy as np
 import tuple
+import transformations
 
 
 class Intersection():
@@ -18,9 +20,8 @@ class HittableObject:
 
 
 class Sphere(HittableObject):
-    def __init__(self, center=tuple.Point(0,0,0), radius=1.0):
-        self.center = center
-        self.radius = radius
+    def __init__(self, transform=np.identity(4)):
+        self.transform = transform
 
     def intersect(self, r):
         assert isinstance(r, tuple.Ray)
@@ -32,11 +33,15 @@ class Sphere(HittableObject):
         # c = tuple.dot(sphere_to_ray, sphere_to_ray) - (self.radius * self.radius)
         # discriminant = (b * b) - (4 * a * c)
 
-        # speedup from mpraytracer:
-        sphere_to_ray = r.origin - self.center
-        a = tuple.dot(r.direction, r.direction)
-        half_b = tuple.dot(r.direction, sphere_to_ray)
-        c = tuple.dot(sphere_to_ray, sphere_to_ray) - (self.radius * self.radius)
+        # speedup from mpraytracer, factoring in that center is always 0,0,0 and
+        # radius is always 1, and we use transform to move the ray:
+
+        r2 = transformations.transformray(np.linalg.inv(self.transform), r)
+
+        sphere_to_ray = r2.origin - tuple.Point(0, 0, 0)
+        a = tuple.dot(r2.direction, r2.direction)
+        half_b = tuple.dot(r2.direction, sphere_to_ray)
+        c = tuple.dot(sphere_to_ray, sphere_to_ray) - 1
         discriminant = (half_b * half_b) - (a * c)
 
         if discriminant < 0:

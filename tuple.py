@@ -84,6 +84,16 @@ class RT_Tuple:
     def isvector(self):
         return math.isclose(self.w, 0.0)
 
+    def magnitude(self):
+        # Had to move this here vs. being in the Vector class, because if you subtract
+        # two points, you're supposed to get a Vector.  You do get a Tuple that is a
+        # vector, but you do not get a Vector object.  It is possible that we will
+        # need to change Point() and Vector() to functions that return Tuples instead
+        # of objects of their own.
+        sqrlenarr = self.arr * self.arr
+        sqrlensum = np.sum(sqrlenarr[:3])
+        return math.sqrt(sqrlensum)
+
 
 class Point(RT_Tuple):
     def __init__(self, x=0.0, y=0.0, z=0.0):
@@ -93,11 +103,6 @@ class Point(RT_Tuple):
 class Vector(RT_Tuple):
     def __init__(self, x=0.0, y=0.0, z=0.0):
         super().__init__(x, y, z, 0.0)
-
-    def magnitude(self):
-        sqrlenarr = self.arr * self.arr
-        sqrlensum = np.sum(sqrlenarr[:3])
-        return math.sqrt(sqrlensum)
 
 
 class Color(RT_Tuple):
