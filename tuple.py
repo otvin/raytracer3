@@ -41,7 +41,7 @@ class RT_Tuple:
         self.arr[3] = w
 
     def __eq__(self, other):
-        return np.allclose(self.arr, other.arr)
+        return np.allclose(self.arr, other.arr, 1e-05, 1e-05)
 
     def __neg__(self):
         res = RT_Tuple()
@@ -133,6 +133,19 @@ class Color(RT_Tuple):
     def b(self, b):
         self.arr[2] = b
 
+    def __mul__(self, other):
+        res = Color()
+        if isinstance(other, RT_Tuple):
+            res.arr = self.arr * other.arr
+        else:
+            res.arr = self.arr * other
+        return res
+
+
+# global constant colors
+BLACK = Color(0, 0, 0)
+WHITE = Color(1, 1, 1)
+
 
 class Ray:
     def __init__(self, origin=Point(), direction=Vector()):
@@ -161,6 +174,10 @@ def cross(vec1, vec2):
     res = Vector()
     res.arr[:3] = np.cross(vec1.arr[:3], vec2.arr[:3])
     return res
+
+
+def reflect(v, n):
+    return v - (n * (dot(v, n) * 2))
 
 
 def matrix_mult_tuple(matrix, tup):

@@ -4,6 +4,8 @@ import tuple
 import canvas
 import transformations
 import objects
+import lights
+import materials
 
 
 def compare_ppms(file1, file2):
@@ -631,3 +633,144 @@ def test_sphereintersect7():
     assert len(xs) == 0
 
 
+def test_normalat1():
+    # The normal on a sphere at a point on the x axis
+    s = objects.Sphere()
+    n = s.normal_at(tuple.Point(1, 0, 0))
+    assert n == tuple.Vector(1, 0, 0)
+
+
+def test_normalat2():
+    # The normal on a sphere at a point on the y axis
+    s = objects.Sphere()
+    n = s.normal_at(tuple.Point(0, 1, 0))
+    assert n == tuple.Vector(0, 1, 0)
+
+
+def test_normalat3():
+    # The normal on a sphere at a point on the z axis
+    s = objects.Sphere()
+    n = s.normal_at(tuple.Point(0, 0, 1))
+    assert n == tuple.Vector(0, 0, 1)
+
+
+def test_normalat4():
+    # The normal on a sphere at a nonaxial point
+    s = objects.Sphere()
+    rt3over3 = math.sqrt(3) / 3.0
+    n = s.normal_at(tuple.Point(rt3over3, rt3over3, rt3over3))
+    assert n == tuple.Vector(rt3over3, rt3over3, rt3over3)
+
+
+def test_normalat5():
+    # Computing the normal on a translated sphere
+    s = objects.Sphere(transformations.translation(0, 1, 0))
+    n = s.normal_at(tuple.Point(0, 1.70711, -0.70711))
+    assert n == tuple.Vector(0, 0.70711, -0.70711)
+
+
+def test_normalat6():
+    # Computing the normal on a transformed sphere
+    m = np.matmul(transformations.scaling(1, 0.5, 1), transformations.rotation_z(math.pi/5))
+    s = objects.Sphere(m)
+    n = s.normal_at(tuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2))
+    assert n == tuple.Vector(0, 0.97014, -0.24254)
+
+
+def test_reflect1():
+    # Reflecting a vector approaching at 45 degrees
+    v = tuple.Vector(1, -1, 0)
+    n = tuple.Vector(0, 1, 0)
+    assert tuple.reflect(v, n) == tuple.Vector(1, 1, 0)
+
+
+def test_reflect2():
+    # Reflecting a vector off a slanted surface
+    v = tuple.Vector(0, -1, 0)
+    n = tuple.Vector(math.sqrt(2)/2, math.sqrt(2)/2, 0)
+    assert tuple.reflect(v, n) == tuple.Vector(1, 0, 0)
+
+
+def test_light1():
+    # A point light has a position and intensity
+    intensity = tuple.Color(1, 1, 1)
+    position = tuple.Point(0, 0, 0)
+    light = lights.PointLight(position, intensity)
+    assert light.position == position
+    assert light.intensity == intensity
+
+
+def test_material1():
+    # The default material
+    m = materials.Material()
+    assert m.color == tuple.Color(1, 1, 1)
+    assert math.isclose(m.ambient, 0.1)
+    assert math.isclose(m.diffuse, 0.9)
+    assert math.isclose(m.specular, 0.9)
+    assert math.isclose(m.shininess, 200.0)
+
+
+def test_spherematerial1():
+    # A sphere has a default material
+    s = objects.Sphere()
+    m = s.material
+    assert m == materials.Material()
+
+
+def test_spherematerial2():
+    # A sphere may be assigned a material
+    s = objects.Sphere()
+    m = materials.Material()
+    m.ambient = 1.0
+    s.material = m
+    assert s.material is m
+
+
+def test_lighting1():
+    # Lighting with the eye between the light and the surface
+    m = materials.Material()
+    position = tuple.Point(0, 0, 0)
+    eyev = tuple.Vector(0, 0, -1)
+    normalv = tuple.Vector(0, 0, -1)
+    light = lights.PointLight(tuple.Point(0, 0, -10), tuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(1.9, 1.9, 1.9)
+
+
+def test_lighting2():
+    # Lighting with the eye between light and surface, eye offset 45 degrees
+    m = materials.Material()
+    position = tuple.Point(0, 0, 0)
+    eyev = tuple.Vector(0, math.sqrt(2)/2, -math.sqrt(2)/2)
+    normalv = tuple.Vector(0, 0, -1)
+    light = lights.PointLight(tuple.Point(0, 0, -10), tuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(1.0, 1.0, 1.0)
+
+
+def test_lighting3():
+    # Lighting with eye opposite surface, light offset 45 degrees
+    m = materials.Material()
+    position = tuple.Point(0, 0, 0)
+    eyev = tuple.Vector(0, 0, -1)
+    normalv = tuple.Vector(0, 0, -1)
+    light = lights.PointLight(tuple.Point(0, 10, -10), tuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(0.7364, 0.7364, 0.7364)
+
+
+def test_lighting4():
+    # Lighting with eye in the path of the reflection vector
+    m = materials.Material()
+    position = tuple.Point(0, 0, 0)
+    eyev = tuple.Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
+    normalv = tuple.Vector(0, 0, -1)
+    light = lights.PointLight(tuple.Point(0, 10, -10), tuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(1.6364, 1.6364, 1.6364)
+
+
+def test_lighting5():
+    # Lighting with the light behind the surface
+    m = materials.Material()
+    position = tuple.Point(0, 0, 0)
+    eyev = tuple.Vector(0, 0, -1)
+    normalv = tuple.Vector(0, 0, -1)
+    light = lights.PointLight(tuple.Point(0, 0, 10), tuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(0.1, 0.1, 0.1)

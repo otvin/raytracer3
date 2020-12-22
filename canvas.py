@@ -35,14 +35,14 @@ def write_pixel(x, y, color):
     global CANVASHEIGHT
     global CANVASWIDTH
 
-    assert isinstance(color, tuple.Color)
     assert 0 <= x < CANVASWIDTH
     assert 0 <= y < CANVASHEIGHT
 
     startcell = (y * CANVASWIDTH * 3) + (x * 3)
-    GLOBALCANVAS[startcell] = color.r
-    GLOBALCANVAS[startcell + 1] = color.g
-    GLOBALCANVAS[startcell + 2] = color.b
+    # TODO - cannot use r, g, b any more because I'm dealing with tuples not colors
+    GLOBALCANVAS[startcell] = color.arr[0]
+    GLOBALCANVAS[startcell + 1] = color.arr[1]
+    GLOBALCANVAS[startcell + 2] = color.arr[2]
 
 
 def pixel_at(x, y):
@@ -66,7 +66,7 @@ def canvas_to_ppm(filename):
     f.write("{} {}\n".format(CANVASWIDTH, CANVASHEIGHT))
     f.write("255\n")
 
-    for h in range(CANVASHEIGHT - 1, -1, -1):
+    for h in range(CANVASHEIGHT):
         for w in range(CANVASWIDTH):
             startcell = (h * CANVASWIDTH * 3) + (w * 3)
 
