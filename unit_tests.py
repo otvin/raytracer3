@@ -6,6 +6,7 @@ import transformations
 import objects
 import lights
 import materials
+import world
 
 
 def compare_ppms(file1, file2):
@@ -774,3 +775,118 @@ def test_lighting5():
     normalv = tuple.Vector(0, 0, -1)
     light = lights.PointLight(tuple.Point(0, 0, 10), tuple.Color(1, 1, 1))
     assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(0.1, 0.1, 0.1)
+
+
+def test_world1():
+    # Creating a world
+    w = world.World()
+    assert len(w.objects) == 0
+    assert len(w.lights) == 0
+
+
+def test_world2():
+    # The default world
+    w = world.default_world()
+    assert len(w.objects) == 2
+    assert len(w.lights) == 1
+    assert w.objects[0].material.color == tuple.Color(0.8, 1.0, 0.6)
+    assert math.isclose(w.objects[0].material.ambient, 0.1)
+    assert math.isclose(w.objects[0].material.diffuse, 0.7)
+    assert math.isclose(w.objects[0].material.specular, 0.2)
+    assert math.isclose(w.objects[0].material.shininess, 200.0)
+    assert isinstance(w.objects[0], objects.Sphere)
+    assert np.allclose(w.objects[1].transform, transformations.scaling(0.5, 0.5, 0.5))
+    assert isinstance(w.objects[1], objects.Sphere)
+    assert isinstance(w.lights[0], lights.Light)
+    assert w.lights[0].position == tuple.Point(-10, 10, -10)
+    assert w.lights[0].intensity == tuple.Color(1, 1, 1)
+
+
+def test_world3():
+    # Intersect a world with a ray
+    w = world.default_world()
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    xs = w.intersect(r)
+    assert len(xs) == 4
+    assert math.isclose(xs[0].t, 4)
+    assert math.isclose(xs[1].t, 4.5)
+    assert math.isclose(xs[2].t, 5.5)
+    assert math.isclose(xs[3].t, 6)
+
+
+def test_hitrecord1():
+    # Precomputing the state of an intersection
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    i = objects.Intersection(s, 4)
+    comps = world.prepare_computations(i, r)
+    assert math.isclose(comps.t, i.t)
+    assert comps.objhit is i.objhit
+    assert comps.point == tuple.Point(0, 0, -1)
+    assert comps.eyev == tuple.Vector(0, 0, -1)
+    assert comps.normalv == tuple.Vector(0, 0, -1)
+    assert not comps.inside
+
+
+def test_hitrecord2():
+    # The hit, when an intersection occurs on the inside
+    r = tuple.Ray(tuple.Point(0, 0, 0), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    i = objects.Intersection(s, 1)
+    comps = world.prepare_computations(i, r)
+    assert comps.point == tuple.Point(0, 0, 1)
+    assert comps.eyev == tuple.Vector(0, 0, -1)
+    assert comps.inside
+    assert comps.normalv == tuple.Vector(0, 0, -1)
+
+
+def test_shadehit1():
+    # Shading an intersection
+    w = world.default_world()
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    s = w.objects[0]
+    i = objects.Intersection(s, 4)
+    hitrecord = world.prepare_computations(i, r)
+    c = w.shade_hit(hitrecord)
+    assert c == tuple.Color(0.38066, 0.47583, 0.2855)
+
+
+def test_shadehit2():
+    # shading an intersection from the inside
+    w = world.default_world()
+    light = lights.PointLight(tuple.Point(0, 0.25, 0), tuple.Color(1, 1, 1))
+    w.lights = [light]
+    r = tuple.Ray(tuple.Point(0, 0, 0), tuple.Vector(0, 0, 1))
+    s = w.objects[1]
+    i = objects.Intersection(s, 0.5)
+    hitrecord = world.prepare_computations(i, r)
+    c = w.shade_hit(hitrecord)
+    assert c == tuple.Color(0.90498, 0.90498, 0.90498)
+
+
+def test_colorat1():
+    # The color when a ray misses
+    w = world.default_world()
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 1, 0))
+    c = w.color_at(r)
+    assert c == tuple.Color(0, 0, 0)
+
+
+def test_colorat2():
+    # The color when a ray hits
+    w = world.default_world()
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    c = w.color_at(r)
+    assert c == tuple.Color(0.38066, 0.47583, 0.2855)
+
+
+def test_colorat3():
+    # The color with an intersection behind the ray
+    w = world.default_world()
+    outer = w.objects[0]
+    outer.material.ambient = 1.0
+    inner = w.objects[1]
+    inner.material.ambient = 1.0
+    r = tuple.Ray(tuple.Point(0, 0, 0.75), tuple.Vector(0, 0, -1))
+    c = w.color_at(r)
+    assert c == inner.material.color

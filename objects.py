@@ -11,6 +11,20 @@ class Intersection():
         self.t = t
 
 
+class HitRecord():
+    def __init__(self, t, objhit, point, eyev, normalv):
+        self.t = t
+        self.objhit = objhit
+        self.point = point
+        self.eyev = eyev
+        if tuple.dot(normalv, eyev) < 0:
+            self.inside = True
+            self.normalv = -normalv
+        else:
+            self.inside = False
+            self.normalv = normalv
+
+
 class HittableObject:
     def __init__(self, transform=np.identity(4), material=materials.Material()):
         self.transform = transform
