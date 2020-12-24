@@ -71,3 +71,12 @@ def skew(xy, xz, yx, yz, zx, zy):
                      [yx, 1, yz, 0],
                      [zx, zy, 1, 0],
                      [0, 0, 0, 1]])
+
+
+def view_transform(from_pt, to_pt, up_vec):
+    forward = tuple.normalize(to_pt - from_pt)
+    left = tuple.cross(forward, tuple.normalize(up_vec))
+    true_up = tuple.cross(left, forward)
+    orientation = np.array([left.arr, true_up.arr, -forward.arr, [0, 0, 0, 1.0]])
+    return np.matmul(orientation, translation(-from_pt.x, -from_pt.y, -from_pt.z))
+

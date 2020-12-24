@@ -890,3 +890,100 @@ def test_colorat3():
     r = tuple.Ray(tuple.Point(0, 0, 0.75), tuple.Vector(0, 0, -1))
     c = w.color_at(r)
     assert c == inner.material.color
+
+
+def test_viewtransform1():
+    # The transformation matrix for the default orientation
+    from_pt = tuple.Point(0, 0, 0)
+    to_pt = tuple.Point(0, 0, -1)
+    up_vec = tuple.Vector(0, 1, 0)
+    t = transformations.view_transform(from_pt, to_pt, up_vec)
+    assert np.allclose(t, np.identity(4))
+
+
+def test_viewtransform2():
+    # A view transformation matrix looking in positive z direction
+    from_pt = tuple.Point(0, 0, 0)
+    to_pt = tuple.Point(0, 0, 1)
+    up_vec = tuple.Vector(0, 1, 0)
+    t = transformations.view_transform(from_pt, to_pt, up_vec)
+    assert np.allclose(t, transformations.scaling(-1, 1, -1))
+
+
+def test_viewtransform3():
+    # The view transformation moves the world
+    from_pt = tuple.Point(0, 0, 8)
+    to_pt = tuple.Point(0, 0, 1)
+    up_vec = tuple.Vector(0, 1, 0)
+    t = transformations.view_transform(from_pt, to_pt, up_vec)
+    assert np.allclose(t, transformations.translation(0, 0, -8))
+
+
+def test_viewtransformation4():
+    # An arbitrary view transformation
+    from_pt = tuple.Point(1, 3, 2)
+    to_pt = tuple.Point(4, -2, 8)
+    up_vec = tuple.Vector(1, 1, 0)
+    t = transformations.view_transform(from_pt, to_pt, up_vec)
+    res = np.array([[-0.50709, 0.50709, 0.67612, -2.36643],
+                    [0.76772, 0.60609, 0.12122, -2.82843],
+                    [-0.35857, 0.59761, -0.71714, 0],
+                    [0, 0, 0, 1]])
+    assert np.allclose(t, res, 1e-05, 1e-05)
+
+
+def test_camera1():
+    # Constructing a camera
+    c = canvas.Camera(160, 120, math.pi/2)
+    assert c.hsize == 160
+    assert c.vsize == 120
+    assert math.isclose(c.field_of_view, math.pi/2)
+    assert np.allclose(c.transform, np.identity(4))
+
+
+def test_camera2():
+    # The pixel size for a horizontal canvas
+    c = canvas.Camera(200, 125, math.pi/2)
+    assert math.isclose(c.pixel_size, 0.01)
+
+
+def test_camera3():
+    # The pixel size for a vertical canvas
+    c = canvas.Camera(125, 200, math.pi/2)
+    assert math.isclose(c.pixel_size, 0.01)
+
+
+def test_camera4():
+    # Constructing a ray through the center of the camera
+    c = canvas.Camera(201, 101, math.pi/2)
+    r = c.ray_for_pixel(100, 50)
+    assert r.origin == tuple.Point(0, 0, 0)
+    assert r.direction == tuple.Vector(0, 0, -1)
+
+
+def test_camera5():
+    # Constructing a ray through the corner of the canvas
+    c = canvas.Camera(201, 101, math.pi/2)
+    r = c.ray_for_pixel(0, 0)
+    assert r.origin == tuple.Point(0, 0, 0)
+    assert r.direction == tuple.Vector(0.66519, 0.33259, -0.66851)
+
+
+def test_camera6():
+    # Constructing a ray when the camera is transformed
+    trans = np.matmul(transformations.rotation_y(math.pi/4), transformations.translation(0, -2, 5))
+    c = canvas.Camera(201, 101, math.pi/2, trans)
+    r = c.ray_for_pixel(100, 50)
+    assert r.origin == tuple.Point(0, 2, -5)
+    assert r.direction == tuple.Vector(math.sqrt(2)/2, 0, -math.sqrt(2)/2)
+
+
+def test_render1():
+    w = world.default_world()
+    c = canvas.Camera(11, 11, math.pi/2)
+    fr = tuple.Point(0, 0, -5)
+    to = tuple.Point(0, 0, 0)
+    up = tuple.Vector(0, 1, 0)
+    c.transform = transformations.view_transform(fr, to, up)
+    canvas.render(c, w)
+    assert canvas.pixel_at(5, 5) == tuple.Color(0.38066, 0.47583, 0.2855)

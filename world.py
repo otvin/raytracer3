@@ -6,9 +6,16 @@ import transformations
 import lights
 
 class World:
-    def __init__(self, objects=[], lights=[]):
-        self.objects = objects
-        self.lights = lights
+    def __init__(self, objects=None, lights=None):
+        if objects is None:
+            self.objects = []
+        else:
+            self.objects = objects
+
+        if lights is None:
+            self.lights = []
+        else:
+            self.lights = lights
 
     def intersect(self, r):
         res = []
