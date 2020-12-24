@@ -42,6 +42,12 @@ def render():
     right.material.diffuse = 0.7
     right.material.specular = 0.3
 
+    left = objects.Sphere()
+    left.transform = np.matmul(transformations.translation(-1.5, 0.33, -0.75), transformations.scaling(0.33, 0.33, 0.3))
+    left.material.color = tuple.Color(0.831, 0.686, 0.216)
+    left.material.diffuse = 0.9
+    left.material.specular = 0.9
+
     camera = canvas.Camera(400, 200, math.pi/3)
     camera.transform = transformations.view_transform(tuple.Point(0, 1.5, -5), tuple.Point(0, 1, 0),
                                                       tuple.Vector(0, 1, 0))
@@ -53,14 +59,14 @@ def render():
     w.objects.append(right_wall)
     w.objects.append(middle)
     w.objects.append(right)
+    w.objects.append(left)
 
     timestart = time.time()
-    canvas.render(camera, w, 1)
-    # canvas.mp_render(camera, w, 10, 6)
+    canvas.mp_render(camera, w, 10, 6)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 
-    canvas.canvas_to_ppm('chap7.ppm')
+    canvas.canvas_to_ppm('chap8.ppm')
 
 
 if __name__ == '__main__':

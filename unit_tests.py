@@ -777,6 +777,16 @@ def test_lighting5():
     assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(0.1, 0.1, 0.1)
 
 
+def test_lighting6():
+    # Lighting with the surface in shadow
+    m = materials.Material()
+    position = tuple.Point(0, 0, 0)
+    eyev = tuple.Vector(0, 0, -1)
+    normalv = tuple.Vector(0, 0, -1)
+    light = lights.PointLight(tuple.Point(0, 0, -10), tuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv, True) == tuple.Color(0.1, 0.1, 0.1)
+
+
 def test_world1():
     # Creating a world
     w = world.World()
@@ -838,6 +848,17 @@ def test_hitrecord2():
     assert comps.eyev == tuple.Vector(0, 0, -1)
     assert comps.inside
     assert comps.normalv == tuple.Vector(0, 0, -1)
+
+
+def test_hitrecord3():
+    # The hit should offset the point
+    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    s = objects.Sphere()
+    s.transform = transformations.translation(0, 0, 1)
+    i = objects.Intersection(s, 5)
+    comps = world.prepare_computations(i, r)
+    assert comps.over_point.z < -objects.EPSILON/2
+    assert comps.point.z > comps.over_point.z
 
 
 def test_shadehit1():
@@ -987,3 +1008,31 @@ def test_render1():
     c.transform = transformations.view_transform(fr, to, up)
     canvas.render(c, w)
     assert canvas.pixel_at(5, 5) == tuple.Color(0.38066, 0.47583, 0.2855)
+
+
+def test_shadowed1():
+    # There is no shadow when nothing is collinear with point and light
+    w = world.default_world()
+    p = tuple.Point(0, 10, 0)
+    assert not w.is_shadowed(p)
+
+
+def test_shadowed2():
+    # There is no shadow when an object is between the point and the light
+    w = world.default_world()
+    p = tuple.Point(10, -10, 10)
+    assert w.is_shadowed(p)
+
+
+def test_shadowed3():
+    # There is no shadow when an object is behind the light
+    w = world.default_world()
+    p = tuple.Point(-20, 20, -20)
+    assert not w.is_shadowed(p)
+
+
+def test_shadowed4():
+    # There is no shadow when an object is behind the point
+    w = world.default_world()
+    p = tuple.Point(-2, 2, -2)
+    assert not w.is_shadowed(p)

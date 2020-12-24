@@ -5,6 +5,7 @@ import tuple
 import transformations
 import lights
 
+
 class World:
     def __init__(self, objects=None, lights=None):
         if objects is None:
@@ -27,8 +28,9 @@ class World:
 
     def shade_hit(self, hitrecord):
         # TODO p.96 to support multiple lights, just iterate over the lights in the scene.
+        shadowed = self.is_shadowed(hitrecord.over_point)
         return lights.lighting(hitrecord.objhit.material, self.lights[0], hitrecord.point,
-                               hitrecord.eyev, hitrecord.normalv)
+                               hitrecord.eyev, hitrecord.normalv, shadowed)
 
     def color_at(self, ray):
         xs = self.intersect(ray)
@@ -39,6 +41,24 @@ class World:
                 hitrecord = prepare_computations(i, ray)
                 return self.shade_hit(hitrecord)
         return tuple.Color(0, 0, 0)  # either no intersections or no positive t intersections
+
+    def is_shadowed(self, point):
+        # TODO if we add multiple lights we need to do something here too.
+        v = self.lights[0].position - point
+        distance = v.magnitude()
+        direction = tuple.normalize(v)
+
+        r = tuple.Ray(point, direction)
+        xs = self.intersect(r)
+        for i in xs:
+            if i.t > 0:
+                # if the smallest positive hit is nearer to the light than the point, then
+                # the point is in shadow.
+                if i.t < distance:
+                    return True
+                else:
+                    return False
+        return False
 
 
 def prepare_computations(i, r):

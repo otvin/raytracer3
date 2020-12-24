@@ -5,13 +5,16 @@ import transformations
 import materials
 
 
-class Intersection():
+class Intersection:
     def __init__(self, objhit, t):
         self.objhit = objhit
         self.t = t
 
 
-class HitRecord():
+EPSILON = 1e-05
+
+
+class HitRecord:
     def __init__(self, t, objhit, point, eyev, normalv):
         self.t = t
         self.objhit = objhit
@@ -23,6 +26,7 @@ class HitRecord():
         else:
             self.inside = False
             self.normalv = normalv
+        self.over_point = self.point + (self.normalv * EPSILON)
 
 
 class HittableObject:
@@ -58,7 +62,6 @@ class Sphere(HittableObject):
     def __init__(self, transform=np.identity(4), material=None):
         super().__init__(transform, material)
         self.origin = tuple.Point(0, 0, 0)
-
 
     def intersect(self, r):
         # original logic:

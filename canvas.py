@@ -119,30 +119,6 @@ def canvas_to_ppm(filename):
     f.close()
 
 
-def render(camera, world, numsamples=1):
-    init_canvas(camera.hsize, camera.vsize)
-
-    if numsamples == 1:
-        for y in range(camera.vsize):
-            for x in range(camera.hsize):
-                r = camera.ray_for_pixel(x, y)
-                c = world.color_at(r)
-                write_pixel(x, y, c)
-            print('line {} complete'.format(y))
-    else:
-        for y in range(camera.vsize):
-            for x in range(camera.hsize):
-                c = tuple.Color(0, 0, 0)
-                for i in range(numsamples):
-                    rndx = x + random.uniform(-0.5, 0.5)
-                    rndy = y + random.uniform(-0.5, 0.5)
-                    r = camera.ray_for_pixel(rndx, rndy)
-                    c += world.color_at(r)
-                c = c / numsamples
-                write_pixel(x, y, c)
-            print('line {} complete'.format(y))
-
-
 global MPGLOBALWORLD
 global MPGLOBALCAMERA
 def mp_render_rows(rowlist, numsamples):
