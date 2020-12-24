@@ -1,12 +1,10 @@
-import numpy as np
 import math
+import matrices
 
 
 class RT_Tuple:
     def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
-        self.arr = np.array([x, y, z, w])
-        # We will allow creation of tuples with integer arguments, but want to store as floats.
-        self.arr = self.arr.astype('float64')
+        self.arr = [x, y, z, w]
 
     @property
     def x(self):
@@ -41,41 +39,46 @@ class RT_Tuple:
         self.arr[3] = w
 
     def __eq__(self, other):
-        return np.allclose(self.arr, other.arr, 1e-05, 1e-05)
+        return matrices.allclose1x1(self.arr, other.arr)
 
     def __neg__(self):
         res = RT_Tuple()
-        res.arr = -self.arr
+        res.arr = [-self.arr[0], -self.arr[1], -self.arr[2], -self.arr[3]]
         return res
 
     def __iadd__(self, other):
-        self.arr = self.arr + other.arr
+        self.arr = [self.arr[0] + other.arr[0], self.arr[1] + other.arr[1],
+                    self.arr[2] + other.arr[2], self.arr[3] + other.arr[3]]
         return self
 
     def __add__(self, other):
         res = RT_Tuple()
-        res.arr = self.arr + other.arr
+        res.arr = [self.arr[0] + other.arr[0], self.arr[1] + other.arr[1],
+                   self.arr[2] + other.arr[2], self.arr[3] + other.arr[3]]
         return res
 
     def __sub__(self, other):
         res = RT_Tuple()
-        res.arr = self.arr - other.arr
+        res.arr = [self.arr[0] - other.arr[0], self.arr[1] - other.arr[1],
+                   self.arr[2] - other.arr[2], self.arr[3] - other.arr[3]]
         return res
 
     def __mul__(self, other):
         res = RT_Tuple()
         if isinstance(other, RT_Tuple):
-            res.arr = self.arr * other.arr
+            res.arr = [self.arr[0] * other.arr[0], self.arr[1] * other.arr[1],
+                       self.arr[2] * other.arr[2], self.arr[3] * other.arr[3]]
         else:
-            res.arr = self.arr * other
+            res.arr = [self.arr[0] * other, self.arr[1] * other, self.arr[2] * other, self.arr[3] * other]
         return res
 
     def __truediv__(self, other):
         res = RT_Tuple()
         if isinstance(other, RT_Tuple):
-            res.arr = self.arr / other.arr
+            res.arr = [self.arr[0] / other.arr[0], self.arr[1] / other.arr[1],
+                       self.arr[2] / other.arr[2], self.arr[3] / other.arr[3]]
         else:
-            res.arr = self.arr / other
+            res.arr = [self.arr[0] / other, self.arr[1] / other, self.arr[2] / other, self.arr[3] / other]
         return res
 
     def ispoint(self):
@@ -90,9 +93,8 @@ class RT_Tuple:
         # vector, but you do not get a Vector object.  It is possible that we will
         # need to change Point() and Vector() to functions that return Tuples instead
         # of objects of their own.
-        sqrlenarr = self.arr * self.arr
-        sqrlensum = np.sum(sqrlenarr[:3])
-        return math.sqrt(sqrlensum)
+        return math.sqrt(self.arr[0] * self.arr[0] + self.arr[1] * self.arr[1] +
+                         self.arr[2] * self.arr[2] + self.arr[3] * self.arr[3])
 
 
 class Point(RT_Tuple):
@@ -136,9 +138,10 @@ class Color(RT_Tuple):
     def __mul__(self, other):
         res = Color()
         if isinstance(other, RT_Tuple):
-            res.arr = self.arr * other.arr
+            res.arr = [self.arr[0] * other.arr[0], self.arr[1] * other.arr[1],
+                       self.arr[2] * other.arr[2], self.arr[3] * other.arr[3]]
         else:
-            res.arr = self.arr * other
+            res.arr = [self.arr[0] * other, self.arr[1] * other, self.arr[2] * other, self.arr[3] * other]
         return res
 
 
@@ -158,32 +161,26 @@ class Ray:
 
 def normalize(vec):
     # returns a vector which is the normalized version of self
-    res = Vector()
     mag = vec.magnitude()
-    res.arr = vec.arr / mag
+    res = vec / mag
     return res
 
 
 def dot(tup1, tup2):
     # returns dot product of the two tuples
-    return np.dot(tup1.arr, tup2.arr)
+    return (tup1.arr[0] * tup2.arr[0] + tup1.arr[1] * tup2.arr[1] +
+            tup1.arr[2] * tup2.arr[2] + tup1.arr[3] * tup2.arr[3])
 
 
 def cross(vec1, vec2):
     # cross product of two vectors
     res = Vector()
-    res.arr[:3] = np.cross(vec1.arr[:3], vec2.arr[:3])
+    res.arr = [vec1.arr[1] * vec2.arr[2] - vec1.arr[2] * vec2.arr[1],
+               vec1.arr[2] * vec2.arr[0] - vec1.arr[0] * vec2.arr[2],
+               vec1.arr[0] * vec2.arr[1] - vec1.arr[1] * vec2.arr[0],
+               0.0]
     return res
 
 
 def reflect(v, n):
     return v - (n * (dot(v, n) * 2))
-
-
-def matrix_mult_tuple(matrix, tup):
-    # matrix must be a 4x4
-    # TODO: Duplicate code with transformations.transform().  If this is only used for the unit test
-    # test_matrix1() then fix the unit test and remove this code
-    res = RT_Tuple()
-    res.arr = np.matmul(matrix, tup.arr)
-    return res

@@ -1,9 +1,9 @@
-import numpy as np
 import objects
 import materials
 import tuple
 import transformations
 import lights
+import matrices
 
 
 class World:
@@ -70,7 +70,7 @@ def prepare_computations(i, r):
 
 
 def default_world():
-    s1 = objects.Sphere(np.identity(4), materials.Material(tuple.Color(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200))
+    s1 = objects.Sphere(matrices.identity4(), materials.Material(tuple.Color(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200))
     s2 = objects.Sphere()
     s2.transform = transformations.scaling(0.5, 0.5, 0.5)
     light = lights.PointLight(tuple.Point(-10, 10, -10), tuple.Color(1, 1, 1))

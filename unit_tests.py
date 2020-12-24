@@ -1,5 +1,4 @@
 import math
-import numpy as np
 import tuple
 import canvas
 import transformations
@@ -7,6 +6,7 @@ import objects
 import lights
 import materials
 import world
+import matrices
 
 
 def compare_ppms(file1, file2):
@@ -259,56 +259,57 @@ def test_canvas3():
 
 def test_matrix1():
     # A matrix mutliplied by a tuple
-    A = np.array([[1, 2, 3, 4], [2, 4, 4, 2], [8, 6, 4, 1], [0, 0, 0, 1]])
+    A = [[1, 2, 3, 4], [2, 4, 4, 2], [8, 6, 4, 1], [0, 0, 0, 1]]
     b = tuple.RT_Tuple(1, 2, 3, 1)
-    assert tuple.matrix_mult_tuple(A, b) == tuple.RT_Tuple(18, 24, 33, 1)
+    assert matrices.matmul4xTuple(A, b) == tuple.RT_Tuple(18, 24, 33, 1)
 
 
-def test_numpy():
-    # These are tests of core numpy methods, mostly here as a reference for me
+def test_matrices():
+    # Replaced numpy as straight Python was faster
 
-    A = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
-    B = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
-    assert np.allclose(A, B)
+    A = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]]
+    B = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]]
+    assert matrices.allclose4x4(A, B)
 
-    A = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
-    B = np.array([[2, 3, 4, 5], [6, 7, 8, 9], [8, 7, 6, 5], [4, 3, 2, 1]])
-    assert (not np.allclose(A, B))
+    A = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]]
+    B = [[2, 3, 4, 5], [6, 7, 8, 9], [8, 7, 6, 5], [4, 3, 2, 1]]
+    assert (not matrices.allclose4x4(A, B))
 
-    A = np.array([[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]])
-    B = np.array([[-2, 1, 2, 3], [3, 2, 1, -1], [4, 3, 6, 5], [1, 2, 7, 8]])
-    res = np.array([[20, 22, 50, 48], [44, 54, 114, 108], [40, 58, 110, 102], [16, 26, 46, 42]])
-    assert np.allclose(np.matmul(A, B), res)
+    A = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 8, 7, 6], [5, 4, 3, 2]]
+    B = [[-2, 1, 2, 3], [3, 2, 1, -1], [4, 3, 6, 5], [1, 2, 7, 8]]
+    res = [[20, 22, 50, 48], [44, 54, 114, 108], [40, 58, 110, 102], [16, 26, 46, 42]]
+    assert matrices.allclose4x4(matrices.matmul4x4(A, B), res)
 
-    A = np.array([[0, 1, 2, 4], [1, 2, 4, 8], [2, 4, 8, 16], [4, 8, 16, 32]])
-    assert np.allclose(np.matmul(A, np.identity(4)), A)
+    A = [[0, 1, 2, 4], [1, 2, 4, 8], [2, 4, 8, 16], [4, 8, 16, 32]]
+    assert matrices.allclose4x4(matrices.matmul4x4(A, matrices.identity4()), A)
 
-    A = np.array([[0, 9, 3, 0], [9, 8, 0, 8], [1, 8, 5, 3], [0, 0, 5, 8]])
-    AT = np.array([[0, 9, 1, 0], [9, 8, 8, 0], [3, 0, 5, 5], [0, 8, 3, 8]])
-    assert np.allclose(np.matrix.transpose(A), AT)
+    A = [[0, 9, 3, 0], [9, 8, 0, 8], [1, 8, 5, 3], [0, 0, 5, 8]]
+    AT = [[0, 9, 1, 0], [9, 8, 8, 0], [3, 0, 5, 5], [0, 8, 3, 8]]
+    assert matrices.allclose4x4(matrices.transpose4x4(A), AT)
 
+    '''
     A = np.array([[6, 4, 4, 4], [5, 5, 7, 6], [4, -9, 3, -7], [9, 1, 7, -6]])
     assert math.isclose(np.linalg.det(A), -2120)
 
     A = np.array([[-4, 2, -2, -3], [9, 6, 2, 6], [0, -5, 1, -5], [0, 0, 0, 0]])
     assert math.isclose(np.linalg.det(A), 0)
+    '''
 
-    A = np.array([[-5, 2, 6, -8], [1, -5, 1, 8], [7, 7, -6, -7], [1, -3, 7, 4]])
-    res = np.array([[0.21805, 0.45113, 0.24060, -0.04511],
-                    [-0.80827, -1.45677, -0.44361, 0.52068],
-                    [-0.07895, -0.22368, -0.05263, 0.19737],
-                    [-0.52256, -0.81391, -0.30075, 0.30639]])
-    B = np.linalg.inv(A)
-    assert math.isclose(np.linalg.det(A), 532)
-    assert np.allclose(B, res, 1e-05, 1e-05)  # need to override the default atol for allclose() to match the book
-    assert math.isclose(B[3, 2], -160.0/532.0)
-    assert math.isclose(B[2, 3], 105.0/532.0)
-    assert np.allclose(np.matmul(A, B), np.identity(4))
+    A = [[-5, 2, 6, -8], [1, -5, 1, 8], [7, 7, -6, -7], [1, -3, 7, 4]]
+    res = [[0.21805, 0.45113, 0.24060, -0.04511],
+           [-0.80827, -1.45677, -0.44361, 0.52068],
+           [-0.07895, -0.22368, -0.05263, 0.19737],
+           [-0.52256, -0.81391, -0.30075, 0.30639]]
+    B = matrices.inverse4x4(A)
+    assert matrices.allclose4x4(B, res)
+    assert math.isclose(B[3][2], -160.0/532.0)
+    assert math.isclose(B[2][3], 105.0/532.0)
+    assert matrices.allclose4x4(matrices.matmul4x4(A, B), matrices.identity4())
 
-    A = np.array([[3, -9, 7, 3], [3, -8, 2, -9], [-4, 4, 4, 1], [-6, 5, -1, 1]])
-    B = np.array([[8, 2, 2, 2], [3, -1, 7, 0], [7, 0, 5, 4], [6, -2, 0, 5]])
-    C = np.matmul(A, B)
-    assert np.allclose(np.matmul(C, np.linalg.inv(B)), A)
+    A = [[3, -9, 7, 3], [3, -8, 2, -9], [-4, 4, 4, 1], [-6, 5, -1, 1]]
+    B = [[8, 2, 2, 2], [3, -1, 7, 0], [7, 0, 5, 4], [6, -2, 0, 5]]
+    C = matrices.matmul4x4(A, B)
+    assert matrices.allclose4x4(matrices.matmul4x4(C, matrices.inverse4x4(B)), A)
 
 
 def test_translation1():
@@ -321,7 +322,7 @@ def test_translation1():
 def test_translation2():
     # Multiplying by the inverse of a translation matrix
     trans = transformations.translation(5, -3, 2)
-    inv = np.linalg.inv(trans)
+    inv = matrices.inverse4x4(trans)
     p = tuple.Point(-3, 4, 5)
     assert transformations.transform(inv, p) == tuple.Point(-8, 7, 3)
 
@@ -350,7 +351,7 @@ def test_scaling2():
 def test_scaling3():
     # Multiplying by the inverse of a scaling matrix
     trans = transformations.scaling(2, 3, 4)
-    inv = np.linalg.inv(trans)
+    inv = matrices.inverse4x4(trans)
     v = tuple.Vector(-4, 6, 8)
     assert transformations.transform(inv, v) == tuple.Vector(-2, 2, 2)
 
@@ -375,7 +376,7 @@ def test_rotation2():
     # The inverse of a rotation rotates in the opposite direction
     p = tuple.Point(0, 1, 0)
     half_quarter = transformations.rotation_x(math.pi / 4)
-    inv = np.linalg.inv(half_quarter)
+    inv = matrices.inverse4x4(half_quarter)
     assert transformations.transform(inv, p) == tuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2)
 
 
@@ -439,7 +440,7 @@ def test_transformchain2():
     A = transformations.rotation_x(math.pi / 2)
     B = transformations.scaling(5, 5, 5)
     C = transformations.translation(10, 5, 7)
-    T = np.matmul(np.matmul(C, B), A)
+    T = matrices.matmul4x4(matrices.matmul4x4(C, B), A)
     assert transformations.transform(T, p) == tuple.Point(15, 0, 7)
 
 
@@ -604,14 +605,14 @@ def test_raytransform2():
 def test_spheretransform1():
     # A sphere's default transformation
     s = objects.Sphere()
-    assert np.allclose(s.transform, np.identity(4))
+    assert matrices.allclose4x4(s.transform, matrices.identity4())
 
 
 def test_spheretransform2():
     # Changing a sphere's transformation
     t = transformations.translation(2, 3, 4)
     s = objects.Sphere(t)
-    assert np.allclose(s.transform, t)
+    assert matrices.allclose4x4(s.transform, t)
 
 
 def test_sphereintersect6():
@@ -672,7 +673,7 @@ def test_normalat5():
 
 def test_normalat6():
     # Computing the normal on a transformed sphere
-    m = np.matmul(transformations.scaling(1, 0.5, 1), transformations.rotation_z(math.pi/5))
+    m = matrices.matmul4x4(transformations.scaling(1, 0.5, 1), transformations.rotation_z(math.pi/5))
     s = objects.Sphere(m)
     n = s.normal_at(tuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2))
     assert n == tuple.Vector(0, 0.97014, -0.24254)
@@ -805,7 +806,7 @@ def test_world2():
     assert math.isclose(w.objects[0].material.specular, 0.2)
     assert math.isclose(w.objects[0].material.shininess, 200.0)
     assert isinstance(w.objects[0], objects.Sphere)
-    assert np.allclose(w.objects[1].transform, transformations.scaling(0.5, 0.5, 0.5))
+    assert matrices.allclose4x4(w.objects[1].transform, transformations.scaling(0.5, 0.5, 0.5))
     assert isinstance(w.objects[1], objects.Sphere)
     assert isinstance(w.lights[0], lights.Light)
     assert w.lights[0].position == tuple.Point(-10, 10, -10)
@@ -919,7 +920,7 @@ def test_viewtransform1():
     to_pt = tuple.Point(0, 0, -1)
     up_vec = tuple.Vector(0, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
-    assert np.allclose(t, np.identity(4))
+    assert matrices.allclose4x4(t, matrices.identity4())
 
 
 def test_viewtransform2():
@@ -928,7 +929,7 @@ def test_viewtransform2():
     to_pt = tuple.Point(0, 0, 1)
     up_vec = tuple.Vector(0, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
-    assert np.allclose(t, transformations.scaling(-1, 1, -1))
+    assert matrices.allclose4x4(t, transformations.scaling(-1, 1, -1))
 
 
 def test_viewtransform3():
@@ -937,7 +938,7 @@ def test_viewtransform3():
     to_pt = tuple.Point(0, 0, 1)
     up_vec = tuple.Vector(0, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
-    assert np.allclose(t, transformations.translation(0, 0, -8))
+    assert matrices.allclose4x4(t, transformations.translation(0, 0, -8))
 
 
 def test_viewtransformation4():
@@ -946,11 +947,11 @@ def test_viewtransformation4():
     to_pt = tuple.Point(4, -2, 8)
     up_vec = tuple.Vector(1, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
-    res = np.array([[-0.50709, 0.50709, 0.67612, -2.36643],
-                    [0.76772, 0.60609, 0.12122, -2.82843],
-                    [-0.35857, 0.59761, -0.71714, 0],
-                    [0, 0, 0, 1]])
-    assert np.allclose(t, res, 1e-05, 1e-05)
+    res = [[-0.50709, 0.50709, 0.67612, -2.36643],
+           [0.76772, 0.60609, 0.12122, -2.82843],
+           [-0.35857, 0.59761, -0.71714, 0],
+           [0, 0, 0, 1]]
+    assert matrices.allclose4x4(t, res)
 
 
 def test_camera1():
@@ -959,7 +960,7 @@ def test_camera1():
     assert c.hsize == 160
     assert c.vsize == 120
     assert math.isclose(c.field_of_view, math.pi/2)
-    assert np.allclose(c.transform, np.identity(4))
+    assert matrices.allclose4x4(c.transform, matrices.identity4())
 
 
 def test_camera2():
@@ -992,7 +993,7 @@ def test_camera5():
 
 def test_camera6():
     # Constructing a ray when the camera is transformed
-    trans = np.matmul(transformations.rotation_y(math.pi/4), transformations.translation(0, -2, 5))
+    trans = matrices.matmul4x4(transformations.rotation_y(math.pi/4), transformations.translation(0, -2, 5))
     c = canvas.Camera(201, 101, math.pi/2, trans)
     r = c.ray_for_pixel(100, 50)
     assert r.origin == tuple.Point(0, 2, -5)
@@ -1006,7 +1007,7 @@ def test_render1():
     to = tuple.Point(0, 0, 0)
     up = tuple.Vector(0, 1, 0)
     c.transform = transformations.view_transform(fr, to, up)
-    canvas.render(c, w)
+    canvas.mp_render(c, w, 1, 1)
     assert canvas.pixel_at(5, 5) == tuple.Color(0.38066, 0.47583, 0.2855)
 
 

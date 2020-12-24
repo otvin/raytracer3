@@ -1,13 +1,12 @@
-import numpy as np
 import time
 import math
 import tuple
 import canvas
 import objects
 import lights
-import random
 import transformations
 import world
+import matrices
 
 
 def render():
@@ -19,16 +18,15 @@ def render():
 
     left_wall = objects.Sphere()
     left_wall.transform = transformations.translation(0, 0, 5)
-    left_wall.transform = np.matmul(left_wall.transform, transformations.rotation_y(-math.pi/4))
-    left_wall.transform = np.matmul(left_wall.transform, transformations.rotation_x(math.pi/2))
-    left_wall.transform = np.matmul(left_wall.transform, transformations.scaling(10, 0.01, 10))
+    left_wall.transform = matrices.matmul4x4(left_wall.transform, transformations.rotation_y(-math.pi/4))
+    left_wall.transform = matrices.matmul4x4(left_wall.transform, transformations.rotation_x(math.pi/2))
+    left_wall.transform = matrices.matmul4x4(left_wall.transform, transformations.scaling(10, 0.01, 10))
 
     right_wall = objects.Sphere()
     right_wall.transform = transformations.translation(0, 0, 5)
-    right_wall.transform = np.matmul(right_wall.transform, transformations.rotation_y(math.pi/4))
-    right_wall.transform = np.matmul(right_wall.transform, transformations.rotation_x(math.pi/2))
-    right_wall.transform = np.matmul(right_wall.transform, transformations.scaling(10, 0.01, 10))
-
+    right_wall.transform = matrices.matmul4x4(right_wall.transform, transformations.rotation_y(math.pi/4))
+    right_wall.transform = matrices.matmul4x4(right_wall.transform, transformations.rotation_x(math.pi/2))
+    right_wall.transform = matrices.matmul4x4(right_wall.transform, transformations.scaling(10, 0.01, 10))
 
     middle = objects.Sphere()
     middle.transform = transformations.translation(-0.5, 1, 0.5)
@@ -37,13 +35,15 @@ def render():
     middle.material.specular = 0.3
 
     right = objects.Sphere()
-    right.transform = np.matmul(transformations.translation(1.5, 0.5, -0.5), transformations.scaling(0.5, 0.5, 0.5))
+    right.transform = matrices.matmul4x4(transformations.translation(1.5, 0.5, -0.5),
+                                         transformations.scaling(0.5, 0.5, 0.5))
     right.material.color = tuple.Color(0.5, 1, 0.1)
     right.material.diffuse = 0.7
     right.material.specular = 0.3
 
     left = objects.Sphere()
-    left.transform = np.matmul(transformations.translation(-1.5, 0.33, -0.75), transformations.scaling(0.33, 0.33, 0.3))
+    left.transform = matrices.matmul4x4(transformations.translation(-1.5, 0.33, -0.75),
+                                        transformations.scaling(0.33, 0.33, 0.3))
     left.material.color = tuple.Color(0.831, 0.686, 0.216)
     left.material.diffuse = 0.9
     left.material.specular = 0.9

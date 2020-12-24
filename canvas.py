@@ -1,9 +1,9 @@
 import multiprocessing
-import numpy as np
 import math
 import random
 import tuple
 import transformations
+import matrices
 
 # This needs to be in global space so that the mp array can be shared when we do multiprocessing.
 # It means that the raytracer can only have a single canvas at a time, which from a practical perspective
@@ -16,7 +16,7 @@ MAXCOLORS = 255
 
 
 class Camera:
-    def __init__(self, hsize=160, vsize=120, field_of_view=math.pi/2, transform=np.identity(4)):
+    def __init__(self, hsize=160, vsize=120, field_of_view=math.pi/2, transform=matrices.identity4()):
         self.hsize = hsize
         self.vsize = vsize
         self.field_of_view = field_of_view
@@ -40,8 +40,8 @@ class Camera:
     @transform.setter
     def transform(self, trans):
         self.__transform = trans
-        self.__inversetransform = np.linalg.inv(self.__transform)
-        self.__origin = transformations.transform(self.__inversetransform, tuple.Point(0,0,0))
+        self.__inversetransform = matrices.inverse4x4(self.__transform)
+        self.__origin = transformations.transform(self.__inversetransform, tuple.Point(0, 0, 0))
 
     def ray_for_pixel(self, x, y):
         px_center_x = (x + 0.5) * self.pixel_size
@@ -121,18 +121,27 @@ def canvas_to_ppm(filename):
 
 global MPGLOBALWORLD
 global MPGLOBALCAMERA
+
+
 def mp_render_rows(rowlist, numsamples):
-    for y in rowlist:
-        for x in range(MPGLOBALCAMERA.hsize):
-            c = tuple.Color(0, 0, 0)
-            for i in range(numsamples):
-                rndx = x + random.uniform(-0.5, 0.5)
-                rndy = y + random.uniform(-0.5, 0.5)
-                r = MPGLOBALCAMERA.ray_for_pixel(rndx, rndy)
-                c += MPGLOBALWORLD.color_at(r)
-            c = c / numsamples
-            write_pixel(x, y, c)
-        print('line {} complete'.format(y))
+
+    if numsamples == 1:
+        for y in rowlist:
+            for x in range(MPGLOBALCAMERA.hsize):
+                r = MPGLOBALCAMERA.ray_for_pixel(x, y)
+                write_pixel(x, y, MPGLOBALWORLD.color_at(r))
+    else:
+        for y in rowlist:
+            for x in range(MPGLOBALCAMERA.hsize):
+                c = tuple.Color(0, 0, 0)
+                for i in range(numsamples):
+                    rndx = x + random.uniform(-0.5, 0.5)
+                    rndy = y + random.uniform(-0.5, 0.5)
+                    r = MPGLOBALCAMERA.ray_for_pixel(rndx, rndy)
+                    c += MPGLOBALWORLD.color_at(r)
+                c = c / numsamples
+                write_pixel(x, y, c)
+            print('line {} complete'.format(y))
 
 
 def mp_render(camera, world, numsamples=10, numprocesses=1):
@@ -159,3 +168,4 @@ def mp_render(camera, world, numsamples=10, numprocesses=1):
 
     for p in procArr:
         p.join()
+
