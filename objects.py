@@ -115,7 +115,13 @@ class Plane(HittableObject):
         super().__init__(transform, material)
 
     def local_intersect(self, object_ray):
-        return []
+        # if ray is parallel to plane we say it misses (even if it's a
+        # coplanar ray, cannot see an infinitely thin plane looking head on)
+        if math.fabs(object_ray.direction.y) <= EPSILON:
+            return []
+        else:
+            t = -object_ray.origin.y / object_ray.direction.y
+            return [Intersection(self, t)]
 
     def local_normal_at(self, object_point):
-        return rttuple.Vector(0, 0, 1)
+        return rttuple.Vector(0, 1, 0)

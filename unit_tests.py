@@ -1018,3 +1018,31 @@ def test_plane2():
     r = rttuple.Ray(rttuple.Point(0, 10, 0), rttuple.Vector(0, 0, 1))
     xs = p.local_intersect(r)
     assert len(xs) == 0
+
+
+def test_plane3():
+    # Intersect with a coplanar ray
+    p = objects.Plane()
+    r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
+    xs = p.local_intersect(r)
+    assert len(xs) == 0
+
+
+def test_plane4():
+    # A ray intersecting a plane from above
+    p = objects.Plane()
+    r = rttuple.Ray(rttuple.Point(0, 1, 0), rttuple.Vector(0, -1, 0))
+    xs = p.local_intersect(r)
+    assert len(xs) == 1
+    assert xs[0].t == 1
+    assert xs[0].objhit == p
+
+
+def test_plane5():
+    # A ray intersecting a plane from below
+    p = objects.Plane()
+    r = rttuple.Ray(rttuple.Point(0, -2, 0), rttuple.Vector(0, 1, 0))
+    xs = p.local_intersect(r)
+    assert len(xs) == 1
+    assert xs[0].t == 2
+    assert xs[0].objhit == p

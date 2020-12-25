@@ -130,6 +130,7 @@ def mp_render_rows(rowlist, numsamples):
             for x in range(MPGLOBALCAMERA.hsize):
                 r = MPGLOBALCAMERA.ray_for_pixel(x, y)
                 write_pixel(x, y, MPGLOBALWORLD.color_at(r))
+            print('line {} complete'.format(y))
     else:
         for y in rowlist:
             for x in range(MPGLOBALCAMERA.hsize):

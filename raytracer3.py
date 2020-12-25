@@ -11,22 +11,9 @@ import matrices
 
 def render():
 
-    floor = objects.Sphere()
-    floor.transform = transformations.scaling(10, 0.01, 10)
+    floor = objects.Plane()
     floor.material.color = rttuple.Color(1, 0.9, 0.9)
     floor.material.specular = 0
-
-    left_wall = objects.Sphere()
-    left_wall.transform = transformations.translation(0, 0, 5)
-    left_wall.transform = matrices.matmul4x4(left_wall.transform, transformations.rotation_y(-math.pi/4))
-    left_wall.transform = matrices.matmul4x4(left_wall.transform, transformations.rotation_x(math.pi/2))
-    left_wall.transform = matrices.matmul4x4(left_wall.transform, transformations.scaling(10, 0.01, 10))
-
-    right_wall = objects.Sphere()
-    right_wall.transform = transformations.translation(0, 0, 5)
-    right_wall.transform = matrices.matmul4x4(right_wall.transform, transformations.rotation_y(math.pi/4))
-    right_wall.transform = matrices.matmul4x4(right_wall.transform, transformations.rotation_x(math.pi/2))
-    right_wall.transform = matrices.matmul4x4(right_wall.transform, transformations.scaling(10, 0.01, 10))
 
     middle = objects.Sphere()
     middle.transform = transformations.translation(-0.5, 1, 0.5)
@@ -55,8 +42,6 @@ def render():
     w = world.World()
     w.lights.append(lights.PointLight(rttuple.Point(-10, 10, -10), rttuple.Color(1, 1, 1)))
     w.objects.append(floor)
-    w.objects.append(left_wall)
-    w.objects.append(right_wall)
     w.objects.append(middle)
     w.objects.append(right)
     w.objects.append(left)
