@@ -1,5 +1,6 @@
 import math
 import rttuple
+import matrices
 
 
 class Light:
@@ -17,9 +18,15 @@ class PointLight(Light):
         self.position = position
 
 
-def lighting(material, light, point, eyev, normalv, in_shadow=False):
-    # combine the surface color with teh light's color/intensity
-    effective_color = material.color * light.intensity
+def lighting(material, object, light, point, eyev, normalv, in_shadow=False):
+    # combine the surface color with the light's color/intensity
+
+    # TODO: Book says that use color only if there is no pattern.  Could fix it so
+    # pattern = a base pattern with the material color or something?
+    object_point = matrices.matmul4xTuple(object.inversetransform, point)
+    pattern_point = matrices.matmul4xTuple(material.pattern.inversetransform, object_point)
+
+    effective_color = material.color * light.intensity * material.pattern.color_at(pattern_point)
 
     # find the direction to the light source
     lightv = rttuple.normalize(light.position - point)

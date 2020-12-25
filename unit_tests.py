@@ -697,7 +697,7 @@ def test_lighting1():
     eyev = rttuple.Vector(0, 0, -1)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(1.9, 1.9, 1.9)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == rttuple.Color(1.9, 1.9, 1.9)
 
 
 def test_lighting2():
@@ -707,7 +707,7 @@ def test_lighting2():
     eyev = rttuple.Vector(0, math.sqrt(2)/2, -math.sqrt(2)/2)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(1.0, 1.0, 1.0)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == rttuple.Color(1.0, 1.0, 1.0)
 
 
 def test_lighting3():
@@ -717,7 +717,7 @@ def test_lighting3():
     eyev = rttuple.Vector(0, 0, -1)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 10, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(0.7364, 0.7364, 0.7364)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == rttuple.Color(0.7364, 0.7364, 0.7364)
 
 
 def test_lighting4():
@@ -727,7 +727,7 @@ def test_lighting4():
     eyev = rttuple.Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 10, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(1.6364, 1.6364, 1.6364)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == rttuple.Color(1.6364, 1.6364, 1.6364)
 
 
 def test_lighting5():
@@ -737,7 +737,7 @@ def test_lighting5():
     eyev = rttuple.Vector(0, 0, -1)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 0, 10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(0.1, 0.1, 0.1)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == rttuple.Color(0.1, 0.1, 0.1)
 
 
 def test_lighting6():
@@ -747,7 +747,7 @@ def test_lighting6():
     eyev = rttuple.Vector(0, 0, -1)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv, True) == rttuple.Color(0.1, 0.1, 0.1)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv, True) == rttuple.Color(0.1, 0.1, 0.1)
 
 
 def test_world1():
@@ -1046,3 +1046,67 @@ def test_plane5():
     assert len(xs) == 1
     assert xs[0].t == 2
     assert xs[0].objhit == p
+
+
+def test_stripepattern1():
+    b = rttuple.Color(0, 0, 0)
+    w = rttuple.Color(1, 1, 1)
+    sp = materials.StripePattern(None, w, b)
+    assert sp.color1 is w
+    assert sp.color2 is b
+
+
+def test_stripepattern2():
+    # A stripe pattern is constant in y
+    b = rttuple.Color(0, 0, 0)
+    w = rttuple.Color(1, 1, 1)
+    sp = materials.StripePattern(None, w, b)
+    assert sp.color_at(rttuple.Point(0, 0, 0)) == w
+    assert sp.color_at(rttuple.Point(0, 1, 0)) == w
+    assert sp.color_at(rttuple.Point(0, 2, 0)) == w
+
+
+def test_stripepattern3():
+    # A stripe pattern is constant in z
+    b = rttuple.Color(0, 0, 0)
+    w = rttuple.Color(1, 1, 1)
+    sp = materials.StripePattern(None, w, b)
+    assert sp.color_at(rttuple.Point(0, 0, 1)) == w
+    assert sp.color_at(rttuple.Point(0, 0, 2)) == w
+
+
+def test_stripepattern4():
+    # A stripe pattern alternates in x
+    b = rttuple.Color(0, 0, 0)
+    w = rttuple.Color(1, 1, 1)
+    sp = materials.StripePattern(None, w, b)
+
+    assert sp.color_at(rttuple.Point(0.9, 0, 0)) == w
+    assert sp.color_at(rttuple.Point(1, 0, 0)) == b
+    assert sp.color_at(rttuple.Point(-0.1, 0, 0)) == b
+    assert sp.color_at(rttuple.Point(-1, 0, 0)) == b
+    assert sp.color_at(rttuple.Point(-1.1, 0, 0)) == w
+
+
+def test_stripepattern5():
+    # Lighting with a pattern applied
+    b = rttuple.Color(0, 0, 0)
+    w = rttuple.Color(1, 1, 1)
+    sp = materials.StripePattern(None, w, b)
+
+    m = materials.Material()
+    m.ambient = 1
+    m.diffuse = 0
+    m.specular = 0
+    m.pattern = sp
+
+    eyev = rttuple.Vector(0, 0, -1)
+    normalv = rttuple.Vector(0, 0, -1)
+
+    light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
+
+    c1 = lights.lighting(m, objects.HittableObject(), light, rttuple.Point(0.9, 0, 0), eyev, normalv, False)
+    c2 = lights.lighting(m, objects.HittableObject(), light, rttuple.Point(1.1, 0, 0), eyev, normalv, False)
+
+    assert c1 == w
+    assert c2 == b

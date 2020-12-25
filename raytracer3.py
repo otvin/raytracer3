@@ -7,6 +7,7 @@ import lights
 import transformations
 import world
 import matrices
+import materials
 
 
 def render():
@@ -14,12 +15,15 @@ def render():
     floor = objects.Plane()
     floor.material.color = rttuple.Color(1, 0.9, 0.9)
     floor.material.specular = 0
+    floor.material.pattern = materials.StripePattern()
 
     middle = objects.Sphere()
     middle.transform = transformations.translation(-0.5, 1, 0.5)
     middle.material.color = rttuple.Color(1, .1, 0.5)
     middle.material.diffuse = 0.7
     middle.material.specular = 0.3
+    middle.material.pattern = materials.StripePattern(color2=rttuple.Color(0.5, 0.5, 0.5))
+    middle.material.pattern.transform = matrices.matmul4x4(transformations.rotation_z(math.pi/2), transformations.scaling(0.1, 0.1, 0.1))
 
     right = objects.Sphere()
     right.transform = matrices.matmul4x4(transformations.translation(1.5, 0.5, -0.5),
@@ -51,7 +55,7 @@ def render():
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 
-    canvas.canvas_to_ppm('chap9.ppm')
+    canvas.canvas_to_ppm('chap10.ppm')
 
 
 if __name__ == '__main__':

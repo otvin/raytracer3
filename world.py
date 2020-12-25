@@ -28,7 +28,7 @@ class World:
     def shade_hit(self, hitrecord):
         # TODO p.96 to support multiple lights, just iterate over the lights in the scene.
         shadowed = self.is_shadowed(hitrecord.over_point)
-        return lights.lighting(hitrecord.objhit.material, self.lights[0], hitrecord.point,
+        return lights.lighting(hitrecord.objhit.material, hitrecord.objhit, self.lights[0], hitrecord.point,
                                hitrecord.eyev, hitrecord.normalv, shadowed)
 
     def color_at(self, ray):
