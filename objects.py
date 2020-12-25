@@ -12,6 +12,7 @@ class Intersection:
 
 
 EPSILON = 1e-05
+ONEMINUSEPSILON = 1 - EPSILON
 
 
 class HitRecord:

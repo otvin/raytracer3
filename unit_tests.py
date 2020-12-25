@@ -1110,3 +1110,21 @@ def test_stripepattern5():
 
     assert c1 == w
     assert c2 == b
+
+
+def test_checkerspattern1():
+    b = rttuple.Color(0, 0, 0)
+    w = rttuple.Color(1, 1, 1)
+    cp = materials.CheckersPattern(None, w, b)
+
+    assert cp.color_at(rttuple.Point(0, 0, 0)) == w
+    assert cp.color_at(rttuple.Point(0.99, 0, 0)) == w
+    assert cp.color_at(rttuple.Point(1.01, 0, 0)) == b
+    assert cp.color_at(rttuple.Point(0, 0.99, 0)) == w
+    assert cp.color_at(rttuple.Point(0, 1.01, 0)) == b
+    assert cp.color_at(rttuple.Point(0, 0, 0.99)) == w
+    assert cp.color_at(rttuple.Point(0, 0, 1.01)) == b
+
+
+
+

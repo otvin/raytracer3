@@ -1,6 +1,7 @@
 import math
 import rttuple
 import matrices
+import objects
 
 
 class Pattern:
@@ -45,6 +46,73 @@ class StripePattern(Pattern):
             return self.color2
         else:
             return self.color1
+
+
+class GradientPattern(Pattern):
+    def __init__(self, transform=None, color1=None, color2=None):
+        super().__init__(transform)
+        if color1 is None:
+            self.color1 = rttuple.Color(1.0, 1.0, 1.0)
+        else:
+            self.color1 = color1
+        if color2 is None:
+            self.color2 = rttuple.Color(0.0, 0.0, 0.0)
+        else:
+            self.color2 = color2
+
+    def color_at(self, pattern_point):
+        distance = self.color2 - self.color1
+        fraction = pattern_point.x - math.floor(pattern_point.x)
+        return self.color1 + (distance * fraction)
+
+
+class RingPattern(Pattern):
+    def __init__(self, transform=None, color1=None, color2=None):
+        super().__init__(transform)
+        if color1 is None:
+            self.color1 = rttuple.Color(1.0, 1.0, 1.0)
+        else:
+            self.color1 = color1
+        if color2 is None:
+            self.color2 = rttuple.Color(0.0, 0.0, 0.0)
+        else:
+            self.color2 = color2
+
+    def color_at(self, pattern_point):
+        if math.sqrt(pattern_point.x * pattern_point.x + pattern_point.z * pattern_point.z) % 2 >= 1.0:
+            return self.color2
+        else:
+            return self.color1
+
+
+class CheckersPattern(Pattern):
+    def __init__(self, transform=None, color1=None, color2=None):
+        super().__init__(transform)
+        if color1 is None:
+            self.color1 = rttuple.Color(1.0, 1.0, 1.0)
+        else:
+            self.color1 = color1
+        if color2 is None:
+            self.color2 = rttuple.Color(0.0, 0.0, 0.0)
+        else:
+            self.color2 = color2
+
+    def color_at(self, pattern_point):
+
+        x = math.floor(pattern_point.x)
+        if pattern_point.x - x > objects.ONEMINUSEPSILON:
+            x = x + 1
+        y = math.floor(pattern_point.y)
+        if pattern_point.y - y > objects.ONEMINUSEPSILON:
+            y = y + 1
+        z = math.floor(pattern_point.z)
+        if pattern_point.z - z > objects.ONEMINUSEPSILON:
+            z = z + 1
+
+        if (x + y + z) % 2 == 0:
+            return self.color1
+        else:
+            return self.color2
 
 
 class Material:

@@ -15,15 +15,19 @@ def render():
     floor = objects.Plane()
     floor.material.color = rttuple.Color(1, 0.9, 0.9)
     floor.material.specular = 0
-    floor.material.pattern = materials.StripePattern()
+    floor.material.pattern = materials.CheckersPattern()
+    # floor.material.pattern.color1 = rttuple.Color(1, 0, 0)
+    # floor.material.pattern.color2 = rttuple.Color(0, 1, 0)
 
     middle = objects.Sphere()
     middle.transform = transformations.translation(-0.5, 1, 0.5)
-    middle.material.color = rttuple.Color(1, .1, 0.5)
+    middle.material.color = rttuple.Color(1, 1, 1)
     middle.material.diffuse = 0.7
     middle.material.specular = 0.3
-    middle.material.pattern = materials.StripePattern(color2=rttuple.Color(0.5, 0.5, 0.5))
-    middle.material.pattern.transform = matrices.matmul4x4(transformations.rotation_z(math.pi/2), transformations.scaling(0.1, 0.1, 0.1))
+    middle.material.pattern = materials.CheckersPattern()
+    middle.material.pattern.color1 = rttuple.Color(229/255, 114/255, 0)
+    middle.material.pattern.color2 = rttuple.Color(35/255, 45/255, 75/255)
+    middle.material.pattern.transform = matrices.matmul4x4(transformations.rotation_z(math.pi/2), transformations.scaling(0.25, 0.25, 0.25))
 
     right = objects.Sphere()
     right.transform = matrices.matmul4x4(transformations.translation(1.5, 0.5, -0.5),
@@ -39,6 +43,7 @@ def render():
     left.material.diffuse = 0.9
     left.material.specular = 0.9
 
+
     camera = canvas.Camera(400, 200, math.pi/3)
     camera.transform = transformations.view_transform(rttuple.Point(0, 1.5, -5), rttuple.Point(0, 1, 0),
                                                       rttuple.Vector(0, 1, 0))
@@ -46,6 +51,7 @@ def render():
     w = world.World()
     w.lights.append(lights.PointLight(rttuple.Point(-10, 10, -10), rttuple.Color(1, 1, 1)))
     w.objects.append(floor)
+
     w.objects.append(middle)
     w.objects.append(right)
     w.objects.append(left)
@@ -55,7 +61,7 @@ def render():
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 
-    canvas.canvas_to_ppm('chap10.ppm')
+    canvas.canvas_to_ppm('chap10a.ppm')
 
 
 if __name__ == '__main__':
