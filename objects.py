@@ -1,8 +1,8 @@
 import math
-import numpy as np
 import tuple
 import transformations
 import materials
+import matrices
 
 
 class Intersection:
@@ -30,7 +30,7 @@ class HitRecord:
 
 
 class HittableObject:
-    def __init__(self, transform=np.identity(4), material=None):
+    def __init__(self, transform=matrices.identity4(), material=None):
         if material is None:
             self.material = materials.Material()
         else:
@@ -44,7 +44,7 @@ class HittableObject:
     @transform.setter
     def transform(self, trans):
         self.__transform = trans
-        self.__inversetransform = np.linalg.inv(self.__transform)
+        self.__inversetransform = matrices.inverse4x4(self.__transform)
 
     @property
     def inversetransform(self):
@@ -63,7 +63,7 @@ class HittableObject:
     def normal_at(self, point):
         object_point = transformations.transform(self.inversetransform, point)
         object_normal = self.local_normal_at(object_point)
-        world_normal = transformations.transform(np.matrix.transpose(self.inversetransform), object_normal)
+        world_normal = transformations.transform(matrices.transpose4x4(self.inversetransform), object_normal)
         # hack - should really get the submatrix of the transform, and multiply by the inverse and
         # transform that, but this is much faster and equivalent.
         world_normal.w = 0.0
@@ -76,7 +76,7 @@ class HittableObject:
 
 
 class Sphere(HittableObject):
-    def __init__(self, transform=np.identity(4), material=None):
+    def __init__(self, transform=matrices.identity4(), material=None):
         super().__init__(transform, material)
         self.origin = tuple.Point(0, 0, 0)
 
