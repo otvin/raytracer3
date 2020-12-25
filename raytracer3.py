@@ -62,11 +62,11 @@ def render():
     w.objects.append(left)
 
     timestart = time.time()
-    canvas.mp_render(camera, w, 10, 6)
+    canvas.mp_render(camera, w, 5, 6)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 
-    canvas.canvas_to_ppm('chap8.ppm')
+    canvas.canvas_to_ppm('chap9.ppm')
 
 
 if __name__ == '__main__':

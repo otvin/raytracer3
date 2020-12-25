@@ -52,9 +52,26 @@ class HittableObject:
 
     def intersect(self, r):
         # returns a list of intersections
+        object_ray = transformations.transformray(self.inversetransform, r)
+        return self.local_intersect(object_ray)
+
+    def local_intersect(self, object_ray):
+        # this method should be overridden by every base class
+        # ray should be converted to object space by intersect() before calling this
         return []
 
     def normal_at(self, point):
+        object_point = transformations.transform(self.inversetransform, point)
+        object_normal = self.local_normal_at(object_point)
+        world_normal = transformations.transform(np.matrix.transpose(self.inversetransform), object_normal)
+        # hack - should really get the submatrix of the transform, and multiply by the inverse and
+        # transform that, but this is much faster and equivalent.
+        world_normal.w = 0.0
+        return tuple.normalize(world_normal)
+
+    def local_normal_at(self, object_point):
+        # this method should be overridden by every base class
+        # point should be converted to object space by normal_at() before calling this
         return tuple.Vector()
 
 
@@ -63,7 +80,7 @@ class Sphere(HittableObject):
         super().__init__(transform, material)
         self.origin = tuple.Point(0, 0, 0)
 
-    def intersect(self, r):
+    def local_intersect(self, object_ray):
         # original logic:
         # sphere_to_ray = r.origin - self.center
         # a = tuple.dot(r.direction, r.direction)
@@ -74,12 +91,10 @@ class Sphere(HittableObject):
         # speedup from mpraytracer, factoring in that center is always 0,0,0 and
         # radius is always 1, and we use transform to move the ray:
 
-        r2 = transformations.transformray(self.inversetransform, r)
-
         # TODO - if we don't ever change the coordinates of the origin, we can take this tuple.Point(0,0,0) out.
-        sphere_to_ray = r2.origin - self.origin
-        a = tuple.dot(r2.direction, r2.direction)
-        half_b = tuple.dot(r2.direction, sphere_to_ray)
+        sphere_to_ray = object_ray.origin - self.origin
+        a = tuple.dot(object_ray.direction, object_ray.direction)
+        half_b = tuple.dot(object_ray.direction, sphere_to_ray)
         c = tuple.dot(sphere_to_ray, sphere_to_ray) - 1
         discriminant = (half_b * half_b) - (a * c)
 
@@ -91,15 +106,8 @@ class Sphere(HittableObject):
             t2 = (-half_b + sqrtd) / a
             return [Intersection(self, t1), Intersection(self, t2)]
 
-    def normal_at(self, point):
-        # get the point moved into object space
-        object_point = transformations.transform(self.inversetransform, point)
-        object_normal = object_point - self.origin
-        world_normal = transformations.transform(np.matrix.transpose(self.inversetransform), object_normal)
-        # hack - should really get the submatrix of the transform, and multiply by the inverse and
-        # transform that, but this is much faster and equivalent.
-        world_normal.w = 0.0
-        return tuple.normalize(world_normal)
+    def local_normal_at(self, object_point):
+        return object_point - self.origin
 
 
 def hit(intersections):
