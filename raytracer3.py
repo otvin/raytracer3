@@ -1,6 +1,6 @@
 import time
 import math
-import tuple
+import rttuple
 import canvas
 import objects
 import lights
@@ -13,7 +13,7 @@ def render():
 
     floor = objects.Sphere()
     floor.transform = transformations.scaling(10, 0.01, 10)
-    floor.material.color = tuple.Color(1, 0.9, 0.9)
+    floor.material.color = rttuple.Color(1, 0.9, 0.9)
     floor.material.specular = 0
 
     left_wall = objects.Sphere()
@@ -30,30 +30,30 @@ def render():
 
     middle = objects.Sphere()
     middle.transform = transformations.translation(-0.5, 1, 0.5)
-    middle.material.color = tuple.Color(1, .1, 0.5)
+    middle.material.color = rttuple.Color(1, .1, 0.5)
     middle.material.diffuse = 0.7
     middle.material.specular = 0.3
 
     right = objects.Sphere()
     right.transform = matrices.matmul4x4(transformations.translation(1.5, 0.5, -0.5),
                                          transformations.scaling(0.5, 0.5, 0.5))
-    right.material.color = tuple.Color(0.5, 1, 0.1)
+    right.material.color = rttuple.Color(0.5, 1, 0.1)
     right.material.diffuse = 0.7
     right.material.specular = 0.3
 
     left = objects.Sphere()
     left.transform = matrices.matmul4x4(transformations.translation(-1.5, 0.33, -0.75),
                                         transformations.scaling(0.33, 0.33, 0.3))
-    left.material.color = tuple.Color(0.831, 0.686, 0.216)
+    left.material.color = rttuple.Color(0.831, 0.686, 0.216)
     left.material.diffuse = 0.9
     left.material.specular = 0.9
 
     camera = canvas.Camera(400, 200, math.pi/3)
-    camera.transform = transformations.view_transform(tuple.Point(0, 1.5, -5), tuple.Point(0, 1, 0),
-                                                      tuple.Vector(0, 1, 0))
+    camera.transform = transformations.view_transform(rttuple.Point(0, 1.5, -5), rttuple.Point(0, 1, 0),
+                                                      rttuple.Vector(0, 1, 0))
 
     w = world.World()
-    w.lights.append(lights.PointLight(tuple.Point(-10, 10, -10), tuple.Color(1, 1, 1)))
+    w.lights.append(lights.PointLight(rttuple.Point(-10, 10, -10), rttuple.Color(1, 1, 1)))
     w.objects.append(floor)
     w.objects.append(left_wall)
     w.objects.append(right_wall)
@@ -62,7 +62,7 @@ def render():
     w.objects.append(left)
 
     timestart = time.time()
-    canvas.mp_render(camera, w, 5, 6)
+    canvas.mp_render(camera, w, 10, 6)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 

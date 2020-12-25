@@ -1,11 +1,11 @@
 import math
-import tuple
+import rttuple
 import matrices
 
 
 def transform(mat, tup):
-    # returns the result of multiplying a transformation matrix by a tuple.  Result will be a tuple
-    res = tuple.RT_Tuple()
+    # returns the result of multiplying a transformation matrix by a rttuple.  Result will be a tuple
+    res = rttuple.RT_Tuple()
     res.arr = matrices.matmul4x1(mat, tup.arr)
     return res
 
@@ -13,7 +13,7 @@ def transform(mat, tup):
 def transformray(mat, ray):
     neworigin = transform(mat, ray.origin)
     newdirection = transform(mat, ray.direction)
-    return tuple.Ray(neworigin, newdirection)
+    return rttuple.Ray(neworigin, newdirection)
 
 
 def translation(x, y, z):
@@ -74,9 +74,9 @@ def skew(xy, xz, yx, yz, zx, zy):
 
 
 def view_transform(from_pt, to_pt, up_vec):
-    forward = tuple.normalize(to_pt - from_pt)
-    left = tuple.cross(forward, tuple.normalize(up_vec))
-    true_up = tuple.cross(left, forward)
+    forward = rttuple.normalize(to_pt - from_pt)
+    left = rttuple.cross(forward, rttuple.normalize(up_vec))
+    true_up = rttuple.cross(left, forward)
     orientation = [left.arr, true_up.arr,
                    [-forward.arr[0], -forward.arr[1], -forward.arr[2], -forward.arr[3]],
                    [0, 0, 0, 1.0]]

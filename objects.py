@@ -1,5 +1,5 @@
 import math
-import tuple
+import rttuple
 import transformations
 import materials
 import matrices
@@ -20,7 +20,7 @@ class HitRecord:
         self.objhit = objhit
         self.point = point
         self.eyev = eyev
-        if tuple.dot(normalv, eyev) < 0:
+        if rttuple.dot(normalv, eyev) < 0:
             self.inside = True
             self.normalv = -normalv
         else:
@@ -67,35 +67,35 @@ class HittableObject:
         # hack - should really get the submatrix of the transform, and multiply by the inverse and
         # transform that, but this is much faster and equivalent.
         world_normal.w = 0.0
-        return tuple.normalize(world_normal)
+        return rttuple.normalize(world_normal)
 
     def local_normal_at(self, object_point):
         # this method should be overridden by every base class
         # point should be converted to object space by normal_at() before calling this
-        return tuple.Vector()
+        return rttuple.Vector()
 
 
 class Sphere(HittableObject):
     def __init__(self, transform=matrices.identity4(), material=None):
         super().__init__(transform, material)
-        self.origin = tuple.Point(0, 0, 0)
+        self.origin = rttuple.Point(0, 0, 0)
 
     def local_intersect(self, object_ray):
         # original logic:
         # sphere_to_ray = r.origin - self.center
-        # a = tuple.dot(r.direction, r.direction)
-        # b = 2 * tuple.dot(r.direction, sphere_to_ray)
-        # c = tuple.dot(sphere_to_ray, sphere_to_ray) - (self.radius * self.radius)
+        # a = rttuple.dot(r.direction, r.direction)
+        # b = 2 * rttuple.dot(r.direction, sphere_to_ray)
+        # c = rttuple.dot(sphere_to_ray, sphere_to_ray) - (self.radius * self.radius)
         # discriminant = (b * b) - (4 * a * c)
 
         # speedup from mpraytracer, factoring in that center is always 0,0,0 and
         # radius is always 1, and we use transform to move the ray:
 
-        # TODO - if we don't ever change the coordinates of the origin, we can take this tuple.Point(0,0,0) out.
+        # TODO - if we don't ever change the coordinates of the origin, we can take this rttuple.Point(0,0,0) out.
         sphere_to_ray = object_ray.origin - self.origin
-        a = tuple.dot(object_ray.direction, object_ray.direction)
-        half_b = tuple.dot(object_ray.direction, sphere_to_ray)
-        c = tuple.dot(sphere_to_ray, sphere_to_ray) - 1
+        a = rttuple.dot(object_ray.direction, object_ray.direction)
+        half_b = rttuple.dot(object_ray.direction, sphere_to_ray)
+        c = rttuple.dot(sphere_to_ray, sphere_to_ray) - 1
         discriminant = (half_b * half_b) - (a * c)
 
         if discriminant < 0:
@@ -110,12 +110,12 @@ class Sphere(HittableObject):
         return object_point - self.origin
 
 
-def hit(intersections):
-    # for now, intersections is a list of Intersection objects.  Function returns the first object hit, which
-    # is the intersection with the smallest non-negative t.
-    assert isinstance(intersections, list)
-    intersections.sort(key=lambda x: x.t)
-    for i in intersections:
-        if i.t > 0:
-            return i
-    return None
+class Plane(HittableObject):
+    def __init__(self, transform=matrices.identity4(), material=None):
+        super().__init__(transform, material)
+
+    def local_intersect(self, object_ray):
+        return []
+
+    def local_normal_at(self, object_point):
+        return rttuple.Vector(0, 0, 1)

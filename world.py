@@ -1,6 +1,6 @@
 import objects
 import materials
-import tuple
+import rttuple
 import transformations
 import lights
 import matrices
@@ -22,7 +22,6 @@ class World:
         res = []
         for i in self.objects:
             res.extend(i.intersect(r))
-        # TODO this is a double-sort since objects.hit(intersections) also sorts
         res.sort(key=lambda x: x.t)
         return res
 
@@ -34,21 +33,19 @@ class World:
 
     def color_at(self, ray):
         xs = self.intersect(ray)
-        # skipping the double-sort by not calling objects.hit().  If we need objects.hit()
-        # later we have to figure something else out.
         for i in xs:
             if i.t > 0:
                 hitrecord = prepare_computations(i, ray)
                 return self.shade_hit(hitrecord)
-        return tuple.Color(0, 0, 0)  # either no intersections or no positive t intersections
+        return rttuple.Color(0, 0, 0)  # either no intersections or no positive t intersections
 
     def is_shadowed(self, point):
         # TODO if we add multiple lights we need to do something here too.
         v = self.lights[0].position - point
         distance = v.magnitude()
-        direction = tuple.normalize(v)
+        direction = rttuple.normalize(v)
 
-        r = tuple.Ray(point, direction)
+        r = rttuple.Ray(point, direction)
         xs = self.intersect(r)
         for i in xs:
             if i.t > 0:
@@ -70,9 +67,9 @@ def prepare_computations(i, r):
 
 
 def default_world():
-    s1 = objects.Sphere(matrices.identity4(), materials.Material(tuple.Color(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200))
+    s1 = objects.Sphere(matrices.identity4(), materials.Material(rttuple.Color(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200))
     s2 = objects.Sphere()
     s2.transform = transformations.scaling(0.5, 0.5, 0.5)
-    light = lights.PointLight(tuple.Point(-10, 10, -10), tuple.Color(1, 1, 1))
+    light = lights.PointLight(rttuple.Point(-10, 10, -10), rttuple.Color(1, 1, 1))
     w = World([s1, s2], [light])
     return w

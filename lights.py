@@ -1,5 +1,5 @@
 import math
-import tuple
+import rttuple
 
 
 class Light:
@@ -8,10 +8,10 @@ class Light:
 
 
 class PointLight(Light):
-    def __init__(self, position=tuple.Point(0, 0, 0), intensity=None):
+    def __init__(self, position=rttuple.Point(0, 0, 0), intensity=None):
         super().__init__()
         if intensity is None:
-            self.intensity = tuple.Color(1, 1, 1)
+            self.intensity = rttuple.Color(1, 1, 1)
         else:
             self.intensity = intensity
         self.position = position
@@ -22,22 +22,22 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
     effective_color = material.color * light.intensity
 
     # find the direction to the light source
-    lightv = tuple.normalize(light.position - point)
+    lightv = rttuple.normalize(light.position - point)
 
     # compute the ambient contribution
     ambient = effective_color * material.ambient
 
     if in_shadow:
-        diffuse = tuple.BLACK
-        specular = tuple.BLACK
+        diffuse = rttuple.BLACK
+        specular = rttuple.BLACK
     else:
         # light_dot_normal represents the cosine of the angle between the
         # light vector and the normal vector.  A negative number means the
         # light is on the other side of the surface.
-        light_dot_normal = tuple.dot(lightv, normalv)
+        light_dot_normal = rttuple.dot(lightv, normalv)
         if light_dot_normal < 0:
-            diffuse = tuple.BLACK
-            specular = tuple.BLACK
+            diffuse = rttuple.BLACK
+            specular = rttuple.BLACK
         else:
             # compute the diffuse contribution
             diffuse = effective_color * material.diffuse * light_dot_normal
@@ -45,10 +45,10 @@ def lighting(material, light, point, eyev, normalv, in_shadow=False):
             # reflect_dot_eye represents the cosine of the angel between the
             # reflection vector and the eye vector.  A negative number means the
             # light reflects away from the eye
-            reflectv = tuple.reflect(-lightv, normalv)
-            reflect_dot_eye = tuple.dot(reflectv, eyev)
+            reflectv = rttuple.reflect(-lightv, normalv)
+            reflect_dot_eye = rttuple.dot(reflectv, eyev)
             if reflect_dot_eye <= 0:
-                specular = tuple.BLACK
+                specular = rttuple.BLACK
             else:
                 # compute the specular contribution
                 factor = math.pow(reflect_dot_eye, material.shininess)

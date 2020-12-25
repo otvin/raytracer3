@@ -1,5 +1,5 @@
 import math
-import tuple
+import rttuple
 import canvas
 import transformations
 import objects
@@ -30,7 +30,7 @@ def compare_ppms(file1, file2):
 
 def test_point1():
     # A tuple with w=1.0 is a point
-    t = tuple.RT_Tuple(4.3, -4.2, 3.1, 1.0)
+    t = rttuple.RT_Tuple(4.3, -4.2, 3.1, 1.0)
     assert math.isclose(t.x, 4.3)
     assert math.isclose(t.y, -4.2)
     assert math.isclose(t.z, 3.1)
@@ -40,7 +40,7 @@ def test_point1():
 
 def test_vector1():
     # A tuple with w=0 is a vector
-    t = tuple.RT_Tuple(4.3, -4.2, 3.1, 0.0)
+    t = rttuple.RT_Tuple(4.3, -4.2, 3.1, 0.0)
     assert math.isclose(t.x, 4.3)
     assert math.isclose(t.y, -4.2)
     assert math.isclose(t.z, 3.1)
@@ -50,173 +50,173 @@ def test_vector1():
 
 def test_point2():
     # Point() creates tuples with w=1
-    p = tuple.Point(4.0, -4.0, 3.0)
-    assert isinstance(p, tuple.RT_Tuple)
-    assert p == tuple.RT_Tuple(4.0, -4.0, 3.0, 1.0)
+    p = rttuple.Point(4.0, -4.0, 3.0)
+    assert isinstance(p, rttuple.RT_Tuple)
+    assert p == rttuple.RT_Tuple(4.0, -4.0, 3.0, 1.0)
 
 
 def test_vector2():
     # Vector() creates tuples with w=0
-    p = tuple.Vector(4, -4, 3)
-    assert isinstance(p, tuple.RT_Tuple)
-    assert p == tuple.RT_Tuple(4.0, -4.0, 3.0, 0.0)
+    p = rttuple.Vector(4, -4, 3)
+    assert isinstance(p, rttuple.RT_Tuple)
+    assert p == rttuple.RT_Tuple(4.0, -4.0, 3.0, 0.0)
 
 
 def test_add1():
     # Adding two tuples
-    p1 = tuple.RT_Tuple(3, -2, 5, 1)
-    p2 = tuple.RT_Tuple(-2, 3, 1, 0)
-    assert p1 + p2 == tuple.RT_Tuple(1, 1, 6, 1)
+    p1 = rttuple.RT_Tuple(3, -2, 5, 1)
+    p2 = rttuple.RT_Tuple(-2, 3, 1, 0)
+    assert p1 + p2 == rttuple.RT_Tuple(1, 1, 6, 1)
 
 
 def test_sub1():
     # Subtracting two points
-    p1 = tuple.Point(3, 2, 1)
-    p2 = tuple.Point(5, 6, 7)
-    assert p1 - p2 == tuple.Vector(-2, -4, -6)
+    p1 = rttuple.Point(3, 2, 1)
+    p2 = rttuple.Point(5, 6, 7)
+    assert p1 - p2 == rttuple.Vector(-2, -4, -6)
 
 
 def test_sub2():
     # Subtracting a vector from a point
-    p = tuple.Point(3, 2, 1)
-    v = tuple.Vector(5, 6, 7)
-    assert p - v == tuple.Point(-2, -4, -6)
+    p = rttuple.Point(3, 2, 1)
+    v = rttuple.Vector(5, 6, 7)
+    assert p - v == rttuple.Point(-2, -4, -6)
 
 
 def test_sub3():
     # Subtracting two vectors
-    v1 = tuple.Vector(3, 2, 1)
-    v2 = tuple.Vector(5, 6, 7)
-    assert v1 - v2 == tuple.Vector(-2, -4, -6)
+    v1 = rttuple.Vector(3, 2, 1)
+    v2 = rttuple.Vector(5, 6, 7)
+    assert v1 - v2 == rttuple.Vector(-2, -4, -6)
 
 
 def test_negation1():
     # Subtracting a vector from the zero vector
-    zero = tuple.Vector(0, 0, 0)
-    v = tuple.Vector(1, -2, 3)
-    assert zero - v == tuple.Vector(-1, 2, -3)
+    zero = rttuple.Vector(0, 0, 0)
+    v = rttuple.Vector(1, -2, 3)
+    assert zero - v == rttuple.Vector(-1, 2, -3)
 
 
 def test_negation2():
     # Negating a tuple
-    a = tuple.RT_Tuple(1, -2, 3, -4)
-    assert -a == tuple.RT_Tuple(-1, 2, -3, 4)
+    a = rttuple.RT_Tuple(1, -2, 3, -4)
+    assert -a == rttuple.RT_Tuple(-1, 2, -3, 4)
 
 
 def test_scalarmult1():
     # Multiplying a tuple by a scalar
-    a = tuple.RT_Tuple(1, -2, 3, -4)
-    assert a * 3.5 == tuple.RT_Tuple(3.5, -7, 10.5, -14)
+    a = rttuple.RT_Tuple(1, -2, 3, -4)
+    assert a * 3.5 == rttuple.RT_Tuple(3.5, -7, 10.5, -14)
 
 
 def test_scalarmult2():
     # Multiplying a tuple by a fraction
-    a = tuple.RT_Tuple(1, -2, 3, -4)
-    assert a * 0.5 == tuple.RT_Tuple(0.5, -1, 1.5, -2)
+    a = rttuple.RT_Tuple(1, -2, 3, -4)
+    assert a * 0.5 == rttuple.RT_Tuple(0.5, -1, 1.5, -2)
 
 
 def test_tuplemult1():
     # Multiplying a tuple by a tuple
-    a = tuple.RT_Tuple(2, 3, 4, 5)
-    b = tuple.RT_Tuple(0.5, 4, -1.2, 1.5)
-    assert a * b == tuple.RT_Tuple(1, 12, -4.8, 7.5)
+    a = rttuple.RT_Tuple(2, 3, 4, 5)
+    b = rttuple.RT_Tuple(0.5, 4, -1.2, 1.5)
+    assert a * b == rttuple.RT_Tuple(1, 12, -4.8, 7.5)
 
 
 def test_scalardiv1():
     # Dividing a tuple by a scalar
-    a = tuple.RT_Tuple(1, -2, 3, -4)
-    assert a / 2 == tuple.RT_Tuple(0.5, -1, 1.5, -2)
+    a = rttuple.RT_Tuple(1, -2, 3, -4)
+    assert a / 2 == rttuple.RT_Tuple(0.5, -1, 1.5, -2)
 
 
 def test_tuplediv1():
     # Dividing a tuple by a tuple
-    a = tuple.RT_Tuple(3, 4, 5, 6)
-    b = tuple.RT_Tuple(1, 2, -2.5, 4)
-    assert a / b == tuple.RT_Tuple(3, 2, -2, 1.5)
+    a = rttuple.RT_Tuple(3, 4, 5, 6)
+    b = rttuple.RT_Tuple(1, 2, -2.5, 4)
+    assert a / b == rttuple.RT_Tuple(3, 2, -2, 1.5)
 
 
 def test_magnitude1():
     # Computing the magnitude of vector (1,0,0)
-    v = tuple.Vector(1, 0, 0)
+    v = rttuple.Vector(1, 0, 0)
     assert v.magnitude() == 1
 
 
 def test_magnitude2():
     # Computing the magnitude of vector (0,1,0)
-    v = tuple.Vector(0, 1, 0)
+    v = rttuple.Vector(0, 1, 0)
     assert v.magnitude() == 1
 
 
 def test_magnitude3():
     # Computing the magnitude of vector (0,0,1)
-    v = tuple.Vector(0, 0, 1)
+    v = rttuple.Vector(0, 0, 1)
     assert v.magnitude() == 1
 
 
 def test_magnitude4():
     # Computing the magnitude of vector (1,2,3)
-    v = tuple.Vector(1, 2, 3)
+    v = rttuple.Vector(1, 2, 3)
     assert v.magnitude() == math.sqrt(14)
 
 
 def test_magnitude5():
     # Computing the magnitude of vector (-1, -2, -3)
-    v = tuple.Vector(-1, -2, -3)
+    v = rttuple.Vector(-1, -2, -3)
     assert v.magnitude() == math.sqrt(14)
 
 
 def test_normalize1():
     # Normalizing vector (4,0,0) gives (1,0,0)
-    v = tuple.Vector(4, 0, 0)
-    assert tuple.normalize(v) == tuple.Vector(1, 0, 0)
+    v = rttuple.Vector(4, 0, 0)
+    assert rttuple.normalize(v) == rttuple.Vector(1, 0, 0)
 
 
 def test_normalize2():
     # Normalizing vector (1, 2, 3)
-    v = tuple.Vector(1, 2, 3)
-    assert tuple.normalize(v) == tuple.Vector(0.26726, 0.53452, 0.80178)
+    v = rttuple.Vector(1, 2, 3)
+    assert rttuple.normalize(v) == rttuple.Vector(0.26726, 0.53452, 0.80178)
 
 
 def test_dot1():
     # The dot product of two tuples
-    a = tuple.RT_Tuple(1, 2, 3)
-    b = tuple.RT_Tuple(2, 3, 4)
-    assert tuple.dot(a, b) == 20
+    a = rttuple.RT_Tuple(1, 2, 3)
+    b = rttuple.RT_Tuple(2, 3, 4)
+    assert rttuple.dot(a, b) == 20
 
 
 def test_cross1():
     # The cross product of two vectors
-    a = tuple.Vector(1, 2, 3)
-    b = tuple.Vector(2, 3, 4)
-    assert tuple.cross(a, b) == tuple.Vector(-1, 2, -1)
-    assert tuple.cross(b, a) == tuple.Vector(1, -2, 1)
+    a = rttuple.Vector(1, 2, 3)
+    b = rttuple.Vector(2, 3, 4)
+    assert rttuple.cross(a, b) == rttuple.Vector(-1, 2, -1)
+    assert rttuple.cross(b, a) == rttuple.Vector(1, -2, 1)
 
 
 def test_color1():
     # Adding colors
-    c1 = tuple.Color(0.9, 0.6, 0.75)
-    c2 = tuple.Color(0.7, 0.1, 0.25)
-    assert c1 + c2 == tuple.Color(1.6, 0.7, 1.0)
+    c1 = rttuple.Color(0.9, 0.6, 0.75)
+    c2 = rttuple.Color(0.7, 0.1, 0.25)
+    assert c1 + c2 == rttuple.Color(1.6, 0.7, 1.0)
 
 
 def test_color2():
     # Subtracting colors
-    c1 = tuple.Color(0.9, 0.6, 0.75)
-    c2 = tuple.Color(0.7, 0.1, 0.25)
-    assert c1 - c2 == tuple.Color(0.2, 0.5, 0.5)
+    c1 = rttuple.Color(0.9, 0.6, 0.75)
+    c2 = rttuple.Color(0.7, 0.1, 0.25)
+    assert c1 - c2 == rttuple.Color(0.2, 0.5, 0.5)
 
 
 def test_color3():
     # Multiplying a color by a scalar
-    c = tuple.Color(0.2, 0.3, 0.4)
-    assert c * 2 == tuple.Color(0.4, 0.6, 0.8)
+    c = rttuple.Color(0.2, 0.3, 0.4)
+    assert c * 2 == rttuple.Color(0.4, 0.6, 0.8)
 
 
 def test_color4():
     # Mutiplying colors
-    c1 = tuple.Color(1, 0.2, 0.4)
-    c2 = tuple.Color(0.9, 1, 0.1)
-    assert c1 * c2 == tuple.Color(0.9, 0.2, 0.04)
+    c1 = rttuple.Color(1, 0.2, 0.4)
+    c2 = rttuple.Color(0.9, 1, 0.1)
+    assert c1 * c2 == rttuple.Color(0.9, 0.2, 0.04)
 
 
 def test_canvas1():
@@ -224,7 +224,7 @@ def test_canvas1():
     canvas.init_canvas(10, 20)
     assert canvas.CANVASWIDTH == 10
     assert canvas.CANVASHEIGHT == 20
-    black = tuple.Color(0, 0, 0)
+    black = rttuple.Color(0, 0, 0)
     for w in range(10):
         for h in range(20):
             assert canvas.pixel_at(w, h) == black
@@ -233,7 +233,7 @@ def test_canvas1():
 def test_canvas2():
     # Writing pixels to a canvas
     canvas.init_canvas(10, 20)
-    red = tuple.Color(1, 0, 0)
+    red = rttuple.Color(1, 0, 0)
     canvas.write_pixel(2, 3, red)
     assert canvas.pixel_at(2, 3) == red
 
@@ -242,11 +242,11 @@ def test_canvas3():
     # This is the final exercise from chapter 2; will test the ppm generated against a "good" ppm.
     # Note I use different variables, etc, but still get the parabola.
     canvas.init_canvas(900, 550)
-    gravity = tuple.Vector(0, -0.1, 0)
-    wind = tuple.Vector(-0.01, 0, 0)
-    velocity = tuple.normalize(tuple.Vector(1, 1.8, 0)) * 11.25
-    red = tuple.Color(1, 0, 0)
-    position = tuple.Point(0, 1, 0)
+    gravity = rttuple.Vector(0, -0.1, 0)
+    wind = rttuple.Vector(-0.01, 0, 0)
+    velocity = rttuple.normalize(rttuple.Vector(1, 1.8, 0)) * 11.25
+    red = rttuple.Color(1, 0, 0)
+    position = rttuple.Point(0, 1, 0)
 
     while 0 <= position.x <= 900 and 0 <= position.y <= 550:
         canvas.write_pixel(int(position.x), int(position.y), red)
@@ -260,8 +260,8 @@ def test_canvas3():
 def test_matrix1():
     # A matrix mutliplied by a tuple
     A = [[1, 2, 3, 4], [2, 4, 4, 2], [8, 6, 4, 1], [0, 0, 0, 1]]
-    b = tuple.RT_Tuple(1, 2, 3, 1)
-    assert matrices.matmul4xTuple(A, b) == tuple.RT_Tuple(18, 24, 33, 1)
+    b = rttuple.RT_Tuple(1, 2, 3, 1)
+    assert matrices.matmul4xTuple(A, b) == rttuple.RT_Tuple(18, 24, 33, 1)
 
 
 def test_matrices():
@@ -315,133 +315,133 @@ def test_matrices():
 def test_translation1():
     # Multiplying by a translation matrix
     trans = transformations.translation(5, -3, 2)
-    p = tuple.Point(-3, 4, 5)
-    assert transformations.transform(trans, p) == tuple.Point(2, 1, 7)
+    p = rttuple.Point(-3, 4, 5)
+    assert transformations.transform(trans, p) == rttuple.Point(2, 1, 7)
 
 
 def test_translation2():
     # Multiplying by the inverse of a translation matrix
     trans = transformations.translation(5, -3, 2)
     inv = matrices.inverse4x4(trans)
-    p = tuple.Point(-3, 4, 5)
-    assert transformations.transform(inv, p) == tuple.Point(-8, 7, 3)
+    p = rttuple.Point(-3, 4, 5)
+    assert transformations.transform(inv, p) == rttuple.Point(-8, 7, 3)
 
 
 def test_translation3():
     # Translation does not affect vectors
     trans = transformations.translation(5, -3, 2)
-    v = tuple.Vector(-3, 4, 5)
+    v = rttuple.Vector(-3, 4, 5)
     assert transformations.transform(trans, v) == v
 
 
 def test_scaling1():
     # A scaling matrix applied to a point
     trans = transformations.scaling(2, 3, 4)
-    p = tuple.Point(-4, 6, 8)
-    assert transformations.transform(trans, p) == tuple.Point(-8, 18, 32)
+    p = rttuple.Point(-4, 6, 8)
+    assert transformations.transform(trans, p) == rttuple.Point(-8, 18, 32)
 
 
 def test_scaling2():
     # A scaling matrix applied to a vector
     trans = transformations.scaling(2, 3, 4)
-    v = tuple.Vector(-4, 6, 8)
-    assert transformations.transform(trans, v) == tuple.Vector(-8, 18, 32)
+    v = rttuple.Vector(-4, 6, 8)
+    assert transformations.transform(trans, v) == rttuple.Vector(-8, 18, 32)
 
 
 def test_scaling3():
     # Multiplying by the inverse of a scaling matrix
     trans = transformations.scaling(2, 3, 4)
     inv = matrices.inverse4x4(trans)
-    v = tuple.Vector(-4, 6, 8)
-    assert transformations.transform(inv, v) == tuple.Vector(-2, 2, 2)
+    v = rttuple.Vector(-4, 6, 8)
+    assert transformations.transform(inv, v) == rttuple.Vector(-2, 2, 2)
 
 
 def test_reflection1():
     # Reflection is scaling by a negative value
     trans = transformations.reflection(True, False, False)
-    p = tuple.Point(2, 3, 4)
-    assert transformations.transform(trans, p) == tuple.Point(-2, 3, 4)
+    p = rttuple.Point(2, 3, 4)
+    assert transformations.transform(trans, p) == rttuple.Point(-2, 3, 4)
 
 
 def test_rotation1():
     # Rotating a point around the x axis
-    p = tuple.Point(0, 1, 0)
+    p = rttuple.Point(0, 1, 0)
     half_quarter = transformations.rotation_x(math.pi / 4)
     full_quarter = transformations.rotation_x(math.pi / 2)
-    assert transformations.transform(half_quarter, p) == tuple.Point(0, math.sqrt(2)/2, math.sqrt(2)/2)
-    assert transformations.transform(full_quarter, p) == tuple.Point(0, 0, 1)
+    assert transformations.transform(half_quarter, p) == rttuple.Point(0, math.sqrt(2)/2, math.sqrt(2)/2)
+    assert transformations.transform(full_quarter, p) == rttuple.Point(0, 0, 1)
 
 
 def test_rotation2():
     # The inverse of a rotation rotates in the opposite direction
-    p = tuple.Point(0, 1, 0)
+    p = rttuple.Point(0, 1, 0)
     half_quarter = transformations.rotation_x(math.pi / 4)
     inv = matrices.inverse4x4(half_quarter)
-    assert transformations.transform(inv, p) == tuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2)
+    assert transformations.transform(inv, p) == rttuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2)
 
 
 def test_rotation3():
     # Rotating a point around the y axis
-    p = tuple.Point(0, 0, 1)
+    p = rttuple.Point(0, 0, 1)
     half_quarter = transformations.rotation_y(math.pi / 4)
     full_quarter = transformations.rotation_y(math.pi / 2)
-    assert transformations.transform(half_quarter, p) == tuple.Point(math.sqrt(2)/2, 0, math.sqrt(2)/2)
-    assert transformations.transform(full_quarter, p) == tuple.Point(1, 0, 0)
+    assert transformations.transform(half_quarter, p) == rttuple.Point(math.sqrt(2)/2, 0, math.sqrt(2)/2)
+    assert transformations.transform(full_quarter, p) == rttuple.Point(1, 0, 0)
 
 
 def test_rotation4():
     # Rotating a point around the z axis
-    p = tuple.Point(0, 1, 0)
+    p = rttuple.Point(0, 1, 0)
     half_quarter = transformations.rotation_z(math.pi / 4)
     full_quarter = transformations.rotation_z(math.pi / 2)
-    assert transformations.transform(half_quarter, p) == tuple.Point(-math.sqrt(2)/2, math.sqrt(2)/2, 0)
-    assert transformations.transform(full_quarter, p) == tuple.Point(-1, 0, 0)
+    assert transformations.transform(half_quarter, p) == rttuple.Point(-math.sqrt(2)/2, math.sqrt(2)/2, 0)
+    assert transformations.transform(full_quarter, p) == rttuple.Point(-1, 0, 0)
 
 
 def test_skew1():
     # A shearing transformation moves x in proportion to y
     trans = transformations.skew(1, 0, 0, 0, 0, 0)
-    p = tuple.Point(2, 3, 4)
-    assert transformations.transform(trans, p) == tuple.Point(5, 3, 4)
+    p = rttuple.Point(2, 3, 4)
+    assert transformations.transform(trans, p) == rttuple.Point(5, 3, 4)
 
 
 def test_skew2():
     # Several other shearing transformations
-    p = tuple.Point(2, 3, 4)
+    p = rttuple.Point(2, 3, 4)
     trans1 = transformations.skew(0, 1, 0, 0, 0, 0)
     trans2 = transformations.skew(0, 0, 1, 0, 0, 0)
     trans3 = transformations.skew(0, 0, 0, 1, 0, 0)
     trans4 = transformations.skew(0, 0, 0, 0, 1, 0)
     trans5 = transformations.skew(0, 0, 0, 0, 0, 1)
-    assert transformations.transform(trans1, p) == tuple.Point(6, 3, 4)
-    assert transformations.transform(trans2, p) == tuple.Point(2, 5, 4)
-    assert transformations.transform(trans3, p) == tuple.Point(2, 7, 4)
-    assert transformations.transform(trans4, p) == tuple.Point(2, 3, 6)
-    assert transformations.transform(trans5, p) == tuple.Point(2, 3, 7)
+    assert transformations.transform(trans1, p) == rttuple.Point(6, 3, 4)
+    assert transformations.transform(trans2, p) == rttuple.Point(2, 5, 4)
+    assert transformations.transform(trans3, p) == rttuple.Point(2, 7, 4)
+    assert transformations.transform(trans4, p) == rttuple.Point(2, 3, 6)
+    assert transformations.transform(trans5, p) == rttuple.Point(2, 3, 7)
 
 
 def test_transformchain1():
     # Individual transformations are applied in sequence
-    p = tuple.Point(1, 0, 1)
+    p = rttuple.Point(1, 0, 1)
     A = transformations.rotation_x(math.pi / 2)
     B = transformations.scaling(5, 5, 5)
     C = transformations.translation(10, 5, 7)
     p2 = transformations.transform(A, p)
-    assert p2 == tuple.Point(1, -1, 0)
+    assert p2 == rttuple.Point(1, -1, 0)
     p3 = transformations.transform(B, p2)
-    assert p3 == tuple.Point(5, -5, 0)
+    assert p3 == rttuple.Point(5, -5, 0)
     p4 = transformations.transform(C, p3)
-    assert p4 == tuple.Point(15, 0, 7)
+    assert p4 == rttuple.Point(15, 0, 7)
 
 
 def test_transformchain2():
     # CHained transformations must be applied in reverse order
-    p = tuple.Point(1, 0, 1)
+    p = rttuple.Point(1, 0, 1)
     A = transformations.rotation_x(math.pi / 2)
     B = transformations.scaling(5, 5, 5)
     C = transformations.translation(10, 5, 7)
     T = matrices.matmul4x4(matrices.matmul4x4(C, B), A)
-    assert transformations.transform(T, p) == tuple.Point(15, 0, 7)
+    assert transformations.transform(T, p) == rttuple.Point(15, 0, 7)
 
 
 def test_transformchain3():
@@ -451,8 +451,8 @@ def test_transformchain3():
     clockradius = int(0.75 * halfcanvas)
     trans = transformations.rotation_y(math.pi / 6)
 
-    gold = tuple.Color(1, 0.84314, 0)
-    p = tuple.RT_Tuple(0, 0, 1)  # start at 12 o'clock
+    gold = rttuple.Color(1, 0.84314, 0)
+    p = rttuple.RT_Tuple(0, 0, 1)  # start at 12 o'clock
     for i in range(13):
         dot = p * clockradius
         canvas.write_pixel(int(dot.x) + halfcanvas, int(dot.z) + halfcanvas, gold)
@@ -464,25 +464,25 @@ def test_transformchain3():
 
 def test_ray1():
     # Creating and querying a ray
-    origin = tuple.Point(1, 2, 3)
-    direction = tuple.Vector(4, 5, 6)
-    r = tuple.Ray(origin, direction)
+    origin = rttuple.Point(1, 2, 3)
+    direction = rttuple.Vector(4, 5, 6)
+    r = rttuple.Ray(origin, direction)
     assert r.origin == origin
     assert r.direction == direction
 
 
 def test_ray2():
     # Computing a point from a distance
-    r = tuple.Ray(tuple.Point(2, 3, 4), tuple.Vector(1, 0, 0))
-    assert r.at(0) == tuple.Point(2, 3, 4)
-    assert r.at(1) == tuple.Point(3, 3, 4)
-    assert r.at(-1) == tuple.Point(1, 3, 4)
-    assert r.at(2.5) == tuple.Point(4.5, 3, 4)
+    r = rttuple.Ray(rttuple.Point(2, 3, 4), rttuple.Vector(1, 0, 0))
+    assert r.at(0) == rttuple.Point(2, 3, 4)
+    assert r.at(1) == rttuple.Point(3, 3, 4)
+    assert r.at(-1) == rttuple.Point(1, 3, 4)
+    assert r.at(2.5) == rttuple.Point(4.5, 3, 4)
 
 
 def test_sphereintersect1():
     # A ray intersects a sphere at two points
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     xs = s.intersect(r)
     assert len(xs) == 2
@@ -492,7 +492,7 @@ def test_sphereintersect1():
 
 def test_sphereintersect2():
     # A ray intersects a sphere at a tangent
-    r = tuple.Ray(tuple.Point(0, 1, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 1, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     xs = s.intersect(r)
     assert len(xs) == 2
@@ -502,7 +502,7 @@ def test_sphereintersect2():
 
 def test_sphereintersect3():
     # A ray misses a sphere
-    r = tuple.Ray(tuple.Point(0, 2, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 2, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     xs = s.intersect(r)
     assert len(xs) == 0
@@ -510,7 +510,7 @@ def test_sphereintersect3():
 
 def test_sphereintersect4():
     # A ray originates inside a sphere
-    r = tuple.Ray(tuple.Point(0, 0, 0), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     xs = s.intersect(r)
     assert len(xs) == 2
@@ -520,7 +520,7 @@ def test_sphereintersect4():
 
 def test_sphereintersect5():
     # A sphere is behind a ray
-    r = tuple.Ray(tuple.Point(0, 0, 5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, 5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     xs = s.intersect(r)
     assert len(xs) == 2
@@ -538,7 +538,7 @@ def test_intersection1():
 
 def test_intersection2():
     # Intersect sets the object on the intersection
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     xs = s.intersect(r)
     assert len(xs) == 2
@@ -546,60 +546,22 @@ def test_intersection2():
     assert xs[1].objhit is s
 
 
-def test_hit1():
-    # The hit, when all intersections have positive t
-    s = objects.Sphere()
-    i1 = objects.Intersection(s, 1)
-    i2 = objects.Intersection(s, 2)
-    xs = [i1, i2]
-    assert objects.hit(xs) is i1
-
-
-def test_hit2():
-    # The hit, when some intersections have negative t
-    s = objects.Sphere()
-    i1 = objects.Intersection(s, -1)
-    i2 = objects.Intersection(s, 1)
-    xs = [i1, i2]
-    assert objects.hit(xs) is i2
-
-
-def test_hit3():
-    # The hit, when all intersections have negative t
-    s = objects.Sphere()
-    i1 = objects.Intersection(s, -2)
-    i2 = objects.Intersection(s, -1)
-    xs = [i1, i2]
-    assert objects.hit(xs) is None
-
-
-def test_hit4():
-    # The hit is always the lowest nonnegative intersection
-    s = objects.Sphere()
-    i1 = objects.Intersection(s, 5)
-    i2 = objects.Intersection(s, 7)
-    i3 = objects.Intersection(s, -3)
-    i4 = objects.Intersection(s, 2)
-    xs = [i1, i2, i3, i4]
-    assert objects.hit(xs) is i4
-
-
 def test_raytransform1():
     # Translating a ray
-    r = tuple.Ray(tuple.Point(1, 2, 3), tuple.Vector(0, 1, 0))
+    r = rttuple.Ray(rttuple.Point(1, 2, 3), rttuple.Vector(0, 1, 0))
     m = transformations.translation(3, 4, 5)
     r2 = transformations.transformray(m, r)
-    assert r2.origin == tuple.Point(4, 6, 8)
-    assert r2.direction == tuple.Vector(0, 1, 0)
+    assert r2.origin == rttuple.Point(4, 6, 8)
+    assert r2.direction == rttuple.Vector(0, 1, 0)
 
 
 def test_raytransform2():
     # Scaling a ray
-    r = tuple.Ray(tuple.Point(1, 2, 3), tuple.Vector(0, 1, 0))
+    r = rttuple.Ray(rttuple.Point(1, 2, 3), rttuple.Vector(0, 1, 0))
     m = transformations.scaling(2, 3, 4)
     r2 = transformations.transformray(m, r)
-    assert r2.origin == tuple.Point(2, 6, 12)
-    assert r2.direction == tuple.Vector(0, 3, 0)
+    assert r2.origin == rttuple.Point(2, 6, 12)
+    assert r2.direction == rttuple.Vector(0, 3, 0)
 
 
 def test_spheretransform1():
@@ -617,7 +579,7 @@ def test_spheretransform2():
 
 def test_sphereintersect6():
     # Intersecting a scaled sphere with a ray
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     t = transformations.scaling(2, 2, 2)
     s = objects.Sphere(t)
     xs = s.intersect(r)
@@ -628,7 +590,7 @@ def test_sphereintersect6():
 
 def test_sphereintersect7():
     # Intersecting a translated sphere with a ray
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     t = transformations.translation(5, 0, 0)
     s = objects.Sphere(t)
     xs = s.intersect(r)
@@ -638,65 +600,65 @@ def test_sphereintersect7():
 def test_normalat1():
     # The normal on a sphere at a point on the x axis
     s = objects.Sphere()
-    n = s.normal_at(tuple.Point(1, 0, 0))
-    assert n == tuple.Vector(1, 0, 0)
+    n = s.normal_at(rttuple.Point(1, 0, 0))
+    assert n == rttuple.Vector(1, 0, 0)
 
 
 def test_normalat2():
     # The normal on a sphere at a point on the y axis
     s = objects.Sphere()
-    n = s.normal_at(tuple.Point(0, 1, 0))
-    assert n == tuple.Vector(0, 1, 0)
+    n = s.normal_at(rttuple.Point(0, 1, 0))
+    assert n == rttuple.Vector(0, 1, 0)
 
 
 def test_normalat3():
     # The normal on a sphere at a point on the z axis
     s = objects.Sphere()
-    n = s.normal_at(tuple.Point(0, 0, 1))
-    assert n == tuple.Vector(0, 0, 1)
+    n = s.normal_at(rttuple.Point(0, 0, 1))
+    assert n == rttuple.Vector(0, 0, 1)
 
 
 def test_normalat4():
     # The normal on a sphere at a nonaxial point
     s = objects.Sphere()
     rt3over3 = math.sqrt(3) / 3.0
-    n = s.normal_at(tuple.Point(rt3over3, rt3over3, rt3over3))
-    assert n == tuple.Vector(rt3over3, rt3over3, rt3over3)
+    n = s.normal_at(rttuple.Point(rt3over3, rt3over3, rt3over3))
+    assert n == rttuple.Vector(rt3over3, rt3over3, rt3over3)
 
 
 def test_normalat5():
     # Computing the normal on a translated sphere
     s = objects.Sphere(transformations.translation(0, 1, 0))
-    n = s.normal_at(tuple.Point(0, 1.70711, -0.70711))
-    assert n == tuple.Vector(0, 0.70711, -0.70711)
+    n = s.normal_at(rttuple.Point(0, 1.70711, -0.70711))
+    assert n == rttuple.Vector(0, 0.70711, -0.70711)
 
 
 def test_normalat6():
     # Computing the normal on a transformed sphere
     m = matrices.matmul4x4(transformations.scaling(1, 0.5, 1), transformations.rotation_z(math.pi/5))
     s = objects.Sphere(m)
-    n = s.normal_at(tuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2))
-    assert n == tuple.Vector(0, 0.97014, -0.24254)
+    n = s.normal_at(rttuple.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2))
+    assert n == rttuple.Vector(0, 0.97014, -0.24254)
 
 
 def test_reflect1():
     # Reflecting a vector approaching at 45 degrees
-    v = tuple.Vector(1, -1, 0)
-    n = tuple.Vector(0, 1, 0)
-    assert tuple.reflect(v, n) == tuple.Vector(1, 1, 0)
+    v = rttuple.Vector(1, -1, 0)
+    n = rttuple.Vector(0, 1, 0)
+    assert rttuple.reflect(v, n) == rttuple.Vector(1, 1, 0)
 
 
 def test_reflect2():
     # Reflecting a vector off a slanted surface
-    v = tuple.Vector(0, -1, 0)
-    n = tuple.Vector(math.sqrt(2)/2, math.sqrt(2)/2, 0)
-    assert tuple.reflect(v, n) == tuple.Vector(1, 0, 0)
+    v = rttuple.Vector(0, -1, 0)
+    n = rttuple.Vector(math.sqrt(2)/2, math.sqrt(2)/2, 0)
+    assert rttuple.reflect(v, n) == rttuple.Vector(1, 0, 0)
 
 
 def test_light1():
     # A point light has a position and intensity
-    intensity = tuple.Color(1, 1, 1)
-    position = tuple.Point(0, 0, 0)
+    intensity = rttuple.Color(1, 1, 1)
+    position = rttuple.Point(0, 0, 0)
     light = lights.PointLight(position, intensity)
     assert light.position == position
     assert light.intensity == intensity
@@ -705,7 +667,7 @@ def test_light1():
 def test_material1():
     # The default material
     m = materials.Material()
-    assert m.color == tuple.Color(1, 1, 1)
+    assert m.color == rttuple.Color(1, 1, 1)
     assert math.isclose(m.ambient, 0.1)
     assert math.isclose(m.diffuse, 0.9)
     assert math.isclose(m.specular, 0.9)
@@ -731,61 +693,61 @@ def test_spherematerial2():
 def test_lighting1():
     # Lighting with the eye between the light and the surface
     m = materials.Material()
-    position = tuple.Point(0, 0, 0)
-    eyev = tuple.Vector(0, 0, -1)
-    normalv = tuple.Vector(0, 0, -1)
-    light = lights.PointLight(tuple.Point(0, 0, -10), tuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(1.9, 1.9, 1.9)
+    position = rttuple.Point(0, 0, 0)
+    eyev = rttuple.Vector(0, 0, -1)
+    normalv = rttuple.Vector(0, 0, -1)
+    light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(1.9, 1.9, 1.9)
 
 
 def test_lighting2():
     # Lighting with the eye between light and surface, eye offset 45 degrees
     m = materials.Material()
-    position = tuple.Point(0, 0, 0)
-    eyev = tuple.Vector(0, math.sqrt(2)/2, -math.sqrt(2)/2)
-    normalv = tuple.Vector(0, 0, -1)
-    light = lights.PointLight(tuple.Point(0, 0, -10), tuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(1.0, 1.0, 1.0)
+    position = rttuple.Point(0, 0, 0)
+    eyev = rttuple.Vector(0, math.sqrt(2)/2, -math.sqrt(2)/2)
+    normalv = rttuple.Vector(0, 0, -1)
+    light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(1.0, 1.0, 1.0)
 
 
 def test_lighting3():
     # Lighting with eye opposite surface, light offset 45 degrees
     m = materials.Material()
-    position = tuple.Point(0, 0, 0)
-    eyev = tuple.Vector(0, 0, -1)
-    normalv = tuple.Vector(0, 0, -1)
-    light = lights.PointLight(tuple.Point(0, 10, -10), tuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(0.7364, 0.7364, 0.7364)
+    position = rttuple.Point(0, 0, 0)
+    eyev = rttuple.Vector(0, 0, -1)
+    normalv = rttuple.Vector(0, 0, -1)
+    light = lights.PointLight(rttuple.Point(0, 10, -10), rttuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(0.7364, 0.7364, 0.7364)
 
 
 def test_lighting4():
     # Lighting with eye in the path of the reflection vector
     m = materials.Material()
-    position = tuple.Point(0, 0, 0)
-    eyev = tuple.Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
-    normalv = tuple.Vector(0, 0, -1)
-    light = lights.PointLight(tuple.Point(0, 10, -10), tuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(1.6364, 1.6364, 1.6364)
+    position = rttuple.Point(0, 0, 0)
+    eyev = rttuple.Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
+    normalv = rttuple.Vector(0, 0, -1)
+    light = lights.PointLight(rttuple.Point(0, 10, -10), rttuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(1.6364, 1.6364, 1.6364)
 
 
 def test_lighting5():
     # Lighting with the light behind the surface
     m = materials.Material()
-    position = tuple.Point(0, 0, 0)
-    eyev = tuple.Vector(0, 0, -1)
-    normalv = tuple.Vector(0, 0, -1)
-    light = lights.PointLight(tuple.Point(0, 0, 10), tuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv) == tuple.Color(0.1, 0.1, 0.1)
+    position = rttuple.Point(0, 0, 0)
+    eyev = rttuple.Vector(0, 0, -1)
+    normalv = rttuple.Vector(0, 0, -1)
+    light = lights.PointLight(rttuple.Point(0, 0, 10), rttuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv) == rttuple.Color(0.1, 0.1, 0.1)
 
 
 def test_lighting6():
     # Lighting with the surface in shadow
     m = materials.Material()
-    position = tuple.Point(0, 0, 0)
-    eyev = tuple.Vector(0, 0, -1)
-    normalv = tuple.Vector(0, 0, -1)
-    light = lights.PointLight(tuple.Point(0, 0, -10), tuple.Color(1, 1, 1))
-    assert lights.lighting(m, light, position, eyev, normalv, True) == tuple.Color(0.1, 0.1, 0.1)
+    position = rttuple.Point(0, 0, 0)
+    eyev = rttuple.Vector(0, 0, -1)
+    normalv = rttuple.Vector(0, 0, -1)
+    light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
+    assert lights.lighting(m, light, position, eyev, normalv, True) == rttuple.Color(0.1, 0.1, 0.1)
 
 
 def test_world1():
@@ -800,7 +762,7 @@ def test_world2():
     w = world.default_world()
     assert len(w.objects) == 2
     assert len(w.lights) == 1
-    assert w.objects[0].material.color == tuple.Color(0.8, 1.0, 0.6)
+    assert w.objects[0].material.color == rttuple.Color(0.8, 1.0, 0.6)
     assert math.isclose(w.objects[0].material.ambient, 0.1)
     assert math.isclose(w.objects[0].material.diffuse, 0.7)
     assert math.isclose(w.objects[0].material.specular, 0.2)
@@ -809,14 +771,14 @@ def test_world2():
     assert matrices.allclose4x4(w.objects[1].transform, transformations.scaling(0.5, 0.5, 0.5))
     assert isinstance(w.objects[1], objects.Sphere)
     assert isinstance(w.lights[0], lights.Light)
-    assert w.lights[0].position == tuple.Point(-10, 10, -10)
-    assert w.lights[0].intensity == tuple.Color(1, 1, 1)
+    assert w.lights[0].position == rttuple.Point(-10, 10, -10)
+    assert w.lights[0].intensity == rttuple.Color(1, 1, 1)
 
 
 def test_world3():
     # Intersect a world with a ray
     w = world.default_world()
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     xs = w.intersect(r)
     assert len(xs) == 4
     assert math.isclose(xs[0].t, 4)
@@ -827,33 +789,33 @@ def test_world3():
 
 def test_hitrecord1():
     # Precomputing the state of an intersection
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     i = objects.Intersection(s, 4)
     comps = world.prepare_computations(i, r)
     assert math.isclose(comps.t, i.t)
     assert comps.objhit is i.objhit
-    assert comps.point == tuple.Point(0, 0, -1)
-    assert comps.eyev == tuple.Vector(0, 0, -1)
-    assert comps.normalv == tuple.Vector(0, 0, -1)
+    assert comps.point == rttuple.Point(0, 0, -1)
+    assert comps.eyev == rttuple.Vector(0, 0, -1)
+    assert comps.normalv == rttuple.Vector(0, 0, -1)
     assert not comps.inside
 
 
 def test_hitrecord2():
     # The hit, when an intersection occurs on the inside
-    r = tuple.Ray(tuple.Point(0, 0, 0), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     i = objects.Intersection(s, 1)
     comps = world.prepare_computations(i, r)
-    assert comps.point == tuple.Point(0, 0, 1)
-    assert comps.eyev == tuple.Vector(0, 0, -1)
+    assert comps.point == rttuple.Point(0, 0, 1)
+    assert comps.eyev == rttuple.Vector(0, 0, -1)
     assert comps.inside
-    assert comps.normalv == tuple.Vector(0, 0, -1)
+    assert comps.normalv == rttuple.Vector(0, 0, -1)
 
 
 def test_hitrecord3():
     # The hit should offset the point
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     s.transform = transformations.translation(0, 0, 1)
     i = objects.Intersection(s, 5)
@@ -865,41 +827,41 @@ def test_hitrecord3():
 def test_shadehit1():
     # Shading an intersection
     w = world.default_world()
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = w.objects[0]
     i = objects.Intersection(s, 4)
     hitrecord = world.prepare_computations(i, r)
     c = w.shade_hit(hitrecord)
-    assert c == tuple.Color(0.38066, 0.47583, 0.2855)
+    assert c == rttuple.Color(0.38066, 0.47583, 0.2855)
 
 
 def test_shadehit2():
     # shading an intersection from the inside
     w = world.default_world()
-    light = lights.PointLight(tuple.Point(0, 0.25, 0), tuple.Color(1, 1, 1))
+    light = lights.PointLight(rttuple.Point(0, 0.25, 0), rttuple.Color(1, 1, 1))
     w.lights = [light]
-    r = tuple.Ray(tuple.Point(0, 0, 0), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
     s = w.objects[1]
     i = objects.Intersection(s, 0.5)
     hitrecord = world.prepare_computations(i, r)
     c = w.shade_hit(hitrecord)
-    assert c == tuple.Color(0.90498, 0.90498, 0.90498)
+    assert c == rttuple.Color(0.90498, 0.90498, 0.90498)
 
 
 def test_colorat1():
     # The color when a ray misses
     w = world.default_world()
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 1, 0))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 1, 0))
     c = w.color_at(r)
-    assert c == tuple.Color(0, 0, 0)
+    assert c == rttuple.Color(0, 0, 0)
 
 
 def test_colorat2():
     # The color when a ray hits
     w = world.default_world()
-    r = tuple.Ray(tuple.Point(0, 0, -5), tuple.Vector(0, 0, 1))
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     c = w.color_at(r)
-    assert c == tuple.Color(0.38066, 0.47583, 0.2855)
+    assert c == rttuple.Color(0.38066, 0.47583, 0.2855)
 
 
 def test_colorat3():
@@ -909,43 +871,43 @@ def test_colorat3():
     outer.material.ambient = 1.0
     inner = w.objects[1]
     inner.material.ambient = 1.0
-    r = tuple.Ray(tuple.Point(0, 0, 0.75), tuple.Vector(0, 0, -1))
+    r = rttuple.Ray(rttuple.Point(0, 0, 0.75), rttuple.Vector(0, 0, -1))
     c = w.color_at(r)
     assert c == inner.material.color
 
 
 def test_viewtransform1():
     # The transformation matrix for the default orientation
-    from_pt = tuple.Point(0, 0, 0)
-    to_pt = tuple.Point(0, 0, -1)
-    up_vec = tuple.Vector(0, 1, 0)
+    from_pt = rttuple.Point(0, 0, 0)
+    to_pt = rttuple.Point(0, 0, -1)
+    up_vec = rttuple.Vector(0, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
     assert matrices.allclose4x4(t, matrices.identity4())
 
 
 def test_viewtransform2():
     # A view transformation matrix looking in positive z direction
-    from_pt = tuple.Point(0, 0, 0)
-    to_pt = tuple.Point(0, 0, 1)
-    up_vec = tuple.Vector(0, 1, 0)
+    from_pt = rttuple.Point(0, 0, 0)
+    to_pt = rttuple.Point(0, 0, 1)
+    up_vec = rttuple.Vector(0, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
     assert matrices.allclose4x4(t, transformations.scaling(-1, 1, -1))
 
 
 def test_viewtransform3():
     # The view transformation moves the world
-    from_pt = tuple.Point(0, 0, 8)
-    to_pt = tuple.Point(0, 0, 1)
-    up_vec = tuple.Vector(0, 1, 0)
+    from_pt = rttuple.Point(0, 0, 8)
+    to_pt = rttuple.Point(0, 0, 1)
+    up_vec = rttuple.Vector(0, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
     assert matrices.allclose4x4(t, transformations.translation(0, 0, -8))
 
 
 def test_viewtransformation4():
     # An arbitrary view transformation
-    from_pt = tuple.Point(1, 3, 2)
-    to_pt = tuple.Point(4, -2, 8)
-    up_vec = tuple.Vector(1, 1, 0)
+    from_pt = rttuple.Point(1, 3, 2)
+    to_pt = rttuple.Point(4, -2, 8)
+    up_vec = rttuple.Vector(1, 1, 0)
     t = transformations.view_transform(from_pt, to_pt, up_vec)
     res = [[-0.50709, 0.50709, 0.67612, -2.36643],
            [0.76772, 0.60609, 0.12122, -2.82843],
@@ -979,16 +941,16 @@ def test_camera4():
     # Constructing a ray through the center of the camera
     c = canvas.Camera(201, 101, math.pi/2)
     r = c.ray_for_pixel(100, 50)
-    assert r.origin == tuple.Point(0, 0, 0)
-    assert r.direction == tuple.Vector(0, 0, -1)
+    assert r.origin == rttuple.Point(0, 0, 0)
+    assert r.direction == rttuple.Vector(0, 0, -1)
 
 
 def test_camera5():
     # Constructing a ray through the corner of the canvas
     c = canvas.Camera(201, 101, math.pi/2)
     r = c.ray_for_pixel(0, 0)
-    assert r.origin == tuple.Point(0, 0, 0)
-    assert r.direction == tuple.Vector(0.66519, 0.33259, -0.66851)
+    assert r.origin == rttuple.Point(0, 0, 0)
+    assert r.direction == rttuple.Vector(0.66519, 0.33259, -0.66851)
 
 
 def test_camera6():
@@ -996,44 +958,63 @@ def test_camera6():
     trans = matrices.matmul4x4(transformations.rotation_y(math.pi/4), transformations.translation(0, -2, 5))
     c = canvas.Camera(201, 101, math.pi/2, trans)
     r = c.ray_for_pixel(100, 50)
-    assert r.origin == tuple.Point(0, 2, -5)
-    assert r.direction == tuple.Vector(math.sqrt(2)/2, 0, -math.sqrt(2)/2)
+    assert r.origin == rttuple.Point(0, 2, -5)
+    assert r.direction == rttuple.Vector(math.sqrt(2)/2, 0, -math.sqrt(2)/2)
 
 
 def test_render1():
     w = world.default_world()
     c = canvas.Camera(11, 11, math.pi/2)
-    fr = tuple.Point(0, 0, -5)
-    to = tuple.Point(0, 0, 0)
-    up = tuple.Vector(0, 1, 0)
+    fr = rttuple.Point(0, 0, -5)
+    to = rttuple.Point(0, 0, 0)
+    up = rttuple.Vector(0, 1, 0)
     c.transform = transformations.view_transform(fr, to, up)
     canvas.mp_render(c, w, 1, 1)
-    assert canvas.pixel_at(5, 5) == tuple.Color(0.38066, 0.47583, 0.2855)
+    assert canvas.pixel_at(5, 5) == rttuple.Color(0.38066, 0.47583, 0.2855)
 
 
 def test_shadowed1():
     # There is no shadow when nothing is collinear with point and light
     w = world.default_world()
-    p = tuple.Point(0, 10, 0)
+    p = rttuple.Point(0, 10, 0)
     assert not w.is_shadowed(p)
 
 
 def test_shadowed2():
     # There is no shadow when an object is between the point and the light
     w = world.default_world()
-    p = tuple.Point(10, -10, 10)
+    p = rttuple.Point(10, -10, 10)
     assert w.is_shadowed(p)
 
 
 def test_shadowed3():
     # There is no shadow when an object is behind the light
     w = world.default_world()
-    p = tuple.Point(-20, 20, -20)
+    p = rttuple.Point(-20, 20, -20)
     assert not w.is_shadowed(p)
 
 
 def test_shadowed4():
     # There is no shadow when an object is behind the point
     w = world.default_world()
-    p = tuple.Point(-2, 2, -2)
+    p = rttuple.Point(-2, 2, -2)
     assert not w.is_shadowed(p)
+
+
+def test_plane1():
+    # The normal of a plane is constant everywhere
+    p = objects.Plane()
+    n1 = p.local_normal_at(rttuple.Point(0, 0, 0))
+    n2 = p.local_normal_at(rttuple.Point(10, 0, -10))
+    n3 = p.local_normal_at(rttuple.Point(-5, 0, 150))
+    assert n1 == rttuple.Vector(0, 1, 0)
+    assert n2 == rttuple.Vector(0, 1, 0)
+    assert n3 == rttuple.Vector(0, 1, 0)
+
+
+def test_plane2():
+    # Intersect with a ray parallel to the plane
+    p = objects.Plane()
+    r = rttuple.Ray(rttuple.Point(0, 10, 0), rttuple.Vector(0, 0, 1))
+    xs = p.local_intersect(r)
+    assert len(xs) == 0

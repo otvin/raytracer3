@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import tuple
+import rttuple
 
 
 def matmul4x4(a, b):
@@ -54,7 +54,7 @@ def matmul4x1(a, b):
 
 
 def matmul4xTuple(a, tup):
-    res = tuple.RT_Tuple()
+    res = rttuple.RT_Tuple()
     res.arr = matmul4x1(a, tup.arr)
     return res
 

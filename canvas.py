@@ -1,7 +1,7 @@
 import multiprocessing
 import math
 import random
-import tuple
+import rttuple
 import transformations
 import matrices
 
@@ -41,7 +41,7 @@ class Camera:
     def transform(self, trans):
         self.__transform = trans
         self.__inversetransform = matrices.inverse4x4(self.__transform)
-        self.__origin = transformations.transform(self.__inversetransform, tuple.Point(0, 0, 0))
+        self.__origin = transformations.transform(self.__inversetransform, rttuple.Point(0, 0, 0))
 
     def ray_for_pixel(self, x, y):
         px_center_x = (x + 0.5) * self.pixel_size
@@ -52,9 +52,9 @@ class Camera:
         world_y = self.half_height - px_center_y
 
         # canvas is at z = -1
-        px_transform = transformations.transform(self.__inversetransform, tuple.Point(world_x, world_y, -1))
-        direction = tuple.normalize(px_transform - self.__origin)
-        return tuple.Ray(self.__origin, direction)
+        px_transform = transformations.transform(self.__inversetransform, rttuple.Point(world_x, world_y, -1))
+        direction = rttuple.normalize(px_transform - self.__origin)
+        return rttuple.Ray(self.__origin, direction)
 
     def perturb_ray_for_pixel(self, x, y):
         pass
@@ -94,7 +94,7 @@ def write_pixel(x, y, color):
 
 def pixel_at(x, y):
     startcell = (y * CANVASWIDTH * 3) + (x * 3)
-    res = tuple.Color(GLOBALCANVAS[startcell], GLOBALCANVAS[startcell + 1], GLOBALCANVAS[startcell + 2])
+    res = rttuple.Color(GLOBALCANVAS[startcell], GLOBALCANVAS[startcell + 1], GLOBALCANVAS[startcell + 2])
     return res
 
 
@@ -133,7 +133,7 @@ def mp_render_rows(rowlist, numsamples):
     else:
         for y in rowlist:
             for x in range(MPGLOBALCAMERA.hsize):
-                c = tuple.Color(0, 0, 0)
+                c = rttuple.Color(0, 0, 0)
                 for i in range(numsamples):
                     rndx = x + random.uniform(-0.5, 0.5)
                     rndy = y + random.uniform(-0.5, 0.5)
