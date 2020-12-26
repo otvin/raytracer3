@@ -1210,3 +1210,42 @@ def test_reflective4():
     comps = world.prepare_computations(i, r)
     color = w.reflected_color(comps, 0)
     assert color == rttuple.Color(0, 0, 0)
+
+
+def test_refraction1():
+    m = materials.Material()
+    assert math.isclose(m.transparency, 0.0)
+    assert math.isclose(m.refractive_index, 1.0)
+
+
+def glass_sphere():
+    # helper function for next set of tests
+    s = objects.Sphere()
+    s.material.transparency = 1.0
+    s.material.refractive_index = 1.5
+    return s
+
+
+def test_refraction2():
+    A = glass_sphere()
+    A.transform = transformations.scaling(2, 2, 2)
+    B = glass_sphere()
+    B.transform = transformations.translation(0, 0, -0.25)
+    B.material.refractive_index = 2.0
+    C = glass_sphere()
+    C.transform = transformations.translation(0, 0, 0.25)
+    C.material.refractive_index = 2.5
+
+    r = rttuple.Ray(rttuple.Point(0, 0, -4), rttuple.Vector(0, 0, 1))
+
+    xs = [objects.Intersection(A, 2), objects.Intersection(B, 2.75), objects.Intersection(C, 3.25),
+          objects.Intersection(B, 4.75), objects.Intersection(C, 5.25), objects.Intersection(A, 6)]
+
+    n1answers = [1.0, 1.5, 2.0, 2.5, 2.5, 1.5]
+    n2answers = [1.5, 2.0, 2.5, 2.5, 1.5, 1.0]
+
+    for i in range (len(xs)):
+        comps = world.prepare_computations(xs[i], r)
+        assert math.isclose(comps.n1, n1answers[i])
+        assert math.isclose(comps.n2, n2answers[i])
+

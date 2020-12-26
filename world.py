@@ -77,7 +77,7 @@ class World:
 
 
 class HitRecord:
-    def __init__(self, t, objhit, point, inside, eyev, normalv, reflectv, over_point, under_point):
+    def __init__(self, t, objhit, point, inside, eyev, normalv, reflectv, over_point, under_point, n1, n2):
         self.t = t
         self.objhit = objhit
         self.point = point
@@ -87,6 +87,8 @@ class HitRecord:
         self.reflectv = reflectv
         self.over_point = over_point
         self.under_point = under_point
+        self.n1 = n1
+        self.n2 = n2
 
 
 def prepare_computations(i, r):
@@ -104,8 +106,10 @@ def prepare_computations(i, r):
     over_point = point + (normalv * objects.EPSILON)
     under_point = point - (normalv * objects.EPSILON)
     reflectv = rttuple.reflect(r.direction, normalv)
+    n1 = 1.0
+    n2 = 1.0
 
-    return HitRecord(i.t, i.objhit, point, inside, eyev, normalv, reflectv, over_point, under_point)
+    return HitRecord(i.t, i.objhit, point, inside, eyev, normalv, reflectv, over_point, under_point, n1, n2)
 
 
 def default_world():
