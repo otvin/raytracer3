@@ -1,5 +1,4 @@
 import math
-import random
 import rttuple
 import matrices
 import objects
@@ -162,7 +161,7 @@ class NestedCheckersPattern(BlendedPattern):
 
 
 class Material:
-    def __init__(self, color=None, ambient=0.1, diffuse=0.9, specular=0.9, shininess=200.0, pattern=None):
+    def __init__(self, color=None, ambient=0.1, diffuse=0.9, specular=0.9, shininess=200.0, reflective=0, pattern=None):
         if color is None:
             self.color = rttuple.Color(1, 1, 1)
         else:
@@ -175,6 +174,7 @@ class Material:
         self.diffuse = diffuse
         self.specular = specular
         self.shininess = shininess
+        self.reflective = reflective
 
     def __eq__(self, other):
         # may only be needed for unit tests

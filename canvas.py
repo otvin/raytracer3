@@ -56,9 +56,6 @@ class Camera:
         direction = rttuple.normalize(px_transform - self.__origin)
         return rttuple.Ray(self.__origin, direction)
 
-    def perturb_ray_for_pixel(self, x, y):
-        pass
-
 
 def clamp(x, minimum, maximum):
     if x < minimum:
@@ -123,13 +120,13 @@ global MPGLOBALWORLD
 global MPGLOBALCAMERA
 
 
-def mp_render_rows(rowlist, numsamples):
+def mp_render_rows(rowlist, numsamples, maxdepth):
 
     if numsamples == 1:
         for y in rowlist:
             for x in range(MPGLOBALCAMERA.hsize):
                 r = MPGLOBALCAMERA.ray_for_pixel(x, y)
-                write_pixel(x, y, MPGLOBALWORLD.color_at(r))
+                write_pixel(x, y, MPGLOBALWORLD.color_at(r, maxdepth))
             print('line {} complete'.format(y))
     else:
         for y in rowlist:
@@ -139,13 +136,13 @@ def mp_render_rows(rowlist, numsamples):
                     rndx = x + random.uniform(-0.5, 0.5)
                     rndy = y + random.uniform(-0.5, 0.5)
                     r = MPGLOBALCAMERA.ray_for_pixel(rndx, rndy)
-                    c += MPGLOBALWORLD.color_at(r)
+                    c += MPGLOBALWORLD.color_at(r, maxdepth)
                 c = c / numsamples
                 write_pixel(x, y, c)
             print('line {} complete'.format(y))
 
 
-def mp_render(camera, world, numsamples=10, numprocesses=1):
+def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5):
     global MPGLOBALWORLD
     global MPGLOBALCAMERA
     init_canvas(camera.hsize, camera.vsize)
@@ -161,7 +158,7 @@ def mp_render(camera, world, numsamples=10, numprocesses=1):
 
     procArr = []
     for s in rowlists:
-        p = multiprocessing.Process(target=mp_render_rows, args=(s, numsamples))
+        p = multiprocessing.Process(target=mp_render_rows, args=(s, numsamples, maxdepth))
         procArr.append(p)
 
     for p in procArr:

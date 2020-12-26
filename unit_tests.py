@@ -717,7 +717,8 @@ def test_lighting3():
     eyev = rttuple.Vector(0, 0, -1)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 10, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == rttuple.Color(0.7364, 0.7364, 0.7364)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == \
+           rttuple.Color(0.7364, 0.7364, 0.7364)
 
 
 def test_lighting4():
@@ -727,7 +728,8 @@ def test_lighting4():
     eyev = rttuple.Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 10, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == rttuple.Color(1.6364, 1.6364, 1.6364)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv) == \
+           rttuple.Color(1.6364, 1.6364, 1.6364)
 
 
 def test_lighting5():
@@ -747,7 +749,8 @@ def test_lighting6():
     eyev = rttuple.Vector(0, 0, -1)
     normalv = rttuple.Vector(0, 0, -1)
     light = lights.PointLight(rttuple.Point(0, 0, -10), rttuple.Color(1, 1, 1))
-    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv, True) == rttuple.Color(0.1, 0.1, 0.1)
+    assert lights.lighting(m, objects.HittableObject(), light, position, eyev, normalv, True) \
+           == rttuple.Color(0.1, 0.1, 0.1)
 
 
 def test_world1():
@@ -787,7 +790,7 @@ def test_world3():
     assert math.isclose(xs[3].t, 6)
 
 
-def test_hitrecord1():
+def test_preparecomputations1():
     # Precomputing the state of an intersection
     r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
@@ -801,7 +804,7 @@ def test_hitrecord1():
     assert not comps.inside
 
 
-def test_hitrecord2():
+def test_preparecomputations2():
     # The hit, when an intersection occurs on the inside
     r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
@@ -813,7 +816,7 @@ def test_hitrecord2():
     assert comps.normalv == rttuple.Vector(0, 0, -1)
 
 
-def test_hitrecord3():
+def test_preparecomputations3():
     # The hit should offset the point
     r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
@@ -824,6 +827,15 @@ def test_hitrecord3():
     assert comps.point.z > comps.over_point.z
 
 
+def test_preparecomputations4():
+    # Precomputing the reflection vector
+    s = objects.Plane()
+    r = rttuple.Ray(rttuple.Point(0, 1, -1), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
+    i = objects.Intersection(s, math.sqrt(2))
+    comps = world.prepare_computations(i, r)
+    assert comps.reflectv == rttuple.Vector(0, math.sqrt(2)/2, math.sqrt(2)/2)
+
+
 def test_shadehit1():
     # Shading an intersection
     w = world.default_world()
@@ -831,7 +843,7 @@ def test_shadehit1():
     s = w.objects[0]
     i = objects.Intersection(s, 4)
     hitrecord = world.prepare_computations(i, r)
-    c = w.shade_hit(hitrecord)
+    c = w.shade_hit(hitrecord, 0)
     assert c == rttuple.Color(0.38066, 0.47583, 0.2855)
 
 
@@ -844,15 +856,29 @@ def test_shadehit2():
     s = w.objects[1]
     i = objects.Intersection(s, 0.5)
     hitrecord = world.prepare_computations(i, r)
-    c = w.shade_hit(hitrecord)
+    c = w.shade_hit(hitrecord, 0)
     assert c == rttuple.Color(0.90498, 0.90498, 0.90498)
+
+
+def test_shadehit3():
+    # shade_hit() with a reflective material
+    w = world.default_world()
+    s = objects.Plane()
+    s.material.reflective = 0.5
+    s.transform = transformations.translation(0, -1, 0)
+    w.objects.append(s)
+    r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
+    i = objects.Intersection(s, math.sqrt(2))
+    comps = world.prepare_computations(i, r)
+    color = w.shade_hit(comps, 1)
+    assert color == rttuple.Color(0.87676, 0.92434, 0.82917)  # I had to change the numbers from the book
 
 
 def test_colorat1():
     # The color when a ray misses
     w = world.default_world()
     r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 1, 0))
-    c = w.color_at(r)
+    c = w.color_at(r, 1)
     assert c == rttuple.Color(0, 0, 0)
 
 
@@ -860,7 +886,7 @@ def test_colorat2():
     # The color when a ray hits
     w = world.default_world()
     r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
-    c = w.color_at(r)
+    c = w.color_at(r, 1)
     assert c == rttuple.Color(0.38066, 0.47583, 0.2855)
 
 
@@ -872,8 +898,23 @@ def test_colorat3():
     inner = w.objects[1]
     inner.material.ambient = 1.0
     r = rttuple.Ray(rttuple.Point(0, 0, 0.75), rttuple.Vector(0, 0, -1))
-    c = w.color_at(r)
+    c = w.color_at(r, 1)
     assert c == inner.material.color
+
+
+def test_colorat3():
+    # Color_at() with mutually reflective surfaces (validate we do not get into an infinite loop)
+    w = world.World()
+    w.lights = [lights.PointLight(rttuple.Point(0, 0, 0), rttuple.Color(1, 1, 1))]
+    lower = objects.Plane()
+    lower.material.reflective = 1.0
+    lower.transform = transformations.translation(0, -1, 0)
+    upper = objects.Plane()
+    upper.material.reflective = 1.0
+    upper.transform = transformations.translation(0, 1, 0)
+    w.objects = [lower, upper]
+    r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 1, 0))
+    c = w.color_at(r, 5)
 
 
 def test_viewtransform1():
@@ -1126,5 +1167,46 @@ def test_checkerspattern1():
     assert cp.color_at(rttuple.Point(0, 0, 1.01)) == b
 
 
+def test_reflective1():
+    m = materials.Material()
+    assert math.isclose(m.reflective, 0)
 
 
+def test_reflective2():
+    # The reflected color for a non-reflective material
+    w = world.default_world()
+    r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
+    shape = w.objects[1]
+    shape.material.ambient = 1
+    i = objects.Intersection(shape, 1)
+    comps = world.prepare_computations(i, r)
+    color = w.reflected_color(comps, 1)
+    assert color == rttuple.Color(0, 0, 0)
+
+
+def test_reflective3():
+    # The reflected color for a reflective material
+    w = world.default_world()
+    s = objects.Plane()
+    s.material.reflective = 0.5
+    s.transform = transformations.translation(0, -1, 0)
+    w.objects.append(s)
+    r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
+    i = objects.Intersection(s, math.sqrt(2))
+    comps = world.prepare_computations(i, r)
+    color = w.reflected_color(comps, 1)
+    assert color == rttuple.Color(0.19033, 0.23792, 0.14275)  # I had to change results from book
+
+
+def test_reflective4():
+    # The reflected color at the maximum recursive depth
+    w = world.default_world()
+    s = objects.Plane()
+    s.material.reflective = 0.5
+    s.transform = transformations.translation(0, -1, 0)
+    w.objects.append(s)
+    r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
+    i = objects.Intersection(s, math.sqrt(2))
+    comps = world.prepare_computations(i, r)
+    color = w.reflected_color(comps, 0)
+    assert color == rttuple.Color(0, 0, 0)

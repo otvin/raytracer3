@@ -15,21 +15,6 @@ EPSILON = 1e-05
 ONEMINUSEPSILON = 1 - EPSILON
 
 
-class HitRecord:
-    def __init__(self, t, objhit, point, eyev, normalv):
-        self.t = t
-        self.objhit = objhit
-        self.point = point
-        self.eyev = eyev
-        if rttuple.dot(normalv, eyev) < 0:
-            self.inside = True
-            self.normalv = -normalv
-        else:
-            self.inside = False
-            self.normalv = normalv
-        self.over_point = self.point + (self.normalv * EPSILON)
-
-
 class HittableObject:
     def __init__(self, transform=matrices.identity4(), material=None):
         if material is None:

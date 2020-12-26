@@ -1,3 +1,4 @@
+import math
 import objects
 import materials
 import rttuple
@@ -25,19 +26,6 @@ class World:
         res.sort(key=lambda x: x.t)
         return res
 
-    def shade_hit(self, hitrecord):
-        # TODO p.96 to support multiple lights, just iterate over the lights in the scene.
-        shadowed = self.is_shadowed(hitrecord.over_point)
-        return lights.lighting(hitrecord.objhit.material, hitrecord.objhit, self.lights[0], hitrecord.point,
-                               hitrecord.eyev, hitrecord.normalv, shadowed)
-
-    def color_at(self, ray):
-        xs = self.intersect(ray)
-        for i in xs:
-            if i.t > 0:
-                hitrecord = prepare_computations(i, ray)
-                return self.shade_hit(hitrecord)
-        return rttuple.Color(0, 0, 0)  # either no intersections or no positive t intersections
 
     def is_shadowed(self, point):
         # TODO if we add multiple lights we need to do something here too.
@@ -58,12 +46,66 @@ class World:
         return False
 
 
+    def shade_hit(self, hitrecord, depth):
+        # TODO p.96 to support multiple lights, just iterate over the lights in the scene.
+        shadowed = self.is_shadowed(hitrecord.over_point)
+        surface = lights.lighting(hitrecord.objhit.material, hitrecord.objhit, self.lights[0], hitrecord.point,
+                                  hitrecord.eyev, hitrecord.normalv, shadowed)
+        reflected = self.reflected_color(hitrecord, depth)
+        return surface + reflected  # I don't understand how this doesn't get > 1.
+
+
+    def reflected_color(self, hitrecord, depth):
+        if math.isclose(hitrecord.objhit.material.reflective, 0):
+            return rttuple.Color(0, 0, 0)
+        elif depth <= 0:
+            return rttuple.Color(0, 0, 0)
+        else:
+            reflect_ray = rttuple.Ray(hitrecord.over_point, hitrecord.reflectv)
+            color = self.color_at(reflect_ray, depth-1)
+            return color * hitrecord.objhit.material.reflective
+
+
+    def color_at(self, ray, depth):
+
+        xs = self.intersect(ray)
+        for i in xs:
+            if i.t > 0:
+                hitrecord = prepare_computations(i, ray)
+                return self.shade_hit(hitrecord, depth)
+        return rttuple.Color(0, 0, 0)  # either no intersections or no positive t intersections
+
+
+class HitRecord:
+    def __init__(self, t, objhit, point, inside, eyev, normalv, reflectv, over_point, under_point):
+        self.t = t
+        self.objhit = objhit
+        self.point = point
+        self.inside = inside
+        self.eyev = eyev
+        self.normalv = normalv
+        self.reflectv = reflectv
+        self.over_point = over_point
+        self.under_point = under_point
+
+
 def prepare_computations(i, r):
     # i is an intersection
     # r is a ray
-    objhit = i.objhit
+
     point = r.at(i.t)
-    return objects.HitRecord(i.t, objhit, point, -r.direction, objhit.normal_at(point))
+    eyev = -r.direction
+    normalv = i.objhit.normal_at(point)
+    if rttuple.dot(normalv, eyev) < 0:
+        inside = True
+        normalv = -normalv
+    else:
+        inside = False
+    over_point = point + (normalv * objects.EPSILON)
+    under_point = point - (normalv * objects.EPSILON)
+    reflectv = rttuple.reflect(r.direction, normalv)
+
+    return HitRecord(i.t, i.objhit, point, inside, eyev, normalv, reflectv, over_point, under_point)
 
 
 def default_world():
