@@ -1,4 +1,5 @@
 import math
+import random
 import rttuple
 import matrices
 import objects
@@ -109,10 +110,55 @@ class CheckersPattern(Pattern):
         if pattern_point.z - z > objects.ONEMINUSEPSILON:
             z = z + 1
 
+
         if (x + y + z) % 2 == 0:
             return self.color1
         else:
             return self.color2
+
+
+class BlendedPattern(Pattern):
+    def __init__(self, transform=None, pattern1=None, pattern2=None):
+        super().__init__(transform)
+        if pattern1 is None:
+            self.pattern1 = Pattern()
+        else:
+            self.pattern1 = pattern1
+        if pattern2 is None:
+            self.pattern2 = Pattern()
+        else:
+            self.pattern2 = pattern2
+
+    def color_at(self, pattern_point):
+        p1 = matrices.matmul4xTuple(self.pattern1.inversetransform, pattern_point)
+        p2 = matrices.matmul4xTuple(self.pattern2.inversetransform, pattern_point)
+
+        c1 = self.pattern1.color_at(p1)
+        c2 = self.pattern2.color_at(p2)
+        return (c1 + c2) / 2
+
+
+class NestedCheckersPattern(BlendedPattern):
+    def __init__(self, transform=None, pattern1=None, pattern2=None):
+        super().__init__(transform, pattern1, pattern2)
+
+    def color_at(self, pattern_point):
+        x = math.floor(pattern_point.x)
+        if pattern_point.x - x > objects.ONEMINUSEPSILON:
+            x = x + 1
+        y = math.floor(pattern_point.y)
+        if pattern_point.y - y > objects.ONEMINUSEPSILON:
+            y = y + 1
+        z = math.floor(pattern_point.z)
+        if pattern_point.z - z > objects.ONEMINUSEPSILON:
+            z = z + 1
+
+        if (x + y + z) % 2 == 0:
+            p1 = matrices.matmul4xTuple(self.pattern1.inversetransform, pattern_point)
+            return self.pattern1.color_at(p1)
+        else:
+            p2 = matrices.matmul4xTuple(self.pattern2.inversetransform, pattern_point)
+            return self.pattern2.color_at(p2)
 
 
 class Material:

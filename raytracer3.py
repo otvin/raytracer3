@@ -15,9 +15,22 @@ def render():
     floor = objects.Plane()
     floor.material.color = rttuple.Color(1, 0.9, 0.9)
     floor.material.specular = 0
-    floor.material.pattern = materials.CheckersPattern()
-    # floor.material.pattern.color1 = rttuple.Color(1, 0, 0)
-    # floor.material.pattern.color2 = rttuple.Color(0, 1, 0)
+    floor.material.pattern = materials.NestedCheckersPattern()
+
+    stripe1 = materials.StripePattern()
+    stripe1.color1 = rttuple.Color(0, 1, 0.5)
+    stripe1.color2 = rttuple.Color(0, 0.5, 0.25)
+    stripe1.transform = matrices.matmul4x4(transformations.rotation_y(math.pi / 4),
+                                           transformations.scaling(0.25, 0.25, 0.25))
+
+    stripe2 = materials.StripePattern()
+    stripe2.color1 = rttuple.Color(1, 0, 0.5)
+    stripe2.color2 = rttuple.Color(0.5, 0, 0.25)
+    stripe2.transform = matrices.matmul4x4(transformations.rotation_y(-math.pi / 4),
+                                           transformations.scaling(0.25, 0.25, 0.25))
+
+    floor.material.pattern.pattern1 = stripe1
+    floor.material.pattern.pattern2 = stripe2
 
     middle = objects.Sphere()
     middle.transform = transformations.translation(-0.5, 1, 0.5)
@@ -61,7 +74,7 @@ def render():
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 
-    canvas.canvas_to_ppm('chap10a.ppm')
+    canvas.canvas_to_ppm('chap10.ppm')
 
 
 if __name__ == '__main__':
