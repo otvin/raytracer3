@@ -4,6 +4,7 @@ import random
 import rttuple
 import transformations
 import matrices
+import world
 
 # This needs to be in global space so that the mp array can be shared when we do multiprocessing.
 # It means that the raytracer can only have a single canvas at a time, which from a practical perspective
@@ -116,8 +117,8 @@ def canvas_to_ppm(filename):
     f.close()
 
 
-global MPGLOBALWORLD
-global MPGLOBALCAMERA
+MPGLOBALWORLD = world.World()
+MPGLOBALCAMERA = Camera()
 
 
 def mp_render_rows(rowlist, numsamples, maxdepth):

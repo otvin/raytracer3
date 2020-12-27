@@ -29,6 +29,14 @@ class Pattern:
         return rttuple.Color(1.0, 1.0, 1.0)
 
 
+class TestPattern(Pattern):
+    def __init__(self, transform=None):
+        super().__init__(transform)
+
+    def color_at(self, pattern_point):
+        return rttuple.Color(pattern_point.x, pattern_point.y, pattern_point.z)
+
+
 class StripePattern(Pattern):
     def __init__(self, transform=None, color1=None, color2=None):
         super().__init__(transform)

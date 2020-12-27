@@ -28,6 +28,14 @@ def compare_ppms(file1, file2):
     f1.close()
 
 
+def glass_sphere():
+    # helper function for refraction tests
+    s = objects.Sphere()
+    s.material.transparency = 1.0
+    s.material.refractive_index = 1.5
+    return s
+
+
 def test_point1():
     # A tuple with w=1.0 is a point
     t = rttuple.RT_Tuple(4.3, -4.2, 3.1, 1.0)
@@ -795,7 +803,7 @@ def test_preparecomputations1():
     r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     i = objects.Intersection(s, 4)
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     assert math.isclose(comps.t, i.t)
     assert comps.objhit is i.objhit
     assert comps.point == rttuple.Point(0, 0, -1)
@@ -809,7 +817,7 @@ def test_preparecomputations2():
     r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
     s = objects.Sphere()
     i = objects.Intersection(s, 1)
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     assert comps.point == rttuple.Point(0, 0, 1)
     assert comps.eyev == rttuple.Vector(0, 0, -1)
     assert comps.inside
@@ -822,7 +830,7 @@ def test_preparecomputations3():
     s = objects.Sphere()
     s.transform = transformations.translation(0, 0, 1)
     i = objects.Intersection(s, 5)
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     assert comps.over_point.z < -objects.EPSILON/2
     assert comps.point.z > comps.over_point.z
 
@@ -832,8 +840,19 @@ def test_preparecomputations4():
     s = objects.Plane()
     r = rttuple.Ray(rttuple.Point(0, 1, -1), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
     i = objects.Intersection(s, math.sqrt(2))
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     assert comps.reflectv == rttuple.Vector(0, math.sqrt(2)/2, math.sqrt(2)/2)
+
+
+def test_preparecomputations5():
+    # The under point is offset below the surface
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
+    shape = glass_sphere()
+    shape.transform = transformations.translation(0, 0, 1)
+    i = objects.Intersection(shape, 5)
+    comps = world.prepare_computations(i, r, [i])
+    assert comps.under_point.z > objects.EPSILON/2
+    assert comps.point.z < comps.under_point.z
 
 
 def test_shadehit1():
@@ -842,7 +861,7 @@ def test_shadehit1():
     r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
     s = w.objects[0]
     i = objects.Intersection(s, 4)
-    hitrecord = world.prepare_computations(i, r)
+    hitrecord = world.prepare_computations(i, r, [i])
     c = w.shade_hit(hitrecord, 0)
     assert c == rttuple.Color(0.38066, 0.47583, 0.2855)
 
@@ -855,7 +874,7 @@ def test_shadehit2():
     r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 0, 1))
     s = w.objects[1]
     i = objects.Intersection(s, 0.5)
-    hitrecord = world.prepare_computations(i, r)
+    hitrecord = world.prepare_computations(i, r, [i])
     c = w.shade_hit(hitrecord, 0)
     assert c == rttuple.Color(0.90498, 0.90498, 0.90498)
 
@@ -869,7 +888,7 @@ def test_shadehit3():
     w.objects.append(s)
     r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
     i = objects.Intersection(s, math.sqrt(2))
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     color = w.shade_hit(comps, 1)
     assert color == rttuple.Color(0.87676, 0.92434, 0.82917)  # I had to change the numbers from the book
 
@@ -902,7 +921,7 @@ def test_colorat3():
     assert c == inner.material.color
 
 
-def test_colorat3():
+def test_colorat4():
     # Color_at() with mutually reflective surfaces (validate we do not get into an infinite loop)
     w = world.World()
     w.lights = [lights.PointLight(rttuple.Point(0, 0, 0), rttuple.Color(1, 1, 1))]
@@ -914,7 +933,7 @@ def test_colorat3():
     upper.transform = transformations.translation(0, 1, 0)
     w.objects = [lower, upper]
     r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 1, 0))
-    c = w.color_at(r, 5)
+    w.color_at(r, 5)  # we don't do anything with the return value - we just validate we exit
 
 
 def test_viewtransform1():
@@ -1179,7 +1198,7 @@ def test_reflective2():
     shape = w.objects[1]
     shape.material.ambient = 1
     i = objects.Intersection(shape, 1)
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     color = w.reflected_color(comps, 1)
     assert color == rttuple.Color(0, 0, 0)
 
@@ -1193,7 +1212,7 @@ def test_reflective3():
     w.objects.append(s)
     r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
     i = objects.Intersection(s, math.sqrt(2))
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     color = w.reflected_color(comps, 1)
     assert color == rttuple.Color(0.19033, 0.23792, 0.14275)  # I had to change results from book
 
@@ -1207,7 +1226,7 @@ def test_reflective4():
     w.objects.append(s)
     r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
     i = objects.Intersection(s, math.sqrt(2))
-    comps = world.prepare_computations(i, r)
+    comps = world.prepare_computations(i, r, [i])
     color = w.reflected_color(comps, 0)
     assert color == rttuple.Color(0, 0, 0)
 
@@ -1216,14 +1235,6 @@ def test_refraction1():
     m = materials.Material()
     assert math.isclose(m.transparency, 0.0)
     assert math.isclose(m.refractive_index, 1.0)
-
-
-def glass_sphere():
-    # helper function for next set of tests
-    s = objects.Sphere()
-    s.material.transparency = 1.0
-    s.material.refractive_index = 1.5
-    return s
 
 
 def test_refraction2():
@@ -1244,8 +1255,173 @@ def test_refraction2():
     n1answers = [1.0, 1.5, 2.0, 2.5, 2.5, 1.5]
     n2answers = [1.5, 2.0, 2.5, 2.5, 1.5, 1.0]
 
-    for i in range (len(xs)):
-        comps = world.prepare_computations(xs[i], r)
+    for i in range(len(xs)):
+        comps = world.prepare_computations(xs[i], r, xs)
         assert math.isclose(comps.n1, n1answers[i])
         assert math.isclose(comps.n2, n2answers[i])
 
+
+def test_refraction3():
+    # The refracted color with an opaque surface
+    w = world.default_world()
+    s = w.objects[0]
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
+    xs = [objects.Intersection(s, 4), objects.Intersection(s, 6)]
+    comps = world.prepare_computations(xs[0], r, xs)
+    c = w.refracted_color(comps, 5)
+    assert c == rttuple.Color(0, 0, 0)
+
+
+def test_refraction4():
+    # The refracted color at the maximum recursive depth
+    w = world.default_world()
+    s = w.objects[0]
+    s.material.transparency = 1.0
+    s.material.refractive_index = 1.5
+    r = rttuple.Ray(rttuple.Point(0, 0, -5), rttuple.Vector(0, 0, 1))
+    xs = [objects.Intersection(s, 4), objects.Intersection(s, 6)]
+    comps = world.prepare_computations(xs[0], r, xs)
+    c = w.refracted_color(comps, 0)
+    assert c == rttuple.Color(0, 0, 0)
+
+
+def test_refraction5():
+    # The refracted color under total internal reflection
+    w = world.default_world()
+    s = w.objects[0]
+    s.material.transparency = 1.0
+    s.material.refractive_index = 1.5
+    r = rttuple.Ray(rttuple.Point(0, 0, -math.sqrt(2)/2), rttuple.Vector(0, 1, 0))
+    xs = [objects.Intersection(s, -math.sqrt(2)/2), objects.Intersection(s, math.sqrt(2)/2)]
+    # because we're inside the sphere we look at second intersection
+    comps = world.prepare_computations(xs[1], r, xs)
+    c = w.refracted_color(comps, 5)
+    assert c == rttuple.Color(0, 0, 0)
+
+
+def test_refraction6():
+    # The refracted color with a refracted ray
+    w = world.default_world()
+    A = w.objects[0]
+    A.material.ambient = 1.0
+    A.material.pattern = materials.TestPattern()
+    B = w.objects[1]
+    B.material.transparency = 1.0
+    B.material.refractive_index = 1.5
+    r = rttuple.Ray(rttuple.Point(0, 0, 0.1), rttuple.Vector(0, 1, 0))
+    xs = [objects.Intersection(A, -0.9899), objects.Intersection(B, -0.4899),
+          objects.Intersection(B, 0.4899), objects.Intersection(A, 0.9899)]
+    comps = world.prepare_computations(xs[2], r, xs)
+    c = w.refracted_color(comps, 5)
+    assert c == rttuple.Color(0, 0.99888, 0.04725)
+
+
+def test_refraction7():
+    # shade_hit() with a transparent material
+    w = world.default_world()
+    floor = objects.Plane()
+    floor.transform = transformations.translation(0, -1, 0)
+    floor.material.transparency = 0.5
+    floor.material.refractive_index = 1.5
+    w.objects.append(floor)
+
+    ball = objects.Sphere()
+    ball.material.color = rttuple.Color(1, 0, 0)
+    ball.material.ambient = 0.5
+    ball.transform = transformations.translation(0, -3.5, -0.5)
+    w.objects.append(ball)
+
+    r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2)/2, math.sqrt(2)/2))
+    xs = [objects.Intersection(floor, math.sqrt(2))]
+    comps = world.prepare_computations(xs[0], r, xs)
+    color = w.shade_hit(comps, 5)
+    assert color == rttuple.Color(0.93642, 0.68642, 0.68642)
+
+
+def test_schlick1():
+    # The Schlick approximation under total internal reflection
+    s = glass_sphere()
+    r = rttuple.Ray(rttuple.Point(0, 0, math.sqrt(2)/2), rttuple.Vector(0, 1, 0))
+    xs = [objects.Intersection(s, -math.sqrt(2)/2), objects.Intersection(s, math.sqrt(2)/2)]
+    comps = world.prepare_computations(xs[1], r, xs)
+    assert math.isclose(world.schlick_reflectance(comps), 1.0)
+
+
+def test_schlick2():
+    # The Schlick approximation with a perpendicular viewing angle
+    s = glass_sphere()
+    r = rttuple.Ray(rttuple.Point(0, 0, 0), rttuple.Vector(0, 1, 0))
+    xs = [objects.Intersection(s, -1), objects.Intersection(s, 1)]
+    comps = world.prepare_computations(xs[1], r, xs)
+    assert math.isclose(world.schlick_reflectance(comps), 0.04)
+
+
+def test_schlick3():
+    # The Schlick approximation with small angle and n2 > n1
+    s = glass_sphere()
+    r = rttuple.Ray(rttuple.Point(0, 0.99, -2), rttuple.Vector(0, 0, 1))
+    xs = [objects.Intersection(s, 1.8589)]
+    comps = world.prepare_computations(xs[0], r, xs)
+    s_r = world.schlick_reflectance(comps)
+    assert math.isclose(s_r, 0.48873, rel_tol=1e-05, abs_tol=1e-05)
+
+
+def test_schlick4():
+    # shade_hit() with a reflective, transparent material
+    w = world.default_world()
+    r = rttuple.Ray(rttuple.Point(0, 0, -3), rttuple.Vector(0, -math.sqrt(2) / 2, math.sqrt(2) / 2))
+
+    floor = objects.Plane()
+    floor.transform = transformations.translation(0, -1, 0)
+    floor.material.reflective = 0.5
+    floor.material.transparency = 0.5
+    floor.material.refractive_index = 1.5
+    w.objects.append(floor)
+
+    ball = objects.Sphere()
+    ball.material.color = rttuple.Color(1, 0, 0)
+    ball.material.ambient = 0.5
+    ball.transform = transformations.translation(0, -3.5, -0.5)
+    w.objects.append(ball)
+
+    xs = [objects.Intersection(floor, math.sqrt(2))]
+    comps = world.prepare_computations(xs[0], r, xs)
+    color = w.shade_hit(comps, 5)
+    assert color == rttuple.Color(0.93391, 0.69643, 0.69243)
+
+
+def test_testpattern1():
+    # A pattern with an object transformation
+    s = objects.Sphere()
+    s.transform = transformations.scaling(2, 2, 2)
+    s.material.pattern = materials.TestPattern()
+    # this logic is in lights.lighting().  Book assumed it would be in the Pattern object.
+    object_point = matrices.matmul4xTuple(s.inversetransform, rttuple.Point(2, 3, 4))
+    pattern_point = matrices.matmul4xTuple(s.material.pattern.inversetransform, object_point)
+    c = s.material.pattern.color_at(pattern_point)
+    assert c == rttuple.Color(1, 1.5, 2)
+
+
+def test_testpattern2():
+    # A pattern with a pattern transformation
+    s = objects.Sphere()
+    s.material.pattern = materials.TestPattern()
+    s.material.pattern.transform = transformations.scaling(2, 2, 2)
+    # this logic is in lights.lighting().  Book assumed it would be in the Pattern object.
+    object_point = matrices.matmul4xTuple(s.inversetransform, rttuple.Point(2, 3, 4))
+    pattern_point = matrices.matmul4xTuple(s.material.pattern.inversetransform, object_point)
+    c = s.material.pattern.color_at(pattern_point)
+    assert c == rttuple.Color(1, 1.5, 2)
+
+
+def test_testpattern3():
+    # A pattern with both an object and a pattern transformation
+    s = objects.Sphere()
+    s.transform = transformations.scaling(2, 2, 2)
+    s.material.pattern = materials.TestPattern()
+    s.material.pattern.transform = transformations.translation(0.5, 1, 1.5)
+    # this logic is in lights.lighting().  Book assumed it would be in the Pattern object.
+    object_point = matrices.matmul4xTuple(s.inversetransform, rttuple.Point(2.5, 3, 3.5))
+    pattern_point = matrices.matmul4xTuple(s.material.pattern.inversetransform, object_point)
+    c = s.material.pattern.color_at(pattern_point)
+    assert c == rttuple.Color(0.75, 0.5, 0.25)
