@@ -175,10 +175,7 @@ class Material:
             self.color = rttuple.Color(1, 1, 1)
         else:
             self.color = color
-        if pattern is None:
-            self.pattern = Pattern()
-        else:
-            self.pattern = pattern
+        self.pattern = pattern
         self.ambient = ambient
         self.diffuse = diffuse
         self.specular = specular

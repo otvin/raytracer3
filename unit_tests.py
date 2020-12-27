@@ -890,7 +890,7 @@ def test_shadehit3():
     i = objects.Intersection(s, math.sqrt(2))
     comps = world.prepare_computations(i, r, [i])
     color = w.shade_hit(comps, 1)
-    assert color == rttuple.Color(0.87676, 0.92434, 0.82917)  # I had to change the numbers from the book
+    assert color == rttuple.Color(0.87677, 0.92436, 0.82918)
 
 
 def test_colorat1():
@@ -1214,7 +1214,7 @@ def test_reflective3():
     i = objects.Intersection(s, math.sqrt(2))
     comps = world.prepare_computations(i, r, [i])
     color = w.reflected_color(comps, 1)
-    assert color == rttuple.Color(0.19033, 0.23792, 0.14275)  # I had to change results from book
+    assert color == rttuple.Color(0.19034, 0.23793, 0.14276)  # I had to change the numbers from the book
 
 
 def test_reflective4():

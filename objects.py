@@ -11,7 +11,7 @@ class Intersection:
         self.t = t
 
 
-EPSILON = 1e-05
+EPSILON = 0.0001
 ONEMINUSEPSILON = 1 - EPSILON
 
 

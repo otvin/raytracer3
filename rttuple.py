@@ -6,6 +6,9 @@ class RT_Tuple:
     def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
         self.arr = [x, y, z, w]
 
+    def __str__(self):
+        return 'Tuple({})'.format(self.arr)
+
     @property
     def x(self):
         return self.arr[0]
@@ -154,6 +157,9 @@ class Ray:
     def __init__(self, origin=Point(), direction=Vector()):
         self.origin = origin
         self.direction = direction
+
+    def __str__(self):
+        return 'Ray: orig:({}), dir:({})'.format(self.origin.arr, self.direction.arr)
 
     def at(self, t=0.0):
         return self.origin + (self.direction * t)
