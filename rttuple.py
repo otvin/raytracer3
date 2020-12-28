@@ -2,7 +2,9 @@ import math
 import matrices
 
 
-class RT_Tuple:
+class RT_Tuple(object):
+    __slots__ = ['arr']
+
     def __init__(self, x=0.0, y=0.0, z=0.0, w=0.0):
         self.arr = [x, y, z, w]
 
@@ -96,8 +98,11 @@ class RT_Tuple:
         # vector, but you do not get a Vector object.  It is possible that we will
         # need to change Point() and Vector() to functions that return Tuples instead
         # of objects of their own.
-        return math.sqrt(self.arr[0] * self.arr[0] + self.arr[1] * self.arr[1] +
-                         self.arr[2] * self.arr[2] + self.arr[3] * self.arr[3])
+        a0 = self.arr[0]
+        a1 = self.arr[1]
+        a2 = self.arr[2]
+        a3 = self.arr[3]
+        return math.sqrt(a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3)
 
 
 class Point(RT_Tuple):
@@ -154,6 +159,8 @@ WHITE = Color(1, 1, 1)
 
 
 class Ray:
+    __slots__ = ['origin', 'direction']
+
     def __init__(self, origin=Point(), direction=Vector()):
         self.origin = origin
         self.direction = direction
@@ -174,16 +181,28 @@ def normalize(vec):
 
 def dot(tup1, tup2):
     # returns dot product of the two tuples
-    return (tup1.arr[0] * tup2.arr[0] + tup1.arr[1] * tup2.arr[1] +
-            tup1.arr[2] * tup2.arr[2] + tup1.arr[3] * tup2.arr[3])
+    t1arr = tup1.arr
+    t2arr = tup2.arr
+
+    return (t1arr[0] * t2arr[0] + t1arr[1] * t2arr[1] +
+            t1arr[2] * t2arr[2] + t1arr[3] * t2arr[3])
 
 
 def cross(vec1, vec2):
     # cross product of two vectors
     res = Vector()
-    res.arr = [vec1.arr[1] * vec2.arr[2] - vec1.arr[2] * vec2.arr[1],
-               vec1.arr[2] * vec2.arr[0] - vec1.arr[0] * vec2.arr[2],
-               vec1.arr[0] * vec2.arr[1] - vec1.arr[1] * vec2.arr[0],
+    v1arr = vec1.arr
+    v2arr = vec2.arr
+    v10 = v1arr[0]
+    v11 = v1arr[1]
+    v12 = v1arr[2]
+    v20 = v2arr[0]
+    v21 = v2arr[1]
+    v22 = v2arr[2]
+
+    res.arr = [v11 * v22 - v12 * v21,
+               v12 * v20 - v10 * v22,
+               v10 * v21 - v11 * v20,
                0.0]
     return res
 

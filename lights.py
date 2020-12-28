@@ -9,6 +9,8 @@ class Light:
 
 
 class PointLight(Light):
+    __slots__ = ['position', 'intensity']
+
     def __init__(self, position=rttuple.Point(0, 0, 0), intensity=None):
         super().__init__()
         if intensity is None:

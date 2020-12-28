@@ -8,6 +8,8 @@ import matrices
 
 
 class World:
+    __slots__ = ['objects', 'lights']
+
     def __init__(self, objects=None, lights=None):
         if objects is None:
             self.objects = []
@@ -118,6 +120,9 @@ class World:
 
 
 class HitRecord:
+    __slots__ = ['t', 'objhit', 'point', 'inside', 'eyev', 'normalv', 'reflectv', 'over_point',
+                 'under_point', 'n1', 'n2']
+
     def __init__(self, t, objhit, point, inside, eyev, normalv, reflectv, over_point, under_point, n1, n2):
         self.t = t
         self.objhit = objhit

@@ -17,6 +17,9 @@ MAXCOLORS = 255
 
 
 class Camera:
+    __slots__ = ['hsize', 'vsize', 'field_of_view', 'aspect_ratio', 'half_width',
+                 'half_height', 'pixel_size', '__transform', '__inversetransform', '__origin']
+
     def __init__(self, hsize=160, vsize=120, field_of_view=math.pi/2, transform=matrices.identity4()):
         self.hsize = hsize
         self.vsize = vsize

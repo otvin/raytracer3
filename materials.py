@@ -5,6 +5,8 @@ import objects
 
 
 class Pattern:
+    __slots__ = ['__transform', '__inversetransform']
+
     def __init__(self, transform=None):
         if transform is None:
             self.transform = matrices.identity4()
@@ -38,6 +40,8 @@ class TestPattern(Pattern):
 
 
 class StripePattern(Pattern):
+    __slots__ = ['color1', 'color2']
+
     def __init__(self, transform=None, color1=None, color2=None):
         super().__init__(transform)
         if color1 is None:
@@ -57,6 +61,8 @@ class StripePattern(Pattern):
 
 
 class GradientPattern(Pattern):
+    __slots__ = ['color1', 'color2']
+
     def __init__(self, transform=None, color1=None, color2=None):
         super().__init__(transform)
         if color1 is None:
@@ -75,6 +81,8 @@ class GradientPattern(Pattern):
 
 
 class RingPattern(Pattern):
+    __slots__ = ['color1', 'color2']
+
     def __init__(self, transform=None, color1=None, color2=None):
         super().__init__(transform)
         if color1 is None:
@@ -94,6 +102,8 @@ class RingPattern(Pattern):
 
 
 class CheckersPattern(Pattern):
+    __slots__ = ['color1', 'color2']
+
     def __init__(self, transform=None, color1=None, color2=None):
         super().__init__(transform)
         if color1 is None:
@@ -125,6 +135,8 @@ class CheckersPattern(Pattern):
 
 
 class BlendedPattern(Pattern):
+    __slots__ = ['pattern1', 'pattern2']
+
     def __init__(self, transform=None, pattern1=None, pattern2=None):
         super().__init__(transform)
         if pattern1 is None:
@@ -169,6 +181,9 @@ class NestedCheckersPattern(BlendedPattern):
 
 
 class Material:
+    __slots__ = ['color', 'pattern', 'ambient', 'diffuse', 'specular', 'shininess', 'reflective', 'transparency',
+                 'refractive_index']
+
     def __init__(self, color=None, ambient=0.1, diffuse=0.9, specular=0.9, shininess=200.0, reflective=0, pattern=None,
                  transparency=0.0, refractive_index=1.0):
         if color is None:

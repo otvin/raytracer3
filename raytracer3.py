@@ -70,7 +70,7 @@ def render():
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 
-    canvas.canvas_to_ppm('chap11e.ppm')
+    canvas.canvas_to_ppm('chap11f.ppm')
 
 
 if __name__ == '__main__':

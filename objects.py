@@ -6,6 +6,8 @@ import matrices
 
 
 class Intersection:
+    __slots__ = ['objhit', 't']
+
     def __init__(self, objhit, t):
         self.objhit = objhit
         self.t = t
@@ -16,6 +18,8 @@ ONEMINUSEPSILON = 1 - EPSILON
 
 
 class HittableObject:
+    __slots__ = ['material', '__transform', '__inversetransform']
+
     def __init__(self, transform=matrices.identity4(), material=None):
         if material is None:
             self.material = materials.Material()
@@ -62,6 +66,8 @@ class HittableObject:
 
 
 class Sphere(HittableObject):
+    __slots__ = ['origin']
+
     def __init__(self, transform=matrices.identity4(), material=None):
         super().__init__(transform, material)
         self.origin = rttuple.Point(0, 0, 0)
