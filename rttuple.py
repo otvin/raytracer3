@@ -101,8 +101,7 @@ class RT_Tuple(object):
         a0 = self.arr[0]
         a1 = self.arr[1]
         a2 = self.arr[2]
-        a3 = self.arr[3]
-        return math.sqrt(a0 * a0 + a1 * a1 + a2 * a2 + a3 * a3)
+        return math.sqrt(a0 * a0 + a1 * a1 + a2 * a2)
 
 
 class Point(RT_Tuple):

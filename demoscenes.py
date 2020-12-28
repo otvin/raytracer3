@@ -8,7 +8,7 @@ import matrices
 import materials
 import math
 
-# These demo scenes return a World object that can then be rendered.
+# These demo scenes return a camera and a World object that can then be rendered.
 
 def chap11_demo():
     # https://forum.raytracerchallenge.com/thread/114/refraction-results/unclear
@@ -22,46 +22,28 @@ def chap11_demo():
     #
     # by Jamis Buck <jamis@jamisbuck.org>
     # ======================================================
-
     w = world.World()
-
-    # ======================================================
-    # the camera
-    # ======================================================
-
-    camera = canvas.Camera(800, 400, math.pi/3)
-    c1= transformations.view_transform(rttuple.Point(-4, 2.5, -5.5), rttuple.Point(0, 1, 0),
-                                                      rttuple.Vector(0, 1, 0))
-
-    c2 = transformations.view_transform(rttuple.Point(-4, 1.5, -5.5), rttuple.Point(0, 1, 0),
-                                                      rttuple.Vector(0, 1, 0))
-
-    highup = transformations.view_transform(rttuple.Point(-4, 4.5, -5.5), rttuple.Point(0, 1, 0),
-                                                      rttuple.Vector(0, 1, 0))
-
-    c3 = transformations.view_transform(rttuple.Point(-5, 1.5, -5.5), rttuple.Point(0, 1, 0),
-                                                      rttuple.Vector(0, 1, 0))
-
-    closeup = transformations.view_transform(rttuple.Point(-3.75, 1.5, -4.5), rttuple.Point(0, 1, 0),
-                                                      rttuple.Vector(0, 1, 0))
-
-    closeup2 = transformations.view_transform(rttuple.Point(-4.25, 1.75, -4), rttuple.Point(0, 1, 0),
-                                             rttuple.Vector(0, 1, 0))
-
-    closeup3 = transformations.view_transform(rttuple.Point(-3.75, 1.5, -4), rttuple.Point(0, 1, 0),
-                                                      rttuple.Vector(0, 1, 0))
-
-    closeup4 = transformations.view_transform(rttuple.Point(-4, 1, -4.5), rttuple.Point(0, 1, 0),
-                                              rttuple.Vector(0, 1, 0))
-
-    camera.transform = closeup4
-
-    # ======================================================
-    # light sources
-    # ======================================================
+    cameratransform = transformations.view_transform(rttuple.Point(-4.5, 0.85, -4), rttuple.Point(0, 0.85, 0), rttuple.Point(0, 1, 0))
+    camera = canvas.Camera(600, 600, 0.5, cameratransform)
 
     light = lights.PointLight(rttuple.Point(-4.9, 4.9, 1.5), rttuple.Color(1, 1, 1))
     w.lights.append(light)
+
+    floor = objects.Plane()
+    floor.transform = transformations.rotation_y(0.31415)
+    floor.material.pattern = materials.CheckersPattern(None, rttuple.Color(0, 0, 0), rttuple.Color(0.75, 0.75, 0.75))
+    floor.material.ambient = 0.5
+    floor.material.diffuse = 0.4
+    floor.material.specular = 0.8
+    floor.material.reflective = 0.1
+    w.objects.append(floor)
+
+    ceiling = objects.Plane()
+    ceiling.transform = transformations.translation(0, 5, 0)
+    ceiling.material.pattern = materials.CheckersPattern(transformations.scaling(.2, .2, .2), rttuple.Color(0.85, 0.85, 0.85), rttuple.Color(1.0, 1.0, 1.0))
+    ceiling.material.ambient = 0.5
+    ceiling.material.specular = 0
+    w.objects.append(ceiling)
 
     # ======================================================
     # define some constants to avoid duplication
@@ -70,86 +52,67 @@ def chap11_demo():
     wallpattern.color1 = rttuple.Color(0, 0, 0)
     wallpattern.color2 = rttuple.Color(0.75, 0.75, 0.75)
     wallpattern.transform = transformations.scaling(0.5, 0.5, 0.5)
-
     wallmaterial = materials.Material()
     wallmaterial.pattern = wallpattern
     wallmaterial.specular = 0
 
-    # ======================================================
-    # describe the scene
-    # ======================================================
-
-
-    floor = objects.Plane()
-    # floor.transform = transformations.rotation_y(.31415)
-    floor.material.pattern = materials.CheckersPattern(None, rttuple.Color(0, 0, 0), rttuple.Color(0.75, 0.75, 0.75))
-    floor.material.ambient = 0.5
-    floor.material.diffuse = 0.4
-    floor.material.specular = 0.8
-    floor.material.reflective = 0.1
-    w.objects.append(floor)
-
-
-    # ceiling
-    ceiling = objects.Plane()
-    ceiling.transform = transformations.translation(0, 5, 0)
-    ceiling.material.pattern = materials.CheckersPattern()
-    ceiling.material.pattern.color1 = rttuple.Color(0.85, 0.85, 0.85)
-    ceiling.material.pattern.color2 = rttuple.Color(1.0, 1.0, 1.0)
-    ceiling.material.pattern.transform = transformations.scaling(0.2, 0.2, 0.2)
-    ceiling.material.ambient = 0.5
-    ceiling.material.specular = 0
-    w.objects.append(ceiling)
-
-
-    # east wall
-    eastwall = objects.Plane()
-    A = transformations.rotation_y(1.5708)
-    B = transformations.rotation_x(1.5708)
-    C = transformations.translation(0, 3, 0)
-    eastwall.material = wallmaterial
-    eastwall.transform = matrices.matmul4x4(matrices.matmul4x4(A, B), C)
-    w.objects.append(eastwall)
-
-
-    # west wall
     westwall = objects.Plane()
-    B = transformations.rotation_x(1.5708)
-    C = transformations.translation(0, 3, 0)
-    westwall.transform = matrices.matmul4x4(B, C)
+    A = transformations.rotation_y(math.pi/2)  # orient texture
+    B = transformations.rotation_z(math.pi/2)  # rotate to vertical
+    C = transformations.translation(-5, 0, 0)
+    westwall.transform = matrices.matmul4x4(matrices.matmul4x4(C, B), A)
     westwall.material = wallmaterial
     w.objects.append(westwall)
 
-    red = objects.Sphere()
-    red.transform = matrices.matmul4x4(transformations.translation(1, 1, 1), transformations.scaling(0.5, 0.5, 0.5))
-    red.material.color = rttuple.Color(0.8, 0.1, 0.3)
-    red.material.specular = 0
-    w.objects.append(red)
+    eastwall = objects.Plane()
+    A = transformations.rotation_y(math.pi/2)  # orient texture
+    B = transformations.rotation_z(math.pi/2)  # rotate to vertical
+    C = transformations.translation(5, 0, 0)
+    eastwall.transform = matrices.matmul4x4(matrices.matmul4x4(C, B), A)
+    eastwall.material = wallmaterial
+    w.objects.append(eastwall)
 
+    northwall = objects.Plane()
+    A = transformations.rotation_x(math.pi/2)  # rotate to vertical
+    B = transformations.translation(0, 0, 5)
+    northwall.transform = matrices.matmul4x4(B, A)
+    northwall.material = wallmaterial
+    w.objects.append(northwall)
 
-    green = objects.Sphere()
+    southwall = objects.Plane()
+    A = transformations.rotation_x(math.pi/2)  # rotate to vertical
+    B = transformations.translation(0, 0, -5)
+    southwall.transform = matrices.matmul4x4(B, A)
+    southwall.material = wallmaterial
+    w.objects.append(southwall)
+
+    red_backgroundball = objects.Sphere()
+    red_backgroundball.transform = transformations.translation(4, 1, 4)
+    red_backgroundball.material.color = rttuple.Color(0.8, 0.1, 0.3)
+    red_backgroundball.material.specular = 0
+    w.objects.append(red_backgroundball)
+    
+    green_backgroundball = objects.Sphere()
     A = transformations.scaling(0.4, 0.4, 0.4)
-    B = transformations.translation(1.6, 0.4, .5)
-    green.transform = matrices.matmul4x4(B, A)
-    green.material.color = rttuple.Color(0.1, 0.8, 0.2)
-    green.material.shininess = 200
-    w.objects.append(green)
+    B = transformations.translation(4.6, 0.4, 2.9)
+    green_backgroundball.transform = matrices.matmul4x4(B, A)
+    green_backgroundball.material.color = rttuple.Color(0.1, 0.8, 0.2)
+    green_backgroundball.material.shininess = 200
+    w.objects.append(green_backgroundball)
 
-
-    blue = objects.Sphere()
+    blue_backgroundball = objects.Sphere()
     A = transformations.scaling(0.6, 0.6, 0.6)
-    B = transformations.translation(-0.1, 0.7, 3.0)
-    blue.transform = matrices.matmul4x4(A, B)
-    blue.material.color = rttuple.Color(0.2, 0.1, 0.8)
-    blue.material.shininess = 10
-    blue.material.specular = 0.4
-    w.objects.append(blue)
-
+    B = transformations.translation(2.6, 0.6, 4.4)
+    blue_backgroundball.transform = matrices.matmul4x4(B, A)
+    blue_backgroundball.material.color = rttuple.Color(0.2, 0.1, 0.8)
+    blue_backgroundball.material.shininess = 10
+    blue_backgroundball.material.specular = 0.4
+    w.objects.append(blue_backgroundball)
 
     glassball = objects.Sphere()
-    A = transformations.scaling(1.1, 1.1, 1.1)
-    B = transformations.translation(-0.8, 1.1, -1.2)
-    glassball.transform = matrices.matmul4x4(A, B)
+    A = transformations.scaling(1, 1, 1)
+    B = transformations.translation(0.25, 1, 0)
+    glassball.transform = matrices.matmul4x4(B, A)
     glassball.material.color = rttuple.Color(0.8, 0.8, 0.9)
     glassball.material.ambient = 0
     glassball.material.diffuse = 0.2
