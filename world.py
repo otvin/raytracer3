@@ -53,7 +53,12 @@ class World:
                                   hitrecord.eyev, hitrecord.normalv, shadowed)
         reflected = self.reflected_color(hitrecord, depth)
         refracted = self.refracted_color(hitrecord, depth)
-        return surface + reflected + refracted # I don't understand how this doesn't get > 1.
+        material = hitrecord.objhit.material
+        if material.reflective > 0 and material.transparency > 0:
+            reflectance = schlick_reflectance(hitrecord)
+            return surface + (reflected * reflectance) + (refracted * (1 - reflectance))
+        else:
+            return surface + reflected + refracted # I don't understand how this doesn't get > 1.
 
 
     def reflected_color(self, hitrecord, depth):
