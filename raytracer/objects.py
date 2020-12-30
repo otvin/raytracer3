@@ -16,7 +16,7 @@ ONEMINUSEPSILON = 1 - EPSILON
 
 
 class HittableObject:
-    __slots__ = ['material', '__transform', '__inversetransform']
+    __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose']
 
     def __init__(self, transform=identity4(), material=None):
         if material is None:
@@ -32,11 +32,8 @@ class HittableObject:
     @transform.setter
     def transform(self, trans):
         self.__transform = trans
-        self.__inversetransform = rt.inverse4x4(self.__transform)
-
-    @property
-    def inversetransform(self):
-        return self.__inversetransform
+        self.inversetransform = rt.inverse4x4(self.__transform)
+        self.__inversetransformtranspose = rt.transpose4x4(self.inversetransform)
 
     def intersect(self, r):
         # returns a list of intersections
@@ -51,7 +48,7 @@ class HittableObject:
     def normal_at(self, point):
         object_point = rt.do_transform(self.inversetransform, point)
         object_normal = self.local_normal_at(object_point)
-        world_normal = rt.transformations.do_transform(rt.transpose4x4(self.inversetransform), object_normal)
+        world_normal = rt.transformations.do_transform(self.__inversetransformtranspose, object_normal)
         # hack - should really get the submatrix of the transform, and multiply by the inverse and
         # transform that, but this is much faster and equivalent.
         world_normal.w = 0.0

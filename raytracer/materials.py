@@ -4,7 +4,7 @@ from .objects import ONEMINUSEPSILON
 
 
 class Pattern:
-    __slots__ = ['__transform', '__inversetransform']
+    __slots__ = ['__transform', 'inversetransform']
 
     def __init__(self, transform=None):
         if transform is None:
@@ -19,11 +19,7 @@ class Pattern:
     @transform.setter
     def transform(self, trans):
         self.__transform = trans
-        self.__inversetransform = rt.inverse4x4(self.__transform)
-
-    @property
-    def inversetransform(self):
-        return self.__inversetransform
+        self.inversetransform = rt.inverse4x4(self.__transform)
 
     def color_at(self, pattern_point):
         # point is in pattern space
