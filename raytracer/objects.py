@@ -40,7 +40,7 @@ class HittableObject:
 
     def intersect(self, r):
         # returns a list of intersections
-        object_ray = rt.transformray(self.inversetransform, r)
+        object_ray = rt.do_transformray(self.inversetransform, r)
         return self.local_intersect(object_ray)
 
     def local_intersect(self, object_ray):
@@ -49,9 +49,9 @@ class HittableObject:
         return []
 
     def normal_at(self, point):
-        object_point = rt.transform(self.inversetransform, point)
+        object_point = rt.do_transform(self.inversetransform, point)
         object_normal = self.local_normal_at(object_point)
-        world_normal = rt.transformations.transform(rt.transpose4x4(self.inversetransform), object_normal)
+        world_normal = rt.transformations.do_transform(rt.transpose4x4(self.inversetransform), object_normal)
         # hack - should really get the submatrix of the transform, and multiply by the inverse and
         # transform that, but this is much faster and equivalent.
         world_normal.w = 0.0

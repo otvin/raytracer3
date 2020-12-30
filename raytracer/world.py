@@ -55,7 +55,7 @@ class World:
             reflectance = schlick_reflectance(hitrecord)
             return surface + (reflected * reflectance) + (refracted * (1 - reflectance))
         else:
-            return surface + reflected + refracted # I don't understand how this doesn't get > 1.
+            return surface + reflected + refracted  # I don't understand how this doesn't get > 1.
 
     def reflected_color(self, hitrecord, depth):
         if math.isclose(hitrecord.objhit.material.reflective, 0):

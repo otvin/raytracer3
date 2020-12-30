@@ -3,16 +3,16 @@ import raytracer as rt
 from .matrices import matmul4x1
 
 
-def transform(mat, tup):
+def do_transform(mat, tup):
     # returns the result of multiplying a transformation matrix by a rt_tuple.  Result will be a tuple
     res = rt.RT_Tuple()
     res.arr = matmul4x1(mat, tup.arr)
     return res
 
 
-def transformray(mat, ray):
-    neworigin = transform(mat, ray.origin)
-    newdirection = transform(mat, ray.direction)
+def do_transformray(mat, ray):
+    neworigin = do_transform(mat, ray.origin)
+    newdirection = do_transform(mat, ray.direction)
     return rt.Ray(neworigin, newdirection)
 
 

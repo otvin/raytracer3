@@ -2,7 +2,7 @@ import math
 import time
 import os
 import raytracer as rt
-from .transformations import transform, transformray, translation, scaling, reflection, rotation_x, rotation_y, \
+from .transformations import do_transform, do_transformray, translation, scaling, reflection, rotation_x, rotation_y, \
                             rotation_z, skew, view_transform
 from .world import prepare_computations, schlick_reflectance
 from .canvas import init_canvas, write_pixel, get_canvasdims, pixel_at
@@ -338,7 +338,7 @@ def rtunittest_translation1():
     # Multiplying by a translation matrix
     trans = translation(5, -3, 2)
     p = rt.Point(-3, 4, 5)
-    assert transform(trans, p) == rt.Point(2, 1, 7)
+    assert do_transform(trans, p) == rt.Point(2, 1, 7)
 
 
 def rtunittest_translation2():
@@ -346,28 +346,28 @@ def rtunittest_translation2():
     trans = translation(5, -3, 2)
     inv = rt.inverse4x4(trans)
     p = rt.Point(-3, 4, 5)
-    assert transform(inv, p) == rt.Point(-8, 7, 3)
+    assert do_transform(inv, p) == rt.Point(-8, 7, 3)
 
 
 def rtunittest_translation3():
     # Translation does not affect vectors
     trans = translation(5, -3, 2)
     v = rt.Vector(-3, 4, 5)
-    assert transform(trans, v) == v
+    assert do_transform(trans, v) == v
 
 
 def rtunittest_scaling1():
     # A scaling matrix applied to a point
     trans = scaling(2, 3, 4)
     p = rt.Point(-4, 6, 8)
-    assert transform(trans, p) == rt.Point(-8, 18, 32)
+    assert do_transform(trans, p) == rt.Point(-8, 18, 32)
 
 
 def rtunittest_scaling2():
     # A scaling matrix applied to a vector
     trans = scaling(2, 3, 4)
     v = rt.Vector(-4, 6, 8)
-    assert transform(trans, v) == rt.Vector(-8, 18, 32)
+    assert do_transform(trans, v) == rt.Vector(-8, 18, 32)
 
 
 def rtunittest_scaling3():
@@ -375,14 +375,14 @@ def rtunittest_scaling3():
     trans = scaling(2, 3, 4)
     inv = rt.inverse4x4(trans)
     v = rt.Vector(-4, 6, 8)
-    assert transform(inv, v) == rt.Vector(-2, 2, 2)
+    assert do_transform(inv, v) == rt.Vector(-2, 2, 2)
 
 
 def rtunittest_reflection1():
     # Reflection is scaling by a negative value
     trans = reflection(True, False, False)
     p = rt.Point(2, 3, 4)
-    assert transform(trans, p) == rt.Point(-2, 3, 4)
+    assert do_transform(trans, p) == rt.Point(-2, 3, 4)
 
 
 def rtunittest_rotation1():
@@ -390,8 +390,8 @@ def rtunittest_rotation1():
     p = rt.Point(0, 1, 0)
     half_quarter = rotation_x(math.pi / 4)
     full_quarter = rotation_x(math.pi / 2)
-    assert transform(half_quarter, p) == rt.Point(0, math.sqrt(2)/2, math.sqrt(2)/2)
-    assert transform(full_quarter, p) == rt.Point(0, 0, 1)
+    assert do_transform(half_quarter, p) == rt.Point(0, math.sqrt(2)/2, math.sqrt(2)/2)
+    assert do_transform(full_quarter, p) == rt.Point(0, 0, 1)
 
 
 def rtunittest_rotation2():
@@ -399,7 +399,7 @@ def rtunittest_rotation2():
     p = rt.Point(0, 1, 0)
     half_quarter = rotation_x(math.pi / 4)
     inv = rt.inverse4x4(half_quarter)
-    assert transform(inv, p) == rt.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2)
+    assert do_transform(inv, p) == rt.Point(0, math.sqrt(2)/2, -math.sqrt(2)/2)
 
 
 def rtunittest_rotation3():
@@ -407,8 +407,8 @@ def rtunittest_rotation3():
     p = rt.Point(0, 0, 1)
     half_quarter = rotation_y(math.pi / 4)
     full_quarter = rotation_y(math.pi / 2)
-    assert transform(half_quarter, p) == rt.Point(math.sqrt(2)/2, 0, math.sqrt(2)/2)
-    assert transform(full_quarter, p) == rt.Point(1, 0, 0)
+    assert do_transform(half_quarter, p) == rt.Point(math.sqrt(2)/2, 0, math.sqrt(2)/2)
+    assert do_transform(full_quarter, p) == rt.Point(1, 0, 0)
 
 
 def rtunittest_rotation4():
@@ -416,15 +416,15 @@ def rtunittest_rotation4():
     p = rt.Point(0, 1, 0)
     half_quarter = rotation_z(math.pi / 4)
     full_quarter = rotation_z(math.pi / 2)
-    assert transform(half_quarter, p) == rt.Point(-math.sqrt(2)/2, math.sqrt(2)/2, 0)
-    assert transform(full_quarter, p) == rt.Point(-1, 0, 0)
+    assert do_transform(half_quarter, p) == rt.Point(-math.sqrt(2)/2, math.sqrt(2)/2, 0)
+    assert do_transform(full_quarter, p) == rt.Point(-1, 0, 0)
 
 
 def rtunittest_skew1():
     # A shearing transformation moves x in proportion to y
     trans = skew(1, 0, 0, 0, 0, 0)
     p = rt.Point(2, 3, 4)
-    assert transform(trans, p) == rt.Point(5, 3, 4)
+    assert do_transform(trans, p) == rt.Point(5, 3, 4)
 
 
 def rtunittest_skew2():
@@ -435,11 +435,11 @@ def rtunittest_skew2():
     trans3 = skew(0, 0, 0, 1, 0, 0)
     trans4 = skew(0, 0, 0, 0, 1, 0)
     trans5 = skew(0, 0, 0, 0, 0, 1)
-    assert transform(trans1, p) == rt.Point(6, 3, 4)
-    assert transform(trans2, p) == rt.Point(2, 5, 4)
-    assert transform(trans3, p) == rt.Point(2, 7, 4)
-    assert transform(trans4, p) == rt.Point(2, 3, 6)
-    assert transform(trans5, p) == rt.Point(2, 3, 7)
+    assert do_transform(trans1, p) == rt.Point(6, 3, 4)
+    assert do_transform(trans2, p) == rt.Point(2, 5, 4)
+    assert do_transform(trans3, p) == rt.Point(2, 7, 4)
+    assert do_transform(trans4, p) == rt.Point(2, 3, 6)
+    assert do_transform(trans5, p) == rt.Point(2, 3, 7)
 
 
 def rtunittest_transformchain1():
@@ -448,11 +448,11 @@ def rtunittest_transformchain1():
     A = rotation_x(math.pi / 2)
     B = scaling(5, 5, 5)
     C = translation(10, 5, 7)
-    p2 = transform(A, p)
+    p2 = do_transform(A, p)
     assert p2 == rt.Point(1, -1, 0)
-    p3 = transform(B, p2)
+    p3 = do_transform(B, p2)
     assert p3 == rt.Point(5, -5, 0)
-    p4 = transform(C, p3)
+    p4 = do_transform(C, p3)
     assert p4 == rt.Point(15, 0, 7)
 
 
@@ -463,7 +463,7 @@ def rtunittest_transformchain2():
     B = scaling(5, 5, 5)
     C = translation(10, 5, 7)
     T = rt.matmul4x4(rt.matmul4x4(C, B), A)
-    assert transform(T, p) == rt.Point(15, 0, 7)
+    assert do_transform(T, p) == rt.Point(15, 0, 7)
 
 
 def rtunittest_transformchain3():
@@ -478,7 +478,7 @@ def rtunittest_transformchain3():
     for i in range(13):
         dot = p * clockradius
         write_pixel(int(dot.x) + halfcanvas, int(dot.z) + halfcanvas, gold)
-        p = transform(trans, p)
+        p = do_transform(trans, p)
 
     rt.canvas_to_ppm('test_transformchain3.ppm')
     compare_ppms('test_transformchain3.ppm', 'raytracer/test_transformchain3_success.ppm')
@@ -573,7 +573,7 @@ def rtunittest_raytransform1():
     # Translating a ray
     r = rt.Ray(rt.Point(1, 2, 3), rt.Vector(0, 1, 0))
     m = translation(3, 4, 5)
-    r2 = transformray(m, r)
+    r2 = do_transformray(m, r)
     assert r2.origin == rt.Point(4, 6, 8)
     assert r2.direction == rt.Vector(0, 1, 0)
 
@@ -582,7 +582,7 @@ def rtunittest_raytransform2():
     # Scaling a ray
     r = rt.Ray(rt.Point(1, 2, 3), rt.Vector(0, 1, 0))
     m = scaling(2, 3, 4)
-    r2 = transformray(m, r)
+    r2 = do_transformray(m, r)
     assert r2.origin == rt.Point(2, 6, 12)
     assert r2.direction == rt.Vector(0, 3, 0)
 
