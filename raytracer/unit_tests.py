@@ -31,7 +31,7 @@ def compare_ppms(file1, file2):
 
 
 def default_world():
-    s1 = rt.Sphere(material = rt.Material(rt.Color(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200))
+    s1 = rt.Sphere(material=rt.Material(rt.Color(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200))
     s2 = rt.Sphere()
     s2.transform = rt.scaling(0.5, 0.5, 0.5)
     light = rt.PointLight(rt.Point(-10, 10, -10), rt.Color(1, 1, 1))
@@ -45,8 +45,6 @@ def glass_sphere():
     s.material.transparency = 1.0
     s.material.refractive_index = 1.5
     return s
-
-
 
 
 def rtunittest_point1():
@@ -1448,13 +1446,13 @@ def run_unit_tests():
     count = 0
 
     # some tests take longer and we can skip unless we're explicitly testing a change to that feature.
-    # tests_to_skip = ['test_canvas3', 'test_transformchain3', 'test_render1']
-    tests_to_skip = []
+    tests_to_skip = ['rtunittest_canvas3', 'rtunittest_render1']
+    # tests_to_skip = []
     
     timestart = time.time()
 
     for f in globals().values():
-        if type(f) == type(lambda *args: None):  # if f is a function
+        if callable(f):
             n = f.__name__
             if n[:11] == 'rtunittest_':
                 if n not in tests_to_skip:
