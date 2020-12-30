@@ -12,6 +12,10 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap8.ppm_ - added shadows
 * _chap9.ppm_ - added planes (the floor is a plane instead of a sphere)
 * _chap10.ppm_ - added various patterns
-* _chap11_demo.ppm_ - added reflection and refraction.
+* _chap11_demo.ppm_ - added reflection and refraction. 
+* _chap12_demo.ppm_ - added cubes and ability to set object as not casting a shadow
+
+Jamis Buck posted details for the scenes shown in the book for chapters 11-13 on-line.  Links can be found in demoscenes.py.
 
 ![chap11_demo.ppm](saved_renders/chap11_demo.png)
+![chap12_demo.ppm](saved_renders/chap12_demo.png)

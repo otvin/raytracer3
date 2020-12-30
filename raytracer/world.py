@@ -34,9 +34,9 @@ class World:
         r = rt.Ray(point, direction)
         xs = self.intersect(r)
         for i in xs:
-            if i.t > 0:
-                # if the smallest positive hit is nearer to the light than the point, then
-                # the point is in shadow.
+            if i.t > 0 and i.objhit.casts_shadow:
+                # if the smallest positive hit from an object that casts a shadow is nearer to the light than
+                # the point, then the point is in shadow.
                 if i.t < distance:
                     return True
                 else:

@@ -3,7 +3,7 @@ import raytracer as rt
 
 # These demo scenes return a camera and a World object that can then be rendered.
 
-def chap11_demo(width, height):
+def chap11_demo(width=200, height=200):
     # https://forum.raytracerchallenge.com/thread/114/refraction-results/unclear
     # ======================================================
     # refraction-bend.yml
@@ -114,5 +114,198 @@ def chap11_demo(width, height):
     glassball.material.transparency = 0.8
     glassball.material.refractive_index = 1.57
     w.objects.append(glassball)
+
+    return camera, w
+
+
+def chap12_demo(width=400, height=200):
+    # https://forum.raytracerchallenge.com/thread/6/tables-scene-description
+    # ======================================================
+    # table.yml
+    #
+    # This file describes the scene illustrated at the start
+    # of chapter 12, "Cubes", in "The Ray Tracer Challenge"
+    #
+    # by Jamis Buck <jamis@jamisbuck.org>
+    # ======================================================
+
+    w = rt.World()
+    cameratransform = rt.view_transform(rt.Point(8, 6, -8), rt.Point(0, 3, 0), rt.Point(0, 1, 0))
+    camera = rt.Camera(width, height, 0.785, cameratransform)
+
+    light = rt.PointLight(rt.Point(0, 6.9, -5), rt.Color(1, 1, 0.9))
+    w.lights.append(light)
+
+    floorceiling = rt.Cube()
+    A = rt.translation(0, 1, 0)
+    B = rt.scaling(20, 7, 20)
+    floorceiling.transform = rt.matmul4x4(B, A)
+    floorceiling.material.pattern = rt.CheckersPattern()
+    floorceiling.material.pattern.color1 = rt.Color(0, 0, 0)
+    floorceiling.material.pattern.color2 = rt.Color(0.25, 0.25, 0.25)
+    floorceiling.material.pattern.transform = rt.scaling(0.07, 0.07, 0.07)
+    floorceiling.ambient = 0.25
+    floorceiling.diffuse = 0.7
+    floorceiling.specular = 0.9
+    floorceiling.shininess = 300
+    floorceiling.reflective = 0.1
+    w.objects.append(floorceiling)
+
+    walls = rt.Cube()
+    walls.transform = rt.scaling(10, 10, 10)
+    walls.material.pattern = rt.CheckersPattern()
+    walls.material.pattern.color1 = rt.Color(0.4863, 0.3765, 0.2941)
+    walls.material.pattern.color2 = rt.Color(0.3725, 0.2902, 0.2275)
+    walls.material.pattern.transform = rt.scaling(.05, 20, .05)
+    walls.material.ambient = 0.1
+    walls.material.diffuse = 0.7
+    walls.material.specular = 0.9
+    walls.material.shininess = 300
+    walls.material.reflective = 0.1
+    w.objects.append(walls)
+
+    tabletop = rt.Cube()
+    A = rt.scaling(3, 0.1, 2)
+    B = rt.translation(0, 3.1, 0)
+    tabletop.transform = rt.matmul4x4(B, A)
+    C = rt.rotation_y(0.1)
+    D = rt.scaling(0.05, 0.05, 0.05)
+    patternxform = rt.matmul4x4(D, C)
+    tabletoppattern = rt.StripePattern(patternxform, rt.Color(0.5529, 0.4235, 0.3255), rt.Color(0.6588, 0.5098, 0.4))
+    tabletop.material.pattern = tabletoppattern
+    tabletop.material.ambient = 0.1
+    tabletop.material.diffuse = 0.7
+    tabletop.material.specular = 0.9
+    tabletop.material.shininess = 300
+    tabletop.material.reflective = 0.2
+    w.objects.append(tabletop)
+
+    leg1 = rt.Cube()
+    A = rt.scaling(0.1, 1.5, 0.1)
+    B = rt.translation(2.7, 1.5, -1.7)
+    leg1.transform = rt.matmul4x4(B, A)
+    leg1.material.color = rt.Color(0.5529, 0.4235, 0.3255)
+    leg1.material.ambient = 0.2
+    leg1.material.diffuse = 0.7
+    w.objects.append(leg1)
+
+    leg2 = rt.Cube()
+    A = rt.scaling(0.1, 1.5, 0.1)
+    B = rt.translation(2.7, 1.5, 1.7)
+    leg2.transform = rt.matmul4x4(B, A)
+    leg2.material.color = rt.Color(0.5529, 0.4235, 0.3255)
+    leg2.material.ambient = 0.2
+    leg2.material.diffuse = 0.7
+    w.objects.append(leg2)
+
+    leg3 = rt.Cube()
+    A = rt.scaling(0.1, 1.5, 0.1)
+    B = rt.translation(-2.7, 1.5, -1.7)
+    leg3.transform = rt.matmul4x4(B, A)
+    leg3.material.color = rt.Color(0.5529, 0.4235, 0.3255)
+    leg3.material.ambient = 0.2
+    leg3.material.diffuse = 0.7
+    w.objects.append(leg3)
+
+    leg4 = rt.Cube()
+    A = rt.scaling(0.1, 1.5, 0.1)
+    B = rt.translation(-2.7, 1.5, 1.7)
+    leg4.transform = rt.matmul4x4(B, A)
+    leg4.material.color = rt.Color(0.5529, 0.4235, 0.3255)
+    leg4.material.ambient = 0.2
+    leg4.material.diffuse = 0.7
+    w.objects.append(leg4)
+
+    glasscube = rt.Cube()
+    A = rt.scaling(0.25, 0.25, 0.25)
+    B = rt.rotation_y(0.2)
+    C = rt.translation(0, 3.45001, 0)
+    glasscube.transform = rt.matmul4x4(rt.matmul4x4(C, B), A)
+    glasscube.casts_shadow = False
+    glasscube.material.color = rt.Color(1, 1, 0.8)
+    glasscube.material.ambient = 0
+    glasscube.material.diffuse = 0.3
+    glasscube.material.specular = 0.9
+    glasscube.material.shininess = 300
+    glasscube.material.reflective = 0.7
+    glasscube.material.transparency = 0.7
+    glasscube.material.refractive_index = 1.5
+    w.objects.append(glasscube)
+
+    littlecube1 = rt.Cube()
+    A = rt.scaling(0.15, 0.15, 0.15)
+    B = rt.rotation_y(-0.4)
+    C = rt.translation(1, 3.35, -0.9)
+    littlecube1.transform = rt.matmul4x4(rt.matmul4x4(C, B), A)
+    littlecube1.material.color = rt.Color(1, 0.5, 0.5)
+    littlecube1.material.reflective = 0.6
+    littlecube1.material.diffuse = 0.4
+    w.objects.append(littlecube1)
+
+    littlecube2 = rt.Cube()
+    A = rt.scaling(0.15, 0.07, 0.15)
+    B = rt.rotation_y(0.4)
+    C = rt.translation(-1.5, 3.27, 0.3)
+    littlecube2.transform = rt.matmul4x4(rt.matmul4x4(C, B), A)
+    littlecube2.material.color = rt.Color(1, 1, 0.5)
+    w.objects.append(littlecube2)
+
+    littlecube3 = rt.Cube()
+    A = rt.scaling(0.2, 0.05, 0.05)
+    B = rt.rotation_y(0.4)
+    C = rt.translation(0, 3.25, 1)
+    littlecube3.transform = rt.matmul4x4(rt.matmul4x4(C, B), A)
+    littlecube3.material.color = rt.Color(0.5, 1, 0.5)
+    w.objects.append(littlecube3)
+
+    littlecube4 = rt.Cube()
+    A = rt.scaling(0.05, 0.2, 0.05)
+    B = rt.rotation_y(0.8)
+    C = rt.translation(-0.6, 3.4, -1)
+    littlecube4.transform = rt.matmul4x4(rt.matmul4x4(C, B), A)
+    littlecube4.material.color = rt.Color(0.5, 0.5, 1)
+    w.objects.append(littlecube4)
+
+    littlecube5 = rt.Cube()
+    A = rt.scaling(0.05, 0.2, 0.05)
+    B = rt.rotation_y(0.8)
+    C = rt.translation(2, 3.4, 1)
+    littlecube5.transform = rt.matmul4x4(rt.matmul4x4(C, B), A)
+    littlecube5.material.color = rt.Color(0.5, 1, 1)
+    w.objects.append(littlecube5)
+
+    frame1 = rt.Cube()
+    frame1.transform = rt.matmul4x4(rt.translation(-10, 4, 1), rt.scaling(0.05, 1, 1))
+    frame1.material.color = rt.Color(0.7098, 0.2471, 0.2196)
+    frame1.material.diffuse = 0.6
+    w.objects.append(frame1)
+
+    frame2 = rt.Cube()
+    frame2.transform = rt.matmul4x4(rt.translation(-10, 3.4, 2.7), rt.scaling(0.05, 0.4, 0.4))
+    frame2.material.color = rt.Color(0.2667, 0.2706, 0.6902)
+    frame2.material.diffuse = 0.6
+    w.objects.append(frame2)
+
+    frame3 = rt.Cube()
+    frame3.transform = rt.matmul4x4(rt.translation(-10, 4.6, 2.7), rt.scaling(0.05, 0.4, 0.4))
+    frame3.material.color = rt.Color(0.3098, 0.5961, 0.3098)
+    frame3.material.diffuse = 0.6
+    w.objects.append(frame3)
+
+    mirrorframe = rt.Cube()
+    mirrorframe.transform = rt.matmul4x4(rt.translation(-2, 3.5, 9.95), rt.scaling(5, 1.5, 0.05))
+    mirrorframe.material.color = rt.Color(0.3882, 0.2627, 0.1882)
+    mirrorframe.material.diffuse = 0.7
+    w.objects.append(mirrorframe)
+
+    mirror = rt.Cube()
+    mirror.transform = rt.matmul4x4(rt.translation(-2, 3.5, 9.95), rt.scaling(4.8, 1.4, 0.06))
+    mirror.material.color = rt.Color(0, 0, 0)
+    mirror.material.diffuse = 0
+    mirror.material.ambient = 0
+    mirror.material.specular = 1
+    mirror.material.shininess = 300
+    mirror.material.reflective = 1
+    w.objects.append(mirror)
 
     return camera, w

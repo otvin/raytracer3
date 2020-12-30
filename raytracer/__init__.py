@@ -7,7 +7,7 @@ from .materials import Pattern, TestPattern, StripePattern, GradientPattern, Rin
 from .matrices import matmul4x4, identity4, transpose4x4, inverse4x4, matmul4x1, matmul4xTuple
 from .transformations import translation, scaling, reflection, rotation_x, rotation_y, rotation_z, skew, \
                         view_transform, do_transformray, do_transform
-from .objects import Intersection, HittableObject, Sphere, Plane
+from .objects import Intersection, HittableObject, Sphere, Plane, Cube
 from .world import World, HitRecord
 
-from .unit_tests import  run_unit_tests
+from .unit_tests import run_unit_tests

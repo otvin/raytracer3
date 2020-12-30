@@ -1442,8 +1442,74 @@ def rtunittest_testpattern3():
     assert c == rt.Color(0.75, 0.5, 0.25)
 
 
+def rtunittest_cube1():
+    # A ray intersects a cube
+    c = rt.Cube()
+
+    # each tuple in the list is origin, direction, t1, t2
+    tests = [
+        (rt.Point(5, 0.5, 0), rt.Vector(-1, 0, 0), 4, 6),
+        (rt.Point(-5, 0.5, 0), rt.Vector(1, 0, 0), 4, 6),
+        (rt.Point(0.5, 5, 0), rt.Vector(0, -1, 0), 4, 6),
+        (rt.Point(0.5, -5, 0), rt.Vector(0, 1, 0), 4, 6),
+        (rt.Point(0.5, 0, 5), rt.Vector(0, 0, -1), 4, 6),
+        (rt.Point(0.5, 0, -5), rt.Vector(0, 0, 1), 4, 6),
+        (rt.Point(0, 0.5, 0), rt.Vector(0, 0, 1), -1, 1)
+    ]
+
+    for test in tests:
+        r = rt.Ray(test[0], test[1])
+        xs = c.local_intersect(r)
+        assert len(xs) == 2
+        assert xs[0].t == test[2]
+        assert xs[1].t == test[3]
+
+
+def rtunittest_cube2():
+    # A ray misses a cube
+    c = rt.Cube()
+
+    # each tuple in the list is origin, direction
+    tests = [
+        (rt.Point(-2, 0, 0), rt.Vector(0.2673, 0.5345, 0.8018)),
+        (rt.Point(0, -2, 0), rt.Vector(0.8018, 0.2673, 0.5345)),
+        (rt.Point(0, 0, -2), rt.Vector(0.5345, 0.8018, 0.2673)),
+        (rt.Point(2, 0, 2), rt.Vector(0, 0, -1)),
+        (rt.Point(0, 2, 2), rt.Vector(0, -1, 0)),
+        (rt.Point(2, 2, 0), rt.Vector(-1, 0, 0)),
+        (rt.Point(0, 0, 2), rt.Vector(0, 0, 1))
+    ]
+
+    for test in tests:
+        r = rt.Ray(test[0], test[1])
+        xs = c.local_intersect(r)
+        assert len(xs) == 0
+
+
+def rtunittest_cube3():
+    # The normal on teh surface of a cube
+    c = rt.Cube()
+
+    # each tuple in the list is point, normal
+    tests = [
+        (rt.Point(1, 0.5, -0.8), rt.Vector(1, 0, 0)),
+        (rt.Point(-1, -0.2, 0.9), rt.Vector(-1, 0, 0)),
+        (rt.Point(-0.4, 1, -0.1), rt.Vector(0, 1, 0)),
+        (rt.Point(0.3, -1, -0.7), rt.Vector(0, -1, 0)),
+        (rt.Point(-0.6, 0.3, 1), rt.Vector(0, 0, 1)),
+        (rt.Point(0.4, 0.4, -1), rt.Vector(0, 0, -1)),
+        (rt.Point(1, 1, 1), rt.Vector(1, 0, 0)),
+        (rt.Point(-1, -1, -1), rt.Vector(-1, 0, 0)),
+    ]
+
+    for test in tests:
+        normal = c.local_normal_at(test[0])
+        assert normal == test[1]
+
+
 def run_unit_tests():
     count = 0
+    failed = 0
 
     # some tests take longer and we can skip unless we're explicitly testing a change to that feature.
     tests_to_skip = ['rtunittest_canvas3', 'rtunittest_render1']
@@ -1456,12 +1522,19 @@ def run_unit_tests():
             n = f.__name__
             if n[:11] == 'rtunittest_':
                 if n not in tests_to_skip:
-                    eval(n + '()')
-                    print('{} complete'.format(n))
-                    count += 1
+                    try:
+                        eval(n + '()')
+                    except AssertionError:
+                        print('{} FAILED'.format(n))
+                        failed += 1
+                    else:
+                        print('{} complete'.format(n))
+                        count += 1
                 else:
                     print('{} skipped'.format(n))
 
     print('{} tests completed.'.format(count))
+    if failed > 0:
+        print('{} tests FAILED'.format(failed))
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))

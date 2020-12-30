@@ -1,6 +1,6 @@
 import math
-from .matrices import identity4
 import raytracer as rt
+from .matrices import identity4
 
 
 class Intersection:
@@ -16,14 +16,15 @@ ONEMINUSEPSILON = 1 - EPSILON
 
 
 class HittableObject:
-    __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose']
+    __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose', 'casts_shadow']
 
-    def __init__(self, transform=identity4(), material=None):
+    def __init__(self, transform=identity4(), material=None, casts_shadow=True):
         if material is None:
             self.material = rt.Material()
         else:
             self.material = material
         self.transform = transform
+        self.casts_shadow = casts_shadow
 
     @property
     def transform(self):
@@ -112,3 +113,54 @@ class Plane(HittableObject):
 
     def local_normal_at(self, object_point):
         return rt.Vector(0, 1, 0)
+
+
+def check_axis(origin, direction):
+    # helper function for cube intersection, but doesn't rely on cube itself
+    tmin_numerator = -1 - origin
+    tmax_numerator = 1 - origin
+    if math.fabs(direction) >= EPSILON:
+        tmin = tmin_numerator / direction
+        tmax = tmax_numerator / direction
+    else:
+        # if the line is parallel to the axis, it won't intersect
+        tmin = tmin_numerator * math.inf  # the multiplication gets the sign right
+        tmax = tmax_numerator * math.inf
+
+    if tmin > tmax:
+        tmin, tmax = tmax, tmin  # swap them
+
+    return tmin, tmax
+
+
+class Cube(HittableObject):
+    def __init__(self, transform=identity4(), material=None):
+        super().__init__(transform, material)
+
+    def local_intersect(self, object_ray):
+
+        # TODO: p.176: When comparing a ray with the cube's sides, the algorithm
+        # checks all three sides even if it's obvious by first or second comparison
+        # that the ray misses.  How can this be optimized?
+
+        xtmin, xtmax = check_axis(object_ray.origin.x, object_ray.direction.x)
+        ytmin, ytmax = check_axis(object_ray.origin.y, object_ray.direction.y)
+        ztmin, ztmax = check_axis(object_ray.origin.z, object_ray.direction.z)
+
+        tmin = max(xtmin, ytmin, ztmin)
+        tmax = min(xtmax, ytmax, ztmax)
+
+        if tmin > tmax or tmax < 0:
+            return []
+        else:
+            return [Intersection(self, tmin), Intersection(self, tmax)]
+
+    def local_normal_at(self, object_point):
+        abs_point = (math.fabs(object_point.x), math.fabs(object_point.y), math.fabs(object_point.z))
+        maxc = max(abs_point)
+        if math.isclose(maxc, abs_point[0]):
+            return rt.Vector(object_point.x, 0, 0)
+        elif math.isclose(maxc, abs_point[1]):
+            return rt.Vector(0, object_point.y, 0)
+        else:
+            return rt.Vector(0, 0, object_point.z)
