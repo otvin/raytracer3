@@ -2,6 +2,8 @@ import math
 import raytracer as rt
 from .lights import lighting
 from .objects import EPSILON
+from .perfcounters import increment_colortests, increment_objintersecttests, increment_objintersections, \
+                        increment_reflectionrays, increment_refractionrays
 
 
 class World:
@@ -18,10 +20,15 @@ class World:
         else:
             self.lights = lights
 
-    def intersect(self, r):
+    def intersect(self, r, perfcount=False):
         res = []
         for i in self.objects:
-            res.extend(i.intersect(r))
+            if perfcount:
+                increment_objintersecttests()
+            ints = i.intersect(r)
+            if perfcount:
+                increment_objintersections(len(ints))
+            res.extend(ints)
         res.sort(key=lambda x: x.t)
         return res
 
@@ -43,13 +50,13 @@ class World:
                     return False
         return False
 
-    def shade_hit(self, hitrecord, depth):
+    def shade_hit(self, hitrecord, depth, perfcount=False):
         # TODO p.96 to support multiple lights, just iterate over the lights in the scene.
         shadowed = self.is_shadowed(hitrecord.over_point)
         surface = lighting(hitrecord.objhit.material, hitrecord.objhit, self.lights[0], hitrecord.point,
                            hitrecord.eyev, hitrecord.normalv, shadowed)
-        reflected = self.reflected_color(hitrecord, depth)
-        refracted = self.refracted_color(hitrecord, depth)
+        reflected = self.reflected_color(hitrecord, depth, perfcount)
+        refracted = self.refracted_color(hitrecord, depth, perfcount)
         material = hitrecord.objhit.material
         if material.reflective > 0 and material.transparency > 0:
             reflectance = schlick_reflectance(hitrecord)
@@ -57,17 +64,19 @@ class World:
         else:
             return surface + reflected + refracted  # I don't understand how this doesn't get > 1.
 
-    def reflected_color(self, hitrecord, depth):
+    def reflected_color(self, hitrecord, depth, perfcount=False):
         if math.isclose(hitrecord.objhit.material.reflective, 0):
             return rt.Color(0, 0, 0)
         elif depth <= 0:
             return rt.Color(0, 0, 0)
         else:
+            if perfcount:
+                increment_reflectionrays()
             reflect_ray = rt.Ray(hitrecord.over_point, hitrecord.reflectv)
-            color = self.color_at(reflect_ray, depth-1)
+            color = self.color_at(reflect_ray, depth-1, perfcount)
             return color * hitrecord.objhit.material.reflective
 
-    def refracted_color(self, hitrecord, depth):
+    def refracted_color(self, hitrecord, depth, perfcount=False):
         if math.isclose(hitrecord.objhit.material.transparency, 0):
             return rt.Color(0, 0, 0)
         elif depth <= 0:
@@ -98,16 +107,21 @@ class World:
         direction = hitrecord.normalv * (n_ratio * cos_thetai - cos_thetat) - hitrecord.eyev * n_ratio
 
         # Create the refracted ray
+        if perfcount:
+            increment_refractionrays()
+
         refract_ray = rt.Ray(hitrecord.under_point, direction)
 
-        return self.color_at(refract_ray, depth-1) * hitrecord.objhit.material.transparency
+        return self.color_at(refract_ray, depth-1, perfcount) * hitrecord.objhit.material.transparency
 
-    def color_at(self, ray, depth):
-        xs = self.intersect(ray)
+    def color_at(self, ray, depth, perfcount=False):
+        xs = self.intersect(ray, perfcount)
         for i in xs:
             if i.t > 0:
                 hitrecord = prepare_computations(i, ray, xs)
-                return self.shade_hit(hitrecord, depth)
+                if perfcount:
+                    increment_colortests()
+                return self.shade_hit(hitrecord, depth, perfcount)
         return rt.Color(0, 0, 0)  # either no intersections or no positive t intersections
 
 

@@ -9,5 +9,7 @@ from .transformations import translation, scaling, reflection, rotation_x, rotat
                         view_transform, do_transformray, do_transform
 from .objects import Intersection, HittableObject, Sphere, Plane, Cube
 from .world import World, HitRecord
+from .perfcounters import getcount_rayforpixel, getcount_objintersecttests, getcount_objintersections, \
+                        getcount_colortests, getcount_reflectionrays, getcount_refractionrays
 
 from .unit_tests import run_unit_tests

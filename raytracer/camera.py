@@ -2,7 +2,7 @@ import math
 from .transformations import do_transform
 from .matrices import identity4, inverse4x4
 from .rttuple import Point, normalize, Ray
-
+from .perfcounters import increment_rayforpixel
 
 class Camera:
     __slots__ = ['hsize', 'vsize', 'field_of_view', 'aspect_ratio', 'half_width',
@@ -35,7 +35,10 @@ class Camera:
         self.__inversetransform = inverse4x4(self.__transform)
         self.__origin = do_transform(self.__inversetransform, Point(0, 0, 0))
 
-    def ray_for_pixel(self, x, y):
+    def ray_for_pixel(self, x, y, perfcount=False):
+        if perfcount:
+            increment_rayforpixel()
+
         px_center_x = (x + 0.5) * self.pixel_size
         px_center_y = (y + 0.5) * self.pixel_size
 

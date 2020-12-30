@@ -81,7 +81,7 @@ MPGLOBALWORLD = World()
 MPGLOBALCAMERA = Camera()
 
 
-def mp_render_rows(rowlist, numsamples, maxdepth):
+def mp_render_rows(rowlist, numsamples, maxdepth, perfcount=False):
 
     if numsamples == 1:
         for y in rowlist:
@@ -96,14 +96,14 @@ def mp_render_rows(rowlist, numsamples, maxdepth):
                 for i in range(numsamples):
                     rndx = x + random.uniform(-0.5, 0.5)
                     rndy = y + random.uniform(-0.5, 0.5)
-                    r = MPGLOBALCAMERA.ray_for_pixel(rndx, rndy)
-                    c += MPGLOBALWORLD.color_at(r, maxdepth)
+                    r = MPGLOBALCAMERA.ray_for_pixel(rndx, rndy, perfcount)
+                    c += MPGLOBALWORLD.color_at(r, maxdepth, perfcount)
                 c = c / numsamples
                 write_pixel(x, y, c)
             print('line {} complete'.format(y))
 
 
-def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5):
+def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5, perfcount=False):
     global MPGLOBALWORLD
     global MPGLOBALCAMERA
     init_canvas(camera.hsize, camera.vsize)
@@ -119,7 +119,7 @@ def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5):
 
     procArr = []
     for s in rowlists:
-        p = multiprocessing.Process(target=mp_render_rows, args=(s, numsamples, maxdepth))
+        p = multiprocessing.Process(target=mp_render_rows, args=(s, numsamples, maxdepth, perfcount))
         procArr.append(p)
 
     for p in procArr:
