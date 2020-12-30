@@ -1,19 +1,19 @@
 import math
-import rttuple
-import matrices
+import raytracer as rt
+from .matrices import matmul4x1
 
 
 def transform(mat, tup):
-    # returns the result of multiplying a transformation matrix by a rttuple.  Result will be a tuple
-    res = rttuple.RT_Tuple()
-    res.arr = matrices.matmul4x1(mat, tup.arr)
+    # returns the result of multiplying a transformation matrix by a rt_tuple.  Result will be a tuple
+    res = rt.RT_Tuple()
+    res.arr = matmul4x1(mat, tup.arr)
     return res
 
 
 def transformray(mat, ray):
     neworigin = transform(mat, ray.origin)
     newdirection = transform(mat, ray.direction)
-    return rttuple.Ray(neworigin, newdirection)
+    return rt.Ray(neworigin, newdirection)
 
 
 def translation(x, y, z):
@@ -74,10 +74,10 @@ def skew(xy, xz, yx, yz, zx, zy):
 
 
 def view_transform(from_pt, to_pt, up_vec):
-    forward = rttuple.normalize(to_pt - from_pt)
-    left = rttuple.cross(forward, rttuple.normalize(up_vec))
-    true_up = rttuple.cross(left, forward)
+    forward = rt.normalize(to_pt - from_pt)
+    left = rt.cross(forward, rt.normalize(up_vec))
+    true_up = rt.cross(left, forward)
     orientation = [left.arr, true_up.arr,
                    [-forward.arr[0], -forward.arr[1], -forward.arr[2], -forward.arr[3]],
                    [0, 0, 0, 1.0]]
-    return matrices.matmul4x4(orientation, translation(-from_pt.x, -from_pt.y, -from_pt.z))
+    return rt.matmul4x4(orientation, translation(-from_pt.x, -from_pt.y, -from_pt.z))

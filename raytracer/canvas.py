@@ -1,10 +1,10 @@
 import multiprocessing
 import math
 import random
-import rttuple
-import transformations
-import matrices
-import world
+from .rttuple import Point, normalize, Ray, Color
+from .transformations import transform
+from .matrices import identity4, inverse4x4
+from .world import World
 
 # This needs to be in global space so that the mp array can be shared when we do multiprocessing.
 # It means that the raytracer can only have a single canvas at a time, which from a practical perspective
@@ -20,7 +20,7 @@ class Camera:
     __slots__ = ['hsize', 'vsize', 'field_of_view', 'aspect_ratio', 'half_width',
                  'half_height', 'pixel_size', '__transform', '__inversetransform', '__origin']
 
-    def __init__(self, hsize=160, vsize=120, field_of_view=math.pi/2, transform=matrices.identity4()):
+    def __init__(self, hsize=160, vsize=120, field_of_view=math.pi/2, transform=identity4()):
         self.hsize = hsize
         self.vsize = vsize
         self.field_of_view = field_of_view
@@ -44,8 +44,8 @@ class Camera:
     @transform.setter
     def transform(self, trans):
         self.__transform = trans
-        self.__inversetransform = matrices.inverse4x4(self.__transform)
-        self.__origin = transformations.transform(self.__inversetransform, rttuple.Point(0, 0, 0))
+        self.__inversetransform = inverse4x4(self.__transform)
+        self.__origin = transform(self.__inversetransform, Point(0, 0, 0))
 
     def ray_for_pixel(self, x, y):
         px_center_x = (x + 0.5) * self.pixel_size
@@ -56,9 +56,9 @@ class Camera:
         world_y = self.half_height - px_center_y
 
         # canvas is at z = -1
-        px_transform = transformations.transform(self.__inversetransform, rttuple.Point(world_x, world_y, -1))
-        direction = rttuple.normalize(px_transform - self.__origin)
-        return rttuple.Ray(self.__origin, direction)
+        px_transform = transform(self.__inversetransform, Point(world_x, world_y, -1))
+        direction = normalize(px_transform - self.__origin)
+        return Ray(self.__origin, direction)
 
 
 def clamp(x, minimum, maximum):
@@ -80,6 +80,10 @@ def init_canvas(width=10, height=10):
     CANVASWIDTH = width
 
 
+def get_canvasdims():
+    return CANVASWIDTH, CANVASHEIGHT
+
+
 def write_pixel(x, y, color):
     global GLOBALCANVAS
 
@@ -95,7 +99,7 @@ def write_pixel(x, y, color):
 
 def pixel_at(x, y):
     startcell = (y * CANVASWIDTH * 3) + (x * 3)
-    res = rttuple.Color(GLOBALCANVAS[startcell], GLOBALCANVAS[startcell + 1], GLOBALCANVAS[startcell + 2])
+    res = Color(GLOBALCANVAS[startcell], GLOBALCANVAS[startcell + 1], GLOBALCANVAS[startcell + 2])
     return res
 
 
@@ -120,7 +124,7 @@ def canvas_to_ppm(filename):
     f.close()
 
 
-MPGLOBALWORLD = world.World()
+MPGLOBALWORLD = World()
 MPGLOBALCAMERA = Camera()
 
 
@@ -135,7 +139,7 @@ def mp_render_rows(rowlist, numsamples, maxdepth):
     else:
         for y in rowlist:
             for x in range(MPGLOBALCAMERA.hsize):
-                c = rttuple.Color(0, 0, 0)
+                c = Color(0, 0, 0)
                 for i in range(numsamples):
                     rndx = x + random.uniform(-0.5, 0.5)
                     rndy = y + random.uniform(-0.5, 0.5)
@@ -170,4 +174,3 @@ def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5):
 
     for p in procArr:
         p.join()
-

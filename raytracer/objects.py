@@ -1,8 +1,6 @@
 import math
-import rttuple
-import transformations
-import materials
-import matrices
+from .matrices import identity4
+import raytracer as rt
 
 
 class Intersection:
@@ -20,9 +18,9 @@ ONEMINUSEPSILON = 1 - EPSILON
 class HittableObject:
     __slots__ = ['material', '__transform', '__inversetransform']
 
-    def __init__(self, transform=matrices.identity4(), material=None):
+    def __init__(self, transform=identity4(), material=None):
         if material is None:
-            self.material = materials.Material()
+            self.material = rt.Material()
         else:
             self.material = material
         self.transform = transform
@@ -34,7 +32,7 @@ class HittableObject:
     @transform.setter
     def transform(self, trans):
         self.__transform = trans
-        self.__inversetransform = matrices.inverse4x4(self.__transform)
+        self.__inversetransform = rt.inverse4x4(self.__transform)
 
     @property
     def inversetransform(self):
@@ -42,7 +40,7 @@ class HittableObject:
 
     def intersect(self, r):
         # returns a list of intersections
-        object_ray = transformations.transformray(self.inversetransform, r)
+        object_ray = rt.transformray(self.inversetransform, r)
         return self.local_intersect(object_ray)
 
     def local_intersect(self, object_ray):
@@ -51,26 +49,26 @@ class HittableObject:
         return []
 
     def normal_at(self, point):
-        object_point = transformations.transform(self.inversetransform, point)
+        object_point = rt.transform(self.inversetransform, point)
         object_normal = self.local_normal_at(object_point)
-        world_normal = transformations.transform(matrices.transpose4x4(self.inversetransform), object_normal)
+        world_normal = rt.transformations.transform(rt.transpose4x4(self.inversetransform), object_normal)
         # hack - should really get the submatrix of the transform, and multiply by the inverse and
         # transform that, but this is much faster and equivalent.
         world_normal.w = 0.0
-        return rttuple.normalize(world_normal)
+        return rt.normalize(world_normal)
 
     def local_normal_at(self, object_point):
         # this method should be overridden by every base class
         # point should be converted to object space by normal_at() before calling this
-        return rttuple.Vector()
+        return rt.Vector()
 
 
 class Sphere(HittableObject):
     __slots__ = ['origin']
 
-    def __init__(self, transform=matrices.identity4(), material=None):
+    def __init__(self, transform=identity4(), material=None):
         super().__init__(transform, material)
-        self.origin = rttuple.Point(0, 0, 0)
+        self.origin = rt.Point(0, 0, 0)
 
     def local_intersect(self, object_ray):
         # original logic:
@@ -85,9 +83,9 @@ class Sphere(HittableObject):
 
         # TODO - if we don't ever change the coordinates of the origin, we can take this rttuple.Point(0,0,0) out.
         sphere_to_ray = object_ray.origin - self.origin
-        a = rttuple.dot(object_ray.direction, object_ray.direction)
-        half_b = rttuple.dot(object_ray.direction, sphere_to_ray)
-        c = rttuple.dot(sphere_to_ray, sphere_to_ray) - 1
+        a = rt.dot(object_ray.direction, object_ray.direction)
+        half_b = rt.dot(object_ray.direction, sphere_to_ray)
+        c = rt.dot(sphere_to_ray, sphere_to_ray) - 1
         discriminant = (half_b * half_b) - (a * c)
 
         if discriminant < 0:
@@ -103,7 +101,7 @@ class Sphere(HittableObject):
 
 
 class Plane(HittableObject):
-    def __init__(self, transform=matrices.identity4(), material=None):
+    def __init__(self, transform=identity4(), material=None):
         super().__init__(transform, material)
 
     def local_intersect(self, object_ray):
@@ -116,4 +114,4 @@ class Plane(HittableObject):
             return [Intersection(self, t)]
 
     def local_normal_at(self, object_point):
-        return rttuple.Vector(0, 1, 0)
+        return rt.Vector(0, 1, 0)

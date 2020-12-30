@@ -1,5 +1,5 @@
 import math
-import matrices
+from .matrices import allclose4x1
 
 
 class RT_Tuple(object):
@@ -44,7 +44,7 @@ class RT_Tuple(object):
         self.arr[3] = w
 
     def __eq__(self, other):
-        return matrices.allclose1x1(self.arr, other.arr)
+        return allclose4x1(self.arr, other.arr)
 
     def __neg__(self):
         res = RT_Tuple()

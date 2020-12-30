@@ -1,10 +1,7 @@
 import math
-import objects
-import materials
-import rttuple
-import transformations
-import lights
-import matrices
+import raytracer as rt
+from .lights import lighting
+from .objects import EPSILON
 
 
 class World:
@@ -28,14 +25,13 @@ class World:
         res.sort(key=lambda x: x.t)
         return res
 
-
     def is_shadowed(self, point):
         # TODO if we add multiple lights we need to do something here too.
         v = self.lights[0].position - point
         distance = v.magnitude()
-        direction = rttuple.normalize(v)
+        direction = rt.normalize(v)
 
-        r = rttuple.Ray(point, direction)
+        r = rt.Ray(point, direction)
         xs = self.intersect(r)
         for i in xs:
             if i.t > 0:
@@ -47,12 +43,11 @@ class World:
                     return False
         return False
 
-
     def shade_hit(self, hitrecord, depth):
         # TODO p.96 to support multiple lights, just iterate over the lights in the scene.
         shadowed = self.is_shadowed(hitrecord.over_point)
-        surface = lights.lighting(hitrecord.objhit.material, hitrecord.objhit, self.lights[0], hitrecord.point,
-                                  hitrecord.eyev, hitrecord.normalv, shadowed)
+        surface = lighting(hitrecord.objhit.material, hitrecord.objhit, self.lights[0], hitrecord.point,
+                           hitrecord.eyev, hitrecord.normalv, shadowed)
         reflected = self.reflected_color(hitrecord, depth)
         refracted = self.refracted_color(hitrecord, depth)
         material = hitrecord.objhit.material
@@ -62,23 +57,21 @@ class World:
         else:
             return surface + reflected + refracted # I don't understand how this doesn't get > 1.
 
-
     def reflected_color(self, hitrecord, depth):
         if math.isclose(hitrecord.objhit.material.reflective, 0):
-            return rttuple.Color(0, 0, 0)
+            return rt.Color(0, 0, 0)
         elif depth <= 0:
-            return rttuple.Color(0, 0, 0)
+            return rt.Color(0, 0, 0)
         else:
-            reflect_ray = rttuple.Ray(hitrecord.over_point, hitrecord.reflectv)
+            reflect_ray = rt.Ray(hitrecord.over_point, hitrecord.reflectv)
             color = self.color_at(reflect_ray, depth-1)
             return color * hitrecord.objhit.material.reflective
 
-
     def refracted_color(self, hitrecord, depth):
         if math.isclose(hitrecord.objhit.material.transparency, 0):
-            return rttuple.Color(0, 0, 0)
+            return rt.Color(0, 0, 0)
         elif depth <= 0:
-            return rttuple.Color(0, 0, 0)
+            return rt.Color(0, 0, 0)
 
         # Snell's law
         # Find the ratio of the first index of refraction to the second.  This is
@@ -86,7 +79,7 @@ class World:
         n_ratio = hitrecord.n1 / hitrecord.n2
         # cos(theta_i) is the same as the dot product of the two vectors, as long as they
         # are unit vectors.
-        cos_thetai = rttuple.dot(hitrecord.eyev, hitrecord.normalv)
+        cos_thetai = rt.dot(hitrecord.eyev, hitrecord.normalv)
         # find sin(theta_t)^2 via trigonometric identity
         sin_thetat_squared = (n_ratio * n_ratio) * (1 - (cos_thetai * cos_thetai))
 
@@ -96,7 +89,7 @@ class World:
         # greater than one.  This of course is impossible, and the light in such cases is
         # completely reflected by the boundary, a phenomenon known as total internal reflection.
         if sin_thetat_squared > 1:
-            return rttuple.Color(0, 0, 0)
+            return rt.Color(0, 0, 0)
 
         # Find cosine of thetat via trigonometric identity
         cos_thetat = math.sqrt(1.0 - sin_thetat_squared)
@@ -105,10 +98,9 @@ class World:
         direction = hitrecord.normalv * (n_ratio * cos_thetai - cos_thetat) - hitrecord.eyev * n_ratio
 
         # Create the refracted ray
-        refract_ray = rttuple.Ray(hitrecord.under_point, direction)
+        refract_ray = rt.Ray(hitrecord.under_point, direction)
 
         return self.color_at(refract_ray, depth-1) * hitrecord.objhit.material.transparency
-
 
     def color_at(self, ray, depth):
         xs = self.intersect(ray)
@@ -116,7 +108,7 @@ class World:
             if i.t > 0:
                 hitrecord = prepare_computations(i, ray, xs)
                 return self.shade_hit(hitrecord, depth)
-        return rttuple.Color(0, 0, 0)  # either no intersections or no positive t intersections
+        return rt.Color(0, 0, 0)  # either no intersections or no positive t intersections
 
 
 class HitRecord:
@@ -166,21 +158,21 @@ def prepare_computations(i, r, xs):
     point = r.at(i.t)
     eyev = -r.direction
     normalv = i.objhit.normal_at(point)
-    if rttuple.dot(normalv, eyev) < 0:
+    if rt.dot(normalv, eyev) < 0:
         inside = True
         normalv = -normalv
     else:
         inside = False
-    over_point = point + (normalv * objects.EPSILON)
-    under_point = point - (normalv * objects.EPSILON)
-    reflectv = rttuple.reflect(r.direction, normalv)
+    over_point = point + (normalv * EPSILON)
+    under_point = point - (normalv * EPSILON)
+    reflectv = rt.reflect(r.direction, normalv)
 
     return HitRecord(i.t, i.objhit, point, inside, eyev, normalv, reflectv, over_point, under_point, n1, n2)
 
 
 def schlick_reflectance(hitrecord):
     # find the cosine of the angle between the eye and normal vectors
-    cos_to_use = rttuple.dot(hitrecord.eyev, hitrecord.normalv)
+    cos_to_use = rt.dot(hitrecord.eyev, hitrecord.normalv)
 
     # total internal reflection can only occur if n1 > n2
     if hitrecord.n1 > hitrecord.n2:
@@ -195,12 +187,3 @@ def schlick_reflectance(hitrecord):
 
     r0 = math.pow(((hitrecord.n1 - hitrecord.n2) / (hitrecord.n1 + hitrecord.n2)), 2)
     return r0 + (1 - r0) * math.pow(1 - cos_to_use, 5)
-
-
-def default_world():
-    s1 = objects.Sphere(matrices.identity4(), materials.Material(rttuple.Color(0.8, 1.0, 0.6), 0.1, 0.7, 0.2, 200))
-    s2 = objects.Sphere()
-    s2.transform = transformations.scaling(0.5, 0.5, 0.5)
-    light = lights.PointLight(rttuple.Point(-10, 10, -10), rttuple.Color(1, 1, 1))
-    w = World([s1, s2], [light])
-    return w

@@ -1,6 +1,6 @@
 import numpy as np
 import math
-import rttuple
+import raytracer as rt
 
 
 def matmul4x4(a, b):
@@ -117,7 +117,7 @@ def matmul4x1(a, b):
 
 
 def matmul4xTuple(a, tup):
-    res = rttuple.RT_Tuple()
+    res = rt.RT_Tuple()
     res.arr = matmul4x1(a, tup.arr)
     return res
 
@@ -141,7 +141,7 @@ def allclose4x4(a, b):
         math.isclose(a[3][3], b[3][3], rel_tol=1e-05, abs_tol=1e-05)
 
 
-def allclose1x1(a, b):
+def allclose4x1(a, b):
     return math.isclose(a[0], b[0], rel_tol=1e-05, abs_tol=1e-05) and \
         math.isclose(a[1], b[1], rel_tol=1e-05, abs_tol=1e-05) and \
         math.isclose(a[2], b[2], rel_tol=1e-05, abs_tol=1e-05) and \

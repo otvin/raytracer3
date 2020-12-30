@@ -1,17 +1,17 @@
 import time
-import canvas
 import demoscenes
+import raytracer as rt
 
 def render():
 
-    camera, w = demoscenes.chap11_demo()
+    camera, w = demoscenes.chap11_demo(200, 200)
 
     timestart = time.time()
-    canvas.mp_render(camera, w, 10, 6, 5)
+    rt.mp_render(camera, w, 10, 6, 5)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
 
-    canvas.canvas_to_ppm('chap11_demo.ppm')
+    rt.canvas_to_ppm('test.ppm')
 
 if __name__ == '__main__':
     render()
