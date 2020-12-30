@@ -13,3 +13,5 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap9.ppm_ - added planes (the floor is a plane instead of a sphere)
 * _chap10.ppm_ - added various patterns
 * _chap11_demo.ppm_ - added reflection and refraction.
+
+![chap11_demo.ppm](saved_renders/chap11_demo.png)
