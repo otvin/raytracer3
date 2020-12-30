@@ -139,12 +139,12 @@ class Cube(HittableObject):
 
     def local_intersect(self, object_ray):
 
-        # TODO: p.176: When comparing a ray with the cube's sides, the algorithm
-        # checks all three sides even if it's obvious by first or second comparison
-        # that the ray misses.  How can this be optimized?
-
         xtmin, xtmax = check_axis(object_ray.origin.x, object_ray.direction.x)
         ytmin, ytmax = check_axis(object_ray.origin.y, object_ray.direction.y)
+
+        if xtmin > ytmax or ytmin > xtmax:
+            return []
+
         ztmin, ztmax = check_axis(object_ray.origin.z, object_ray.direction.z)
 
         tmin = max(xtmin, ytmin, ztmin)
