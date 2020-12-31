@@ -79,7 +79,9 @@ class Sphere(HittableObject):
         # speedup from mpraytracer, factoring in that center is always 0,0,0 and
         # radius is always 1, and we use transform to move the ray:
 
-        # TODO - if we don't ever change the coordinates of the origin, we can take this rttuple.Point(0,0,0) out.
+        # TODO - since we never change the origin of the sphere, we could
+        # just create a vector out of object_ray.origin.x/y/z and save the
+        # 4 subtractions that are done here in the tuple subtract.
         sphere_to_ray = object_ray.origin - self.origin
         a = rt.dot(object_ray.direction, object_ray.direction)
         half_b = rt.dot(object_ray.direction, sphere_to_ray)
@@ -164,3 +166,114 @@ class Cube(HittableObject):
             return rt.Vector(0, object_point.y, 0)
         else:
             return rt.Vector(0, 0, object_point.z)
+
+
+def check_cap(ray, t):
+    # helper function for cylinder intersection, but doesn't rely on cylinder itself
+    ro = ray.origin
+    rd = ray.direction
+    rox = ro.x
+    roz = ro.z
+    rdx = rd.x
+    rdz = rd.z
+    x = rox + (t * rdx)
+    z = roz + (t * rdz)
+    return (x * x + z * z) <= 1
+
+
+class Cylinder(HittableObject):
+    __slots__ = ['closed', 'min_y', 'max_y']
+
+    def __init__(self, transform=identity4(), material=None, closed=False, min_y=-math.inf, max_y=math.inf):
+        super().__init__(transform, material)
+        self.closed = closed
+        self.min_y = min_y
+        self.max_y = max_y
+
+    def local_intersect(self, object_ray):
+        rd = object_ray.direction
+        ro = object_ray.origin
+        rdx = rd.x
+        rdz = rd.z
+        rox = ro.x
+        roz = ro.z
+        roy = ro.y
+        rdy = rd.y
+
+        res = []
+
+        # First check for intersection with the caps
+        if self.closed:
+            # check for intersection with lower end cap by intersecting the ray
+            # with the plane at y = self.min_y
+            t = (self.min_y - roy) / rdy
+            if check_cap(object_ray, t):
+                res.append(Intersection(self, t))
+
+            # check for intersection with upper end cap by intersecting the ray
+            # with the plane at y = self.max_y
+            t = (self.max_y - roy) / rdy
+            if check_cap(object_ray, t):
+                res.append(Intersection(self, t))
+
+        # now intersect with the body of the cylinder
+
+        # original logic:
+        # a = (rdx * rdx) + (rdz * rdz)
+        # b = 2 * ((rox * rdx) + (roz * rdz))
+        # c = (rox * rox) + (roz * roz) - 1
+
+        # uses same "half b" trick from Sphere.local_intersect()
+        a = (rdx * rdx) + (rdz * rdz)
+
+        # ray is parallel to the y axis
+        if a < EPSILON:
+            return res
+
+        half_b = ((rox * rdx) + (roz * rdz))
+
+        c = (rox * rox) + (roz * roz) - 1
+
+        discriminant = (half_b * half_b) - (a * c)
+        if discriminant < 0:
+            return res
+
+        sqrtd = math.sqrt(discriminant)
+        t1 = (-half_b - sqrtd) / a
+        t2 = (-half_b + sqrtd) / a
+
+        # If we were rendering many infinite cylinders, we would
+        # do an "if infinite cylinder, return both intersections, else..."
+        # However, since almost all cylinders will be bounded, we will
+        # not do the needless comparison
+
+        y1 = roy + (t1 * rdy)
+        if self.min_y < y1 < self.max_y:  # note strict less than
+            res.append(Intersection(self, t1))
+        y2 = roy + (t2 * rdy)
+        if self.min_y < y2 < self.max_y:
+            res.append(Intersection(self, t2))
+
+        return res
+
+
+    def local_normal_at(self, object_point):
+        # Remember: local_normal_at assumes object_point is on the object.
+        # So for cylinder it either needs to be on an end cap (which means
+        # the cylinder must be closed) or on the body.
+
+        # compute square of distance from the y axis
+        opx = object_point.x
+        opz = object_point.z
+        dist = (opx * opx) + (opz * opz)
+        if dist < 1:
+            # it must have intersected an end cap because the cylinder
+            # has x^2 + z^2 = 1 in object space
+            if object_point.y >= self.max_y - EPSILON:
+                # top cap
+                return rt.Vector(0, 1, 0)
+            else:
+                # must be bottom cap
+                return rt.Vector(0, -1, 0)
+        else:
+            return rt.Vector(object_point.x, 0, object_point.z)

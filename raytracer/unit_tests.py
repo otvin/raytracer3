@@ -1507,6 +1507,140 @@ def rtunittest_cube3():
         assert normal == test[1]
 
 
+def rtunittest_cylinder1():
+    # A ray misses a cylinder
+    cyl = rt.Cylinder()
+
+    # each test has origin, direction of a ray that misses the cylinder
+    tests = [
+        (rt.Point(1, 0, 0), rt.Vector(0, 1, 0)),
+        (rt.Point(0, 0, 0), rt.Vector(0, 1, 0)),
+        (rt.Point(0, 0, -5), rt.Vector(1, 1, 1))
+    ]
+
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        xs = cyl.local_intersect(r)
+        assert len(xs) == 0
+
+
+def rtunittest_cylinder2():
+    # A ray strikes a cylinder
+
+    cyl = rt.Cylinder()
+
+    # each test has origin, direction of ray and t0/t1 for the two intersections
+    tests = [
+        (rt.Point(1, 0, -5), rt.Vector(0, 0, 1), 5, 5),
+        (rt.Point(0, 0, -5), rt.Vector(0, 0, 1), 4, 6),
+        (rt.Point(0.5, 0, -5), rt.Vector(0.1, 1, 1), 6.80798, 7.08872)
+    ]
+
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        xs = cyl.local_intersect(r)
+        assert len(xs) == 2
+        assert math.isclose(xs[0].t, test[2], rel_tol=1e-05, abs_tol=1e-05)
+        assert math.isclose(xs[1].t, test[3], rel_tol=1e-05, abs_tol=1e-05)
+
+
+def rtunittest_cylinder3():
+    # Normal vector on a cylinder
+
+    cyl = rt.Cylinder()
+
+    # each test has point on cylinder and the expected normal at that point
+    tests = [
+        (rt.Point(1, 0, 0), rt.Vector(1, 0, 0)),
+        (rt.Point(0, 5, -1), rt.Vector(0, 0, -1)),
+        (rt.Point(0, -2, 1), rt.Vector(0, 0, 1)),
+        (rt.Point(-1, 1, 0), rt.Vector(-1, 0, 0))
+    ]
+
+    for test in tests:
+        n = cyl.local_normal_at(test[0])
+        assert n == test[1]
+
+
+def rtunittest_cylinder4():
+    # default minimum and maximum for a cylinder
+    # The default closed value for a cylinder
+    cyl = rt.Cylinder()
+    assert math.isinf(cyl.min_y)
+    assert math.isinf(cyl.max_y)
+    assert not cyl.closed
+
+
+def rtunittest_cylinder5():
+    # Intersecting a constrained cylinder
+
+    # each test has a point, direction, and number of intersections
+    tests = [
+        (rt.Point(0, 1.5, 0), rt.Vector(0.1, 1, 0), 0),
+        (rt.Point(0, 3, -5), rt.Vector(0, 0, 1), 0),
+        (rt.Point(0, 0, -5), rt.Vector(0, 0, 1), 0),
+        (rt.Point(0, 2, -5), rt.Vector(0, 0, 1), 0),
+        (rt.Point(0, 1, -5), rt.Vector(0, 0, 1), 0),
+        (rt.Point(0, 1.5, -2), rt.Vector(0, 0, 1), 2)
+    ]
+
+    cyl = rt.Cylinder()
+    cyl.min_y = 1
+    cyl.max_y = 2
+
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        xs = cyl.local_intersect(r)
+        assert len(xs) == test[2]
+
+
+def rtunittest_cylinder6():
+    # Intersecting the caps of a closed cylinder
+
+    # each test has a point, direction, and number of intersections
+    tests = [
+        (rt.Point(0, 3, 0), rt.Vector(0, -1, 0), 2),
+        (rt.Point(0, 3, -2), rt.Vector(0, -1, 2), 2),
+        (rt.Point(0, 4, -2), rt.Vector(0, -1, 1), 2),
+        (rt.Point(0, 0, -2), rt.Vector(0, 1, 2), 2),
+        (rt.Point(0, -1, -2), rt.Vector(0, 1, 1), 2),
+        (rt.Point(0, 1.5, 0), rt.Vector(0, 1, 0), 2)  # I added this test
+    ]
+
+    cyl = rt.Cylinder()
+    cyl.min_y = 1
+    cyl.max_y = 2
+    cyl.closed = True
+
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        xs = cyl.local_intersect(r)
+        assert len(xs) == test[2]
+
+
+def rtunittest_cylinder7():
+    # The normal vector on a cylinder's end caps
+
+    # each test has the point on the cylinder and the expected normal
+    tests = [
+        (rt.Point(0, 1, 0), rt.Vector(0, -1, 0)),
+        (rt.Point(0.5, 1, 0), rt.Vector(0, -1, 0)),
+        (rt.Point(0, 1, 0.5), rt.Vector(0, -1, 0)),
+        (rt.Point(0, 2, 0), rt.Vector(0, 1, 0)),
+        (rt.Point(0.5, 2, 0), rt.Vector(0, 1, 0)),
+        (rt.Point(0, 2, 0.5), rt.Vector(0, 1, 0))
+    ]
+
+    cyl = rt.Cylinder()
+    cyl.min_y = 1
+    cyl.max_y = 2
+    cyl.closed = True
+
+    for test in tests:
+        n = cyl.local_normal_at(test[0])
+        assert n == test[1]
+
+
 def run_unit_tests():
     count = 0
     failed = 0

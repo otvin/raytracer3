@@ -309,3 +309,91 @@ def chap12_demo(width=400, height=200):
     w.objects.append(mirror)
 
     return camera, w
+
+
+def chap13_demo(width=400, height=200):
+    # https://forum.raytracerchallenge.com/thread/7/cylinders-scene-description
+    # ======================================================
+    # cylinders.yml
+    #
+    # This file describes the scene illustrated at the start
+    # of chapter 13, "Cylinders", in "The Ray Tracer
+    # Challenge"
+    #
+    # by Jamis Buck <jamis@jamisbuck.org>
+    # ======================================================
+    w = rt.World()
+    cameratransform = rt.view_transform(rt.Point(8, 3.5, -9), rt.Point(0, 0.3, 0), rt.Point(0, 1, 0))
+    camera = rt.Camera(width, height, 0.314, cameratransform)
+
+    light = rt.PointLight(rt.Point(1, 6.9, -4.9), rt.Color(1, 1, 1))
+    w.lights.append(light)
+
+    floor = rt.Plane()
+    A = rt.scaling(0.25, 0.25, 0.25)
+    B = rt.rotation_y(0.3)
+    floor.material.pattern = rt.CheckersPattern()
+    floor.material.pattern.color1 = rt.Color(0.5, 0.5, 0.5)
+    floor.material.pattern.color2 = rt.Color(0.75, 0.75, 0.75)
+    floor.material.pattern.transform = rt.matmul4x4(B, A)
+    floor.material.ambient = 0.2
+    floor.material.diffuse = 0.9
+    floor.material.specular = 0
+    w.objects.append(floor)
+
+    cyl1 = rt.Cylinder()
+    cyl1.min_y = 0
+    cyl1.max_y = 0.75
+    cyl1.closed = True
+    A = rt.scaling(0.5, 1, 0.5)
+    B = rt.translation(-1, 0, 1)
+    cyl1.transform = rt.matmul4x4(B, A)
+    cyl1.material.color = rt.Color(0, 0, 0.6)
+    cyl1.material.diffuse = 0.1
+    cyl1.material.specular = 0.9
+    cyl1.material.shininess = 300
+    cyl1.material.reflective = 0.9
+    w.objects.append(cyl1)
+
+    # concentric cylinders
+
+    con1 = rt.Cylinder()
+    con1.min_y = 0
+    con1.max_y = 0.2
+    A = rt.scaling(0.8, 1, 0.8)
+    B = rt.translation(1, 0, 0)
+    con1.transform = rt.matmul4x4(B, A)
+    con1.material.color = rt.Color(1, 1, 0.3)
+    con1.material.ambient = 0.1
+    con1.material.diffuse = 0.8
+    con1.material.specular = 0.9
+    con1.material.shininess = 300
+    w.objects.append(con1)
+
+    con2 = rt.Cylinder()
+    con2.min_y = 0
+    con2.max_y = 0.3
+    A = rt.scaling(0.6, 1, 0.6)
+    B = rt.translation(1, 0, 0)
+    con2.transform = rt.matmul4x4(B, A)
+    con2.material.color = rt.Color(1, 0.9, 0.4)
+    con2.material.ambient = 0.1
+    con2.material.diffuse = 0.8
+    con2.material.specular = 0.9
+    con2.material.shininess = 300
+    w.objects.append(con2)
+
+    con3 = rt.Cylinder()
+    con3.min_y = 0
+    con3.max_y = 0.4
+    A = rt.scaling(0.4, 1, 0.4)
+    B = rt.translation(1, 0, 0)
+    con3.transform = rt.matmul4x4(B, A)
+    con3.material.color = rt.Color(1, 0.8, 0.5)
+    con3.material.ambient = 0.1
+    con3.material.diffuse = 0.8
+    con3.material.specular = 0.9
+    con3.material.shininess = 300
+    w.objects.append(con3)
+
+    return camera, w

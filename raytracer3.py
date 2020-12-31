@@ -6,7 +6,7 @@ def render():
 
     GETPERFCOUNTERS = False
 
-    camera, w = demoscenes.chap11_demo()
+    camera, w = demoscenes.chap13_demo()
 
     timestart = time.time()
     rt.mp_render(camera, w, 10, 6, 5, GETPERFCOUNTERS)
@@ -22,7 +22,7 @@ def render():
         print('Intersection tests: {}'.format(rt.getcount_objintersecttests()))
         print('Intersections: {}'.format(rt.getcount_objintersections()))
 
-    rt.canvas_to_ppm('chap11_demo.ppm')
+    rt.canvas_to_ppm('chap13_demo.ppm')
 
 if __name__ == '__main__':
     render()
