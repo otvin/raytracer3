@@ -396,4 +396,101 @@ def chap13_demo(width=400, height=200):
     con3.material.shininess = 300
     w.objects.append(con3)
 
+    con4 = rt.Cylinder()
+    con4.min_y = 0
+    con4.max_y = 0.5
+    A = rt.scaling(0.2, 1, 0.2)
+    B = rt.translation(1, 0, 0)
+    con4.transform = rt.matmul4x4(B, A)
+    con4.material.color = rt.Color(1, 0.7, 0.6)
+    con4.material.ambient = 0.1
+    con4.material.diffuse = 0.8
+    con4.material.specular = 0.9
+    con4.material.shininess = 300
+    w.objects.append(con4)
+
+    # decorative cylinders
+    dec1 = rt.Cylinder()
+    dec1.min_y = 0
+    dec1.max_y = 0.3
+    dec1.closed = True
+    A = rt.scaling(0.05, 1, 0.05)
+    B = rt.translation(0, 0, -0.75)
+    dec1.transform = rt.matmul4x4(B, A)
+    dec1.material.color = rt.Color(1, 0, 0)
+    dec1.material.ambient = 0.1
+    dec1.material.diffuse = 0.9
+    dec1.material.specular = 0.9
+    dec1.material.shininess = 300
+    w.objects.append(dec1)
+
+    dec2 = rt.Cylinder()
+    dec2.min_y = 0
+    dec2.max_y = 0.3
+    dec2.closed = True
+    A = rt.scaling(0.05, 1, 0.05)
+    B = rt.translation(0, 0, 1.5)
+    C = rt.rotation_y(-0.15)
+    D = rt.translation(0, 0, -2.25)
+    dec2.transform = rt.matmul4x4(D, rt.matmul4x4(C, rt.matmul4x4(B, A)))
+    dec2.material.color = rt.Color(1, 1, 0)
+    dec2.material.ambient = 0.1
+    dec2.material.diffuse = 0.9
+    dec2.material.specular = 0.9
+    dec2.material.shininess = 300
+    w.objects.append(dec2)
+
+    dec3 = rt.Cylinder()
+    dec3.min_y = 0
+    dec3.max_y = 0.3
+    dec3.closed = True
+    A = rt.scaling(0.05, 1, 0.05)
+    B = rt.translation(0, 0, 1.5)
+    C = rt.rotation_y(-0.3)
+    D = rt.translation(0, 0, -2.25)
+    dec3.transform = rt.matmul4x4(D, rt.matmul4x4(C, rt.matmul4x4(B, A)))
+    dec3.material.color = rt.Color(0, 1, 0)
+    dec3.material.ambient = 0.1
+    dec3.material.diffuse = 0.9
+    dec3.material.specular = 0.9
+    dec3.material.shininess = 300
+    w.objects.append(dec3)
+
+    dec4 = rt.Cylinder()
+    dec4.min_y = 0
+    dec4.max_y = 0.3
+    dec4.closed = True
+    A = rt.scaling(0.05, 1, 0.05)
+    B = rt.translation(0, 0, 1.5)
+    C = rt.rotation_y(-0.45)
+    D = rt.translation(0, 0, -2.25)
+    dec4.transform = rt.matmul4x4(D, rt.matmul4x4(C, rt.matmul4x4(B, A)))
+    dec4.material.color = rt.Color(0, 1, 1)
+    dec4.material.ambient = 0.1
+    dec4.material.diffuse = 0.9
+    dec4.material.specular = 0.9
+    dec4.material.shininess = 300
+    w.objects.append(dec4)
+
+    # glass cylinder
+
+    # glass = rt.Cylinder()
+    # glass.min_y = 0.0001
+    # glass.max_y = 0.5
+    # glass.closed = True
+
+    # I'm using a glass cube because the glass cylinder looks meh.
+    glass = rt.Cube()
+    A = rt.scaling(0.33, 1, 0.33)
+    B = rt.translation(0, 0, -1.5)
+    glass.transform = rt.matmul4x4(B, A)
+    glass.material.color = rt.Color(0.25, 0, 0)
+    glass.material.diffuse = 0.1
+    glass.material.specular = 0.9
+    glass.material.shininess = 300
+    glass.material.reflective = 0.9
+    glass.material.transparency = 0.9
+    glass.material.refractive_index = 1.5
+    w.objects.append(glass)
+
     return camera, w

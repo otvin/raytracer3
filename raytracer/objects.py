@@ -223,6 +223,7 @@ class Cylinder(HittableObject):
         # b = 2 * ((rox * rdx) + (roz * rdz))
         # c = (rox * rox) + (roz * roz) - 1
 
+
         # uses same "half b" trick from Sphere.local_intersect()
         a = (rdx * rdx) + (rdz * rdz)
 
@@ -266,7 +267,7 @@ class Cylinder(HittableObject):
         opx = object_point.x
         opz = object_point.z
         dist = (opx * opx) + (opz * opz)
-        if dist < 1:
+        if dist < ONEMINUSEPSILON:
             # it must have intersected an end cap because the cylinder
             # has x^2 + z^2 = 1 in object space
             if object_point.y >= self.max_y - EPSILON:
