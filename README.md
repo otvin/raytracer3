@@ -15,9 +15,11 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap11_demo.ppm_ - added reflection and refraction. 
 * _chap12_demo.ppm_ - added cubes and ability to set object as not casting a shadow
 * _chap13_demo.ppm_ - added cylinders.  Note I tweaked the demo image to use scaled glass cube instead of glass cylinder, as in the original image it was unclear to me that the cylinder was glass, so it looked a bit odd.
+* _chap13_demo2.ppm_ - added cones.  Added a cone to the demo image and moved the light.
 
 Jamis Buck posted details for the scenes shown in the book for chapters 11-13 on-line.  Links can be found in demoscenes.py.
 
 ![chap11_demo.ppm](saved_renders/chap11_demo.png)
 ![chap12_demo.ppm](saved_renders/chap12_demo.png)
 ![chap13_demo.ppm](saved_renders/chap13_demo.png)
+![chap13_demo2.ppm](saved_renders/chap13_demo2.png)

@@ -168,8 +168,10 @@ class Cube(HittableObject):
             return rt.Vector(0, 0, object_point.z)
 
 
-def check_cap(ray, t):
-    # helper function for cylinder intersection, but doesn't rely on cylinder itself
+def check_cap(ray, t, radius_squared):
+    # helper function for cylinder or cone intersection, but doesn't rely on those objects.
+    # radius = 1 for cylinders, and equals abs(y) for cones, but squaring means the
+    # sign of the radius doesn't matter.
     ro = ray.origin
     rd = ray.direction
     rox = ro.x
@@ -178,7 +180,7 @@ def check_cap(ray, t):
     rdz = rd.z
     x = rox + (t * rdx)
     z = roz + (t * rdz)
-    return (x * x + z * z) <= 1
+    return (x * x + z * z) <= radius_squared
 
 
 class Cylinder(HittableObject):
@@ -203,17 +205,17 @@ class Cylinder(HittableObject):
         res = []
 
         # First check for intersection with the caps
-        if self.closed:
+        if self.closed and math.fabs(rdy) > EPSILON:
             # check for intersection with lower end cap by intersecting the ray
             # with the plane at y = self.min_y
             t = (self.min_y - roy) / rdy
-            if check_cap(object_ray, t):
+            if check_cap(object_ray, t, 1):
                 res.append(Intersection(self, t))
 
             # check for intersection with upper end cap by intersecting the ray
             # with the plane at y = self.max_y
             t = (self.max_y - roy) / rdy
-            if check_cap(object_ray, t):
+            if check_cap(object_ray, t, 1):
                 res.append(Intersection(self, t))
 
         # now intersect with the body of the cylinder
@@ -280,19 +282,6 @@ class Cylinder(HittableObject):
             return rt.Vector(object_point.x, 0, object_point.z)
 
 
-def check_cone_cap(ray, t, y):
-    # helper function for cone intersection, but doesn't rely on cone itself
-    ro = ray.origin
-    rd = ray.direction
-    rox = ro.x
-    roz = ro.z
-    rdx = rd.x
-    rdz = rd.z
-    x = rox + (t * rdx)
-    z = roz + (t * rdz)
-    return (x * x + z * z) <= (y * y)
-
-
 class Cone(HittableObject):
     __slots__ = ['closed', 'min_y', 'max_y']
 
@@ -314,36 +303,43 @@ class Cone(HittableObject):
 
         res = []
 
-        if self.closed:
+        if self.closed and math.fabs(rdy) > EPSILON:
             t = (self.min_y - roy) / rdy
-            if check_cone_cap(object_ray, t, self.min_y):
+            if check_cap(object_ray, t, self.min_y * self.min_y):
                 res.append(Intersection(self, t))
 
             t = (self.max_y - roy) / rdy
-            if check_cone_cap(object_ray, t, self.max_y):
+            if check_cap(object_ray, t, self.max_y * self.max_y):
                 res.append(Intersection(self, t))
 
         # Intersect with the body of the cone
+
+        # original logic
+        # a = (rdx * rdx) + (rdz * rdz) - (rdy * rdy)
+        # b = 2 * (rox * rdx + roz * rdz - roy * rdy)
+        # c = (rox * rox) + (roz * roz) - (roy * roy)
+
+        # uses same "half b" trick from Sphere.local_intersect()
         a = (rdx * rdx) + (rdz * rdz) - (rdy * rdy)
-        b = 2 * (rox * rdx + roz * rdz - roy * rdy)
+        half_b = (rox * rdx + roz * rdz - roy * rdy)
         c = (rox * rox) + (roz * roz) - (roy * roy)
 
         if math.fabs(a) < EPSILON:
             # ray is parallel to one of the cone's halves
-            if math.fabs(b) < EPSILON:
+            if math.fabs(half_b) < EPSILON:
                 # ray misses cone completely
                 return res
             else:
-                res.append(Intersection(self, -c/(2 * b)))
+                res.append(Intersection(self, -c/(4 * half_b)))
                 return res
 
-        discriminant = (b * b) - (4 * a * c)
+        discriminant = (half_b * half_b) - (a * c)
         if discriminant < 0:
             return res
 
         sqrtd = math.sqrt(discriminant)
-        t1 = (-b - sqrtd) / (2 * a)
-        t2 = (-b + sqrtd) / (2 * a)
+        t1 = (-half_b - sqrtd) / a
+        t2 = (-half_b + sqrtd) / a
 
         y1 = roy + (t1 * rdy)
         if self.min_y < y1 < self.max_y:

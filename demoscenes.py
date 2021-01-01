@@ -494,3 +494,24 @@ def chap13_demo(width=400, height=200):
     w.objects.append(glass)
 
     return camera, w
+
+
+def chap13_demo2(width=400, height=200):
+
+    # add a cone and move the light
+    camera, w = chap13_demo(width, height)
+    light = rt.PointLight(rt.Point(0, 0.75, 0), rt.Color(1, 1, 1))
+    w.lights = [light]
+
+    cone1 = rt.Cone()
+    A = rt.scaling(0.5, 0.5, 0.5)
+    B = rt.translation(0.5, 0.25, 1.5)
+    cone1.transform = rt.matmul4x4(B, A)
+    cone1.min_y = -0.5
+    cone1.max_y = 0.5
+    cone1.material.color = rt.Color(0.5, 0.0, 0.5)
+    cone1.material.reflective = 0.1
+    cone1.material.diffuse = 0.8
+    w.objects.append(cone1)
+
+    return camera, w
