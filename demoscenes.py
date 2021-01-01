@@ -661,11 +661,10 @@ def chap14_demo(width=600, height=200):
     cameratransform = rt.view_transform(rt.Point(0, 0, -9), rt.Point(0, 0, 0), rt.Point(0, 1, 0))
     camera = rt.Camera(width, height, 0.9, cameratransform)
 
-    light = rt.PointLight(rt.Point(10000, 10000, -10000), rt.Color(1, 1, 1))
-    # Original has 4 lights: (10000, 10000, -10000), (-10000, 10000, -10000)
-    # (10000, -10000, -10000) and (-10000, -10000, -10000) all with intensity
-    # 0.25, 0.25, 0.25.
-    w.lights.append(light)
+    w.lights.append(rt.PointLight(rt.Point(10000, 10000, -10000), rt.Color(0.25, 0.25, 0.25)))
+    w.lights.append(rt.PointLight(rt.Point(-10000, 10000, -10000), rt.Color(0.25, 0.25, 0.25)))
+    w.lights.append(rt.PointLight(rt.Point(10000, -10000, -10000), rt.Color(0.25, 0.25, 0.25)))
+    w.lights.append(rt.PointLight(rt.Point(-10000, -10000, -10000), rt.Color(0.25, 0.25, 0.25)))
 
     # a white backdrop
     backdrop = rt.Plane()

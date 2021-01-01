@@ -1051,28 +1051,28 @@ def rtunittest_shadowed1():
     # There is no shadow when nothing is collinear with point and light
     w = default_world()
     p = rt.Point(0, 10, 0)
-    assert not w.is_shadowed(p)
+    assert not w.is_shadowed(p, w.lights[0])
 
 
 def rtunittest_shadowed2():
     # There is no shadow when an object is between the point and the light
     w = default_world()
     p = rt.Point(10, -10, 10)
-    assert w.is_shadowed(p)
+    assert w.is_shadowed(p, w.lights[0])
 
 
 def rtunittest_shadowed3():
     # There is no shadow when an object is behind the light
     w = default_world()
     p = rt.Point(-20, 20, -20)
-    assert not w.is_shadowed(p)
+    assert not w.is_shadowed(p, w.lights[0])
 
 
 def rtunittest_shadowed4():
     # There is no shadow when an object is behind the point
     w = default_world()
     p = rt.Point(-2, 2, -2)
-    assert not w.is_shadowed(p)
+    assert not w.is_shadowed(p, w.lights[0])
 
 
 def rtunittest_plane1():
