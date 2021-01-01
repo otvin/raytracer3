@@ -278,3 +278,98 @@ class Cylinder(HittableObject):
                 return rt.Vector(0, -1, 0)
         else:
             return rt.Vector(object_point.x, 0, object_point.z)
+
+
+def check_cone_cap(ray, t, y):
+    # helper function for cone intersection, but doesn't rely on cone itself
+    ro = ray.origin
+    rd = ray.direction
+    rox = ro.x
+    roz = ro.z
+    rdx = rd.x
+    rdz = rd.z
+    x = rox + (t * rdx)
+    z = roz + (t * rdz)
+    return (x * x + z * z) <= (y * y)
+
+
+class Cone(HittableObject):
+    __slots__ = ['closed', 'min_y', 'max_y']
+
+    def __init__(self, transform=identity4(), material=None, closed=False, min_y=-math.inf, max_y=math.inf):
+        super().__init__(transform, material)
+        self.closed = closed
+        self.min_y = min_y
+        self.max_y = max_y
+
+    def local_intersect(self, object_ray):
+        rd = object_ray.direction
+        ro = object_ray.origin
+        rdx = rd.x
+        rdz = rd.z
+        rox = ro.x
+        roz = ro.z
+        roy = ro.y
+        rdy = rd.y
+
+        res = []
+
+        if self.closed:
+            t = (self.min_y - roy) / rdy
+            if check_cone_cap(object_ray, t, self.min_y):
+                res.append(Intersection(self, t))
+
+            t = (self.max_y - roy) / rdy
+            if check_cone_cap(object_ray, t, self.max_y):
+                res.append(Intersection(self, t))
+
+        # Intersect with the body of the cone
+        a = (rdx * rdx) + (rdz * rdz) - (rdy * rdy)
+        b = 2 * (rox * rdx + roz * rdz - roy * rdy)
+        c = (rox * rox) + (roz * roz) - (roy * roy)
+
+        if math.fabs(a) < EPSILON:
+            # ray is parallel to one of the cone's halves
+            if math.fabs(b) < EPSILON:
+                # ray misses cone completely
+                return res
+            else:
+                res.append(Intersection(self, -c/(2 * b)))
+                return res
+
+        discriminant = (b * b) - (4 * a * c)
+        if discriminant < 0:
+            return res
+
+        sqrtd = math.sqrt(discriminant)
+        t1 = (-b - sqrtd) / (2 * a)
+        t2 = (-b + sqrtd) / (2 * a)
+
+        y1 = roy + (t1 * rdy)
+        if self.min_y < y1 < self.max_y:
+            res.append(Intersection(self, t1))
+        y2 = roy + (t2 * rdy)
+        if self.min_y < y2 < self.max_y:
+            res.append(Intersection(self, t2))
+
+        return res
+
+
+    def local_normal_at(self, object_point):
+        opx = object_point.x
+        opy = object_point.y
+        opz = object_point.z
+
+        dist = (opx * opx) + (opz * opz)
+        if dist < (opy * opy) - EPSILON:
+            # it must have intersected an end cap
+            if opy >= self.max_y - EPSILON:
+                return rt.Vector(0, 1, 0)
+            else:
+                return rt.Vector(0, -1, 0)
+
+        normaly = math.sqrt(opx * opx + opz * opz)
+        if opy > 0:
+            normaly = -normaly
+
+        return rt.Vector(opx, normaly, opz)

@@ -1641,6 +1641,72 @@ def rtunittest_cylinder7():
         assert n == test[1]
 
 
+def rtunittest_cone1():
+    # Intersecting a cone with a ray
+
+    # Each test has origin, direction, then t's for the two intersections
+    tests = [
+        (rt.Point(0, 0, -5), rt.Vector(0, 0, 1), 5, 5),
+        (rt.Point(0, 0, -5), rt.Vector(1, 1, 1), 8.66025, 8.66025),
+        (rt.Point(1, 1, -5), rt.Vector(-0.5, -1, 1), 4.55006, 49.44994)
+    ]
+
+    s = rt.Cone()
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        xs = s.local_intersect(r)
+        assert len(xs) == 2
+        assert math.isclose(xs[0].t, test[2], rel_tol=1e-05)
+        assert math.isclose(xs[1].t, test[3], rel_tol=1e-05)
+
+
+def rtunittest_cone2():
+    # Intersecting a cone with a ray parallel to one. of its halves
+
+    s = rt.Cone()
+    d = rt.normalize(rt.Vector(0, 1, 1))
+    r = rt.Ray(rt.Point(0, 0, -1), d)
+    xs = s.local_intersect(r)
+    assert len(xs) == 1
+    assert math.isclose(xs[0].t, 0.35355, rel_tol=1e-05)
+
+
+def rtunittest_cone3():
+    # Intersecting a cone's end caps
+
+    # each test has origin, direction, and number of intersections
+    tests = [
+        (rt.Point(0, 0, -5), rt.Vector(0, 1, 0), 0),
+        (rt.Point(0, 0, -0.25), rt.Vector(0, 1, 1), 2),
+        (rt.Point(0, 0, -0.25), rt.Vector(0, 1, 0), 4)
+    ]
+
+    s = rt.Cone()
+    s.min_y = -0.5
+    s.max_y = 0.5
+    s.closed = True
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        xs = s.local_intersect(r)
+        assert len(xs) == test[2]
+
+
+def rtunittest_cone4():
+    # Computing the normal vector on a cone
+
+    # each test has a point and the expected normal
+    tests = [
+        (rt.Point(0, 0, 0), rt.Vector(0, 0, 0)),
+        (rt.Point(1, 1, 1), rt.Vector(1, -math.sqrt(2), 1)),
+        (rt.Point(-1, -1, 0), rt.Vector(-1, 1, 0))
+    ]
+
+    s = rt.Cone()
+    for test in tests:
+        n = s.local_normal_at(test[0])
+        assert n == test[1]
+
+
 def run_unit_tests():
     count = 0
     failed = 0
