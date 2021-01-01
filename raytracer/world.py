@@ -1,6 +1,5 @@
 import math
 import raytracer as rt
-from .lights import lighting
 from .objects import EPSILON
 from .perfcounters import increment_colortests, increment_objintersecttests, increment_objintersections, \
                         increment_reflectionrays, increment_refractionrays
@@ -53,8 +52,8 @@ class World:
     def shade_hit(self, hitrecord, depth, perfcount=False):
         # TODO p.96 to support multiple lights, just iterate over the lights in the scene.
         shadowed = self.is_shadowed(hitrecord.over_point)
-        surface = lighting(hitrecord.objhit.material, hitrecord.objhit, self.lights[0], hitrecord.point,
-                           hitrecord.eyev, hitrecord.normalv, shadowed)
+        surface = self.lights[0].lighting(hitrecord.objhit.material, hitrecord.objhit, hitrecord.point,
+                                          hitrecord.eyev, hitrecord.normalv, shadowed)
         reflected = self.reflected_color(hitrecord, depth, perfcount)
         refracted = self.refracted_color(hitrecord, depth, perfcount)
         material = hitrecord.objhit.material

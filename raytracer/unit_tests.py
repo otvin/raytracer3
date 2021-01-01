@@ -7,7 +7,6 @@ from .transformations import do_transform, do_transformray, translation, scaling
 from .world import prepare_computations, schlick_reflectance
 from .canvas import init_canvas, write_pixel, get_canvasdims, pixel_at
 from .matrices import allclose4x4
-from .lights import lighting
 from .objects import EPSILON
 
 
@@ -720,7 +719,7 @@ def rtunittest_lighting1():
     eyev = rt.Vector(0, 0, -1)
     normalv = rt.Vector(0, 0, -1)
     light = rt.PointLight(rt.Point(0, 0, -10), rt.Color(1, 1, 1))
-    assert lighting(m, rt.HittableObject(), light, position, eyev, normalv) == rt.Color(1.9, 1.9, 1.9)
+    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv) == rt.Color(1.9, 1.9, 1.9)
 
 
 def rtunittest_lighting2():
@@ -730,7 +729,7 @@ def rtunittest_lighting2():
     eyev = rt.Vector(0, math.sqrt(2)/2, -math.sqrt(2)/2)
     normalv = rt.Vector(0, 0, -1)
     light = rt.PointLight(rt.Point(0, 0, -10), rt.Color(1, 1, 1))
-    assert lighting(m, rt.HittableObject(), light, position, eyev, normalv) == rt.Color(1.0, 1.0, 1.0)
+    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv) == rt.Color(1.0, 1.0, 1.0)
 
 
 def rtunittest_lighting3():
@@ -740,7 +739,7 @@ def rtunittest_lighting3():
     eyev = rt.Vector(0, 0, -1)
     normalv = rt.Vector(0, 0, -1)
     light = rt.PointLight(rt.Point(0, 10, -10), rt.Color(1, 1, 1))
-    assert lighting(m, rt.HittableObject(), light, position, eyev, normalv) == \
+    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv) == \
            rt.Color(0.7364, 0.7364, 0.7364)
 
 
@@ -751,7 +750,7 @@ def rtunittest_lighting4():
     eyev = rt.Vector(0, -math.sqrt(2) / 2, -math.sqrt(2) / 2)
     normalv = rt.Vector(0, 0, -1)
     light = rt.PointLight(rt.Point(0, 10, -10), rt.Color(1, 1, 1))
-    assert lighting(m, rt.HittableObject(), light, position, eyev, normalv) == \
+    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv) == \
            rt.Color(1.6364, 1.6364, 1.6364)
 
 
@@ -762,7 +761,7 @@ def rtunittest_lighting5():
     eyev = rt.Vector(0, 0, -1)
     normalv = rt.Vector(0, 0, -1)
     light = rt.PointLight(rt.Point(0, 0, 10), rt.Color(1, 1, 1))
-    assert lighting(m, rt.HittableObject(), light, position, eyev, normalv) == rt.Color(0.1, 0.1, 0.1)
+    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv) == rt.Color(0.1, 0.1, 0.1)
 
 
 def rtunittest_lighting6():
@@ -772,7 +771,7 @@ def rtunittest_lighting6():
     eyev = rt.Vector(0, 0, -1)
     normalv = rt.Vector(0, 0, -1)
     light = rt.PointLight(rt.Point(0, 0, -10), rt.Color(1, 1, 1))
-    assert lighting(m, rt.HittableObject(), light, position, eyev, normalv, True) \
+    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv, True) \
            == rt.Color(0.1, 0.1, 0.1)
 
 
@@ -1180,8 +1179,8 @@ def rtunittest_stripepattern5():
 
     light = rt.PointLight(rt.Point(0, 0, -10), rt.Color(1, 1, 1))
 
-    c1 = lighting(m, rt.HittableObject(), light, rt.Point(0.9, 0, 0), eyev, normalv, False)
-    c2 = lighting(m, rt.HittableObject(), light, rt.Point(1.1, 0, 0), eyev, normalv, False)
+    c1 = light.lighting(m, rt.HittableObject(), rt.Point(0.9, 0, 0), eyev, normalv, False)
+    c2 = light.lighting(m, rt.HittableObject(), rt.Point(1.1, 0, 0), eyev, normalv, False)
 
     assert c1 == w
     assert c2 == b
