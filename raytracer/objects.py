@@ -1,4 +1,5 @@
 import math
+from copy import deepcopy
 import raytracer as rt
 from .matrices import identity4
 
@@ -16,15 +17,16 @@ ONEMINUSEPSILON = 1 - EPSILON
 
 
 class HittableObject:
-    __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose', 'casts_shadow']
+    __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose', 'casts_shadow', 'parent']
 
-    def __init__(self, transform=identity4(), material=None, casts_shadow=True):
+    def __init__(self, transform=identity4(), material=None, casts_shadow=True, parent=None):
         if material is None:
             self.material = rt.Material()
         else:
             self.material = material
         self.transform = transform
         self.casts_shadow = casts_shadow
+        self.parent = parent
 
     @property
     def transform(self):
@@ -47,18 +49,31 @@ class HittableObject:
         return []
 
     def normal_at(self, point):
-        object_point = rt.do_transform(self.inversetransform, point)
+        object_point = self.world_to_object(point)
         object_normal = self.local_normal_at(object_point)
-        world_normal = rt.transformations.do_transform(self.__inversetransformtranspose, object_normal)
-        # hack - should really get the submatrix of the transform, and multiply by the inverse and
-        # transform that, but this is much faster and equivalent.
-        world_normal.w = 0.0
-        return rt.normalize(world_normal)
+        world_normal = self.normal_to_world(object_normal)
+        return world_normal
 
     def local_normal_at(self, object_point):
         # this method should be overridden by every base class
         # point should be converted to object space by normal_at() before calling this
         return rt.Vector()
+
+    def world_to_object(self, world_point):
+        if self.parent is not None:
+            return rt.matmul4xTuple(self.inversetransform, self.parent.world_to_object(world_point))
+        else:
+            return rt.matmul4xTuple(self.inversetransform, world_point)
+
+    def normal_to_world(self, normal):
+        n = rt.matmul4xTuple(self.__inversetransformtranspose, normal)
+        n.w = 0
+        n = rt.normalize(n)
+
+        if self.parent is not None:
+            return self.parent.normal_to_world(n)
+        else:
+            return n
 
 
 class Sphere(HittableObject):
@@ -225,7 +240,6 @@ class Cylinder(HittableObject):
         # b = 2 * ((rox * rdx) + (roz * rdz))
         # c = (rox * rox) + (roz * roz) - 1
 
-
         # uses same "half b" trick from Sphere.local_intersect()
         a = (rdx * rdx) + (rdz * rdz)
 
@@ -258,7 +272,6 @@ class Cylinder(HittableObject):
             res.append(Intersection(self, t2))
 
         return res
-
 
     def local_normal_at(self, object_point):
         # Remember: local_normal_at assumes object_point is on the object.
@@ -350,7 +363,6 @@ class Cone(HittableObject):
 
         return res
 
-
     def local_normal_at(self, object_point):
         opx = object_point.x
         opy = object_point.y
@@ -369,3 +381,34 @@ class Cone(HittableObject):
             normaly = -normaly
 
         return rt.Vector(opx, normaly, opz)
+
+
+class ObjectGroup(HittableObject):
+    __slots__ = ['children']
+
+    def __init__(self, transform=identity4()):
+        super().__init__(transform, None)
+        self.children = []
+
+    def addchild(self, obj):
+        obj.parent = self
+        self.children.append(obj)
+
+    def push_material_to_children(self):
+        # takes the material of the group and sets all children to have this material
+        for child in self.children:
+            child.material = deepcopy(self.material)
+            if isinstance(child, ObjectGroup):
+                child.push_material_to_children()
+
+    def local_normal_at(self, object_point):
+        raise NotImplementedError('Group objects do not have local normals')
+
+    def local_intersect(self, object_ray):
+        if len(self.children) == 0:
+            return []
+        else:
+            xs = []
+            for child in self.children:
+                xs.extend(child.intersect(object_ray))
+            return xs

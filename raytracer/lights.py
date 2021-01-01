@@ -23,7 +23,7 @@ def lighting(material, obj, light, point, eyev, normalv, in_shadow=False):
     # combine the surface color with the light's color/intensity
 
     if material.pattern is not None:
-        object_point = rt.matmul4xTuple(obj.inversetransform, point)
+        object_point = obj.world_to_object(point)
         pattern_point = rt.matmul4xTuple(material.pattern.inversetransform, object_point)
         effective_color = material.pattern.color_at(pattern_point) * light.intensity
     else:

@@ -2,11 +2,12 @@ import time
 import demoscenes
 import raytracer as rt
 
+
 def render():
 
     GETPERFCOUNTERS = False
 
-    camera, w = demoscenes.chap13_demo2()
+    camera, w = demoscenes.chap14_demo()
 
     timestart = time.time()
     rt.mp_render(camera, w, 10, 6, 5, GETPERFCOUNTERS)
@@ -22,7 +23,8 @@ def render():
         print('Intersection tests: {}'.format(rt.getcount_objintersecttests()))
         print('Intersections: {}'.format(rt.getcount_objintersections()))
 
-    rt.canvas_to_ppm('chap13_demo2.ppm')
+    rt.canvas_to_ppm('chap14_demo.ppm')
+
 
 if __name__ == '__main__':
     render()

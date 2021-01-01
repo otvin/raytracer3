@@ -1707,6 +1707,118 @@ def rtunittest_cone4():
         assert n == test[1]
 
 
+def rtunittest_groups1():
+    # Creating a new group
+    g = rt.ObjectGroup()
+    assert g.transform == rt.identity4()
+    assert len(g.children) == 0
+
+
+def rtunittest_groups2():
+    # A shape has a parent attribute
+    s = glass_sphere()
+    assert s.parent is None
+
+
+def rtunittest_groups3():
+    # Adding a child to a group
+    s = glass_sphere()
+    g = rt.ObjectGroup()
+    g.addchild(s)
+    assert len(g.children) == 1
+    assert s in g.children
+
+
+def rtunittest_groups4():
+    # Intersecting a ray with an empty group
+    g = rt.ObjectGroup()
+    r = rt.Ray(rt.Point(0, 0, 0), rt.Vector(0, 0, 1))
+    xs = g.local_intersect(r)
+    assert len(xs) == 0
+
+
+def rtunittest_groups5():
+    # Intersecting a ray with a nonempty group
+    g = rt.ObjectGroup()
+    s1 = rt.Sphere()
+    s2 = rt.Sphere()
+    s2.transform = rt.translation(0, 0, -3)
+    s3 = rt.Sphere()
+    s3.transform = rt.translation(5, 0, 0)
+    g.addchild(s1)
+    g.addchild(s2)
+    g.addchild(s3)
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
+    xs = g.local_intersect(r)
+    # the book says to test that the intersections come back in sorted order.
+    # However, we don't sort in local_intersect, we sort in World.intersect().
+    # so we need to sort here to make the test work properly.
+    xs.sort(key=lambda x: x.t)
+
+    assert len(xs) == 4
+    assert xs[0].objhit is s2
+    assert xs[1].objhit is s2
+    assert xs[2].objhit is s1
+    assert xs[3].objhit is s1
+
+
+def rtunittest_groups6():
+    # Intersecting a transformed group
+    g = rt.ObjectGroup()
+    g.transform = rt.scaling(2, 2, 2)
+    s = rt.Sphere()
+    s.transform = rt.translation(5, 0, 0)
+    g.addchild(s)
+
+    r = rt.Ray(rt.Point(10, 0, -10), rt.Vector(0, 0, 1))
+    xs = g.intersect(r)
+
+    assert len(xs) == 2
+
+
+def rtunittest_groups7():
+    # Converting a point from world to object space
+    g1 = rt.ObjectGroup()
+    g1.transform = rt.rotation_y(math.pi/2)
+    g2 = rt.ObjectGroup()
+    g2.transform = rt.scaling(2, 2, 2)
+    g1.addchild(g2)
+    s = rt.Sphere()
+    s.transform = rt.translation(5, 0, 0)
+    g2.addchild(s)
+
+    p = s.world_to_object(rt.Point(-2, 0, -10))
+    assert p == rt.Point(0, 0, -1)
+
+
+def rtunittest_groups8():
+    # converting a normal from object to world space
+    g1 = rt.ObjectGroup()
+    g1.transform = rt.rotation_y(math.pi/2)
+    g2 = rt.ObjectGroup()
+    g2.transform = rt.scaling(1, 2, 3)
+    g1.addchild(g2)
+    s = rt.Sphere()
+    s.transform = rt.translation(5, 0, 0)
+    g2.addchild(s)
+    n = s.normal_to_world(rt.Vector(math.sqrt(3)/3, math.sqrt(3)/3, math.sqrt(3)/3))
+    assert n == rt.Vector(0.28571, 0.42857, -0.85714)
+
+
+def rtunittest_groups9():
+    # Finding the normal on a child object
+    g1 = rt.ObjectGroup()
+    g1.transform = rt.rotation_y(math.pi / 2)
+    g2 = rt.ObjectGroup()
+    g2.transform = rt.scaling(1, 2, 3)
+    g1.addchild(g2)
+    s = rt.Sphere()
+    s.transform = rt.translation(5, 0, 0)
+    g2.addchild(s)
+    n = s.normal_at(rt.Point(1.7321, 1.1547, -5.5774))
+    assert n == rt.Vector(0.2857, 0.42854, -0.85716)
+
+
 def run_unit_tests():
     count = 0
     failed = 0

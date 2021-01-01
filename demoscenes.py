@@ -3,6 +3,7 @@ import raytracer as rt
 
 # These demo scenes return a camera and a World object that can then be rendered.
 
+
 def chap11_demo(width=200, height=200):
     # https://forum.raytracerchallenge.com/thread/114/refraction-results/unclear
     # ======================================================
@@ -33,7 +34,8 @@ def chap11_demo(width=200, height=200):
 
     ceiling = rt.Plane()
     ceiling.transform = rt.translation(0, 5, 0)
-    ceiling.material.pattern = rt.CheckersPattern(rt.scaling(.2, .2, .2), rt.Color(0.85, 0.85, 0.85), rt.Color(1.0, 1.0, 1.0))
+    ceiling.material.pattern = rt.CheckersPattern(rt.scaling(.2, .2, .2), rt.Color(0.85, 0.85, 0.85),
+                                                  rt.Color(1.0, 1.0, 1.0))
     ceiling.material.ambient = 0.5
     ceiling.material.specular = 0
     w.objects.append(ceiling)
@@ -513,5 +515,203 @@ def chap13_demo2(width=400, height=200):
     cone1.material.reflective = 0.1
     cone1.material.diffuse = 0.8
     w.objects.append(cone1)
+
+    return camera, w
+
+
+# ======================================================
+# These (leg, cap, and wacky) describe groups that will be reused within
+# the scene. (You can think of these as functions that
+# return a new instance of the given shape each time they
+# are referenced.)
+# ======================================================
+def chap14_demo_leg(trans=rt.identity4()):
+    leg = rt.ObjectGroup()
+
+    sphere = rt.Sphere()
+    A = rt.scaling(0.25, 0.25, 0.25)
+    B = rt.translation(0, 0, -1)
+    # sphere.transform = rt.matmul4x4(B, rt.matmul4x4(A, trans))
+    sphere.transform = rt.matmul4x4(trans, rt.matmul4x4(B, A))
+    leg.addchild(sphere)
+
+    cylinder = rt.Cylinder()
+    cylinder.min_y = 0
+    cylinder.max_y = 1
+    A = rt.scaling(0.25, 1, 0.25)
+    B = rt.rotation_z(-1.5708)
+    C = rt.rotation_y(-0.5236)
+    D = rt.translation(0, 0, -1)
+    cylinder.transform = rt.matmul4x4(trans, rt.matmul4x4(D, rt.matmul4x4(C, rt.matmul4x4(B, A))))
+    leg.addchild(cylinder)
+
+    return leg
+
+
+def chap14_demo_cap(trans=rt.identity4(), trans2=rt.identity4()):
+    cap = rt.ObjectGroup()
+
+    cone1 = rt.Cone()
+    cone1.min_y = -1
+    cone1.max_y = 0
+    A = rt.scaling(0.24606, 1.37002, 0.24606)
+    B = rt.rotation_x(-0.7854)
+    cone1.transform = rt.matmul4x4(trans2, rt.matmul4x4(trans, rt.matmul4x4(B, A)))
+    cap.addchild(cone1)
+
+    cone2 = rt.Cone()
+    cone2.min_y = -1
+    cone2.max_y = 0
+    A = rt.scaling(0.24606, 1.37002, 0.24606)
+    B = rt.rotation_x(-0.7854)
+    C = rt.rotation_y(1.0472)
+    cone2.transform = rt.matmul4x4(trans2, rt.matmul4x4(trans, rt.matmul4x4(C, rt.matmul4x4(B, A))))
+    cap.addchild(cone2)
+
+    cone3 = rt.Cone()
+    cone3.min_y = -1
+    cone3.max_y = 0
+    A = rt.scaling(0.24606, 1.37002, 0.24606)
+    B = rt.rotation_x(-0.7854)
+    C = rt.rotation_y(2.0944)
+    cone3.transform = rt.matmul4x4(trans2, rt.matmul4x4(trans, rt.matmul4x4(C, rt.matmul4x4(B, A))))
+    cap.addchild(cone3)
+
+    cone4 = rt.Cone()
+    cone4.min_y = -1
+    cone4.max_y = 0
+    A = rt.scaling(0.24606, 1.37002, 0.24606)
+    B = rt.rotation_x(-0.7854)
+    C = rt.rotation_y(3.1416)
+    cone4.transform = rt.matmul4x4(trans2, rt.matmul4x4(trans, rt.matmul4x4(C, rt.matmul4x4(B, A))))
+    cap.addchild(cone4)
+
+    cone5 = rt.Cone()
+    cone5.min_y = -1
+    cone5.max_y = 0
+    A = rt.scaling(0.24606, 1.37002, 0.24606)
+    B = rt.rotation_x(-0.7854)
+    C = rt.rotation_y(4.1888)
+    cone5.transform = rt.matmul4x4(trans2, rt.matmul4x4(trans, rt.matmul4x4(C, rt.matmul4x4(B, A))))
+    cap.addchild(cone5)
+
+    cone6 = rt.Cone()
+    cone6.min_y = -1
+    cone6.max_y = 0
+    A = rt.scaling(0.24606, 1.37002, 0.24606)
+    B = rt.rotation_x(-0.7854)
+    C = rt.rotation_y(5.236)
+    cone6.transform = rt.matmul4x4(trans2, rt.matmul4x4(trans, rt.matmul4x4(C, rt.matmul4x4(B, A))))
+    cap.addchild(cone6)
+
+    return cap
+
+
+def chap14_demo_wacky():
+    wacky = rt.ObjectGroup()
+
+    wacky.addchild(chap14_demo_leg())
+    leg2 = chap14_demo_leg(rt.rotation_y(1.0472))
+    wacky.addchild(leg2)
+    leg3 = chap14_demo_leg(rt.rotation_y(2.0944))
+    wacky.addchild(leg3)
+    leg4 = chap14_demo_leg(rt.rotation_y(3.1416))
+    wacky.addchild(leg4)
+    leg5 = chap14_demo_leg(rt.rotation_y(4.1888))
+    wacky.addchild(leg5)
+    leg6 = chap14_demo_leg(rt.rotation_y(5.236))
+    wacky.addchild(leg6)
+
+    cap1 = chap14_demo_cap(rt.translation(0, 1, 0))
+    wacky.addchild(cap1)
+    A = rt.translation(0, 1, 0)
+    B = rt.rotation_x(3.1416)
+    cap2 = chap14_demo_cap(A, B)
+    wacky.addchild(cap2)
+
+    return wacky
+
+
+def chap14_demo(width=600, height=200):
+    # Found at: https://iliathoughts.com/posts/raytracer/
+    # ======================================================
+    # group.yml
+    #
+    # This file describes the scene illustrated at the start
+    # of chapter 14, "Groups", in "The Ray Tracer
+    # Challenge"
+    #
+    # This scene description assumes:
+    #
+    # 1. Your ray tracer supports multiple light sources.
+    #    If it does not, you can omit the extra light
+    #    sources and bump up the existing light's intensity
+    #    to [1, 1, 1].
+    # 2. Child objects in a group inherit their default
+    #    material from the parent group. If you haven't
+    #    implemented this optional feature, you'll need
+    #    arrange other means of texturing the child
+    #    elements (or accept that all elements of the
+    #    scene will be white).
+    #
+    # by Jamis Buck <jamis@jamisbuck.org>
+    # ======================================================
+
+    w = rt.World()
+    cameratransform = rt.view_transform(rt.Point(0, 0, -9), rt.Point(0, 0, 0), rt.Point(0, 1, 0))
+    camera = rt.Camera(width, height, 0.9, cameratransform)
+
+    light = rt.PointLight(rt.Point(10000, 10000, -10000), rt.Color(1, 1, 1))
+    # Original has 4 lights: (10000, 10000, -10000), (-10000, 10000, -10000)
+    # (10000, -10000, -10000) and (-10000, -10000, -10000) all with intensity
+    # 0.25, 0.25, 0.25.
+    w.lights.append(light)
+
+    # a white backdrop
+    backdrop = rt.Plane()
+    A = rt.rotation_x(1.5708)
+    B = rt.translation(0, 0, 100)
+    backdrop.transform = rt.matmul4x4(B, A)
+    backdrop.material.color = rt.Color(1, 1, 1)
+    backdrop.material.ambient = 1
+    backdrop.material.diffuse = 0
+    backdrop.material.specular = 0
+    w.objects.append(backdrop)
+
+    wacky1 = chap14_demo_wacky()
+    A = rt.rotation_y(0.1745)
+    B = rt.rotation_x(0.4363)
+    C = rt.translation(-2.8, 0, 0)
+    wacky1.transform = rt.matmul4x4(C, rt.matmul4x4(B, A))
+    wacky1.material.color = rt.Color(0.9, 0.2, 0.4)
+    wacky1.material.ambient = 0.2
+    wacky1.material.diffuse = 0.8
+    wacky1.material.specular = 0.7
+    wacky1.material.shininess = 20
+    wacky1.push_material_to_children()
+    w.objects.append(wacky1)
+
+    wacky2 = chap14_demo_wacky()
+    wacky2.transform = rt.rotation_y(0.1745)
+    wacky2.material.color = rt.Color(0.2, 0.9, 0.6)
+    wacky2.material.ambient = 0.2
+    wacky2.material.diffuse = 0.8
+    wacky2.material.specular = 0.7
+    wacky2.material.shininess = 20
+    wacky2.push_material_to_children()
+    w.objects.append(wacky2)
+
+    wacky3 = chap14_demo_wacky()
+    A = rt.rotation_y(-0.1745)
+    B = rt.rotation_x(-0.4363)
+    C = rt.translation(2.8, 0, 0)
+    wacky3.transform = rt.matmul4x4(C, rt.matmul4x4(B, A))
+    wacky3.material.color = rt.Color(0.2, 0.3, 1.0)
+    wacky3.material.ambient = 0.2
+    wacky3.material.diffuse = 0.8
+    wacky3.material.specular = 0.7
+    wacky3.material.shininess = 20
+    wacky3.push_material_to_children()
+    w.objects.append(wacky3)
 
     return camera, w
