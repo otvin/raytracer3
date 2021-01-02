@@ -17,6 +17,8 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap13_demo.ppm_ - added cylinders.  Note I tweaked the demo image to use scaled glass cube instead of glass cylinder, as in the original image it was unclear to me that the cylinder was glass, so it looked a bit odd.
 * _chap13_demo2.ppm_ - added cones.  Added a cone to the demo image and moved the light.
 * _chap14_demo.ppm_ - added groups of objects, which can be transformed as a group, and support for multiple lights in a scene.
+* _chap15_demo.ppm_ - added triangles and ability to read a limited set of Wavefront .obj files
+* _chap15_demo2.ppm_ - the obligatory teapot.  Low-res.  Rendering this model, which contains 241 triangles, took over 18 minutes on my machine with 6 cores/6 threads.
 
 Jamis Buck posted details for the scenes shown in the book for chapters 11-14 on-line.  Links can be found in demoscenes.py.
 
@@ -25,3 +27,5 @@ Jamis Buck posted details for the scenes shown in the book for chapters 11-14 on
 ![chap13_demo.ppm](saved_renders/chap13_demo.png)
 ![chap13_demo2.ppm](saved_renders/chap13_demo2.png)
 ![chap14_demo.ppm](saved_renders/chap14_demo.png)
+![chap15_demo.ppm](saved_renders/chap15_demo.png)
+![chap15_demo2.ppm](saved_renders/chap15_demo2.png)

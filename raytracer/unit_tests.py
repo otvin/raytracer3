@@ -1818,6 +1818,265 @@ def rtunittest_groups9():
     assert n == rt.Vector(0.2857, 0.42854, -0.85716)
 
 
+def rtunittest_triangle1():
+    # Constructing a triangle
+    p1 = rt.Point(0, 1, 0)
+    p2 = rt.Point(-1, 0, 0)
+    p3 = rt.Point(1, 0, 0)
+    t = rt.Triangle(p1, p2, p3)
+    assert t.p1 == p1
+    assert t.p2 == p2
+    assert t.p3 == p3
+    assert t.e1 == rt.Vector(-1, -1, 0)
+    assert t.e2 == rt.Vector(1, -1, 0)
+    assert t.normal == rt.Vector(0, 0, -1)
+
+
+def rtunittest_triangle2():
+    # Finding the normal on a triangle
+    t = rt.Triangle(rt.Point(0, 1, 0), rt.Point(-1, 0, 0), rt.Point(1, 0, 0))
+    n1 = t.local_normal_at(rt.Point(0, 0.5, 0))
+    n2 = t.local_normal_at(rt.Point(-0.5, 0.75, 0))
+    n3 = t.local_normal_at(rt.Point(0.5, 0.25, 0))
+    assert n1 == t.normal
+    assert n2 == t.normal
+    assert n3 == t.normal
+
+
+def rtunittest_triangle3():
+    # Intersecting a ray parallel to the triangle
+    t = rt.Triangle(rt.Point(0, 1, 0), rt.Point(-1, 0, 0), rt.Point(1, 0, 0))
+    r = rt.Ray(rt.Point(0, -2, -2), rt.Vector(0, 1, 0))
+    xs = t.local_intersect(r)
+    assert len(xs) == 0
+
+
+def rtunittest_triangle4():
+    # A ray misses the p1-p3 edge
+    t = rt.Triangle(rt.Point(0, 1, 0), rt.Point(-1, 0, 0), rt.Point(1, 0, 0))
+    r = rt.Ray(rt.Point(1, 1, -2), rt.Vector(0, 0, 1))
+    xs = t.local_intersect(r)
+    assert len(xs) == 0
+
+
+def rtunittest_triangle5():
+    # A ray misses the p1-p2 edge
+    t = rt.Triangle(rt.Point(0, 1, 0), rt.Point(-1, 0, 0), rt.Point(1, 0, 0))
+    r = rt.Ray(rt.Point(-1, 1, -2), rt.Vector(0, 0, 1))
+    xs = t.local_intersect(r)
+    assert len(xs) == 0
+
+
+def rtunittest_triangle6():
+    # A ray misses the p2-p3 edge
+    t = rt.Triangle(rt.Point(0, 1, 0), rt.Point(-1, 0, 0), rt.Point(1, 0, 0))
+    r = rt.Ray(rt.Point(0, -1, -2), rt.Vector(0, 0, 1))
+    xs = t.local_intersect(r)
+    assert len(xs) == 0
+
+
+def rtunittest_triangle7():
+    # A ray strikes a triangle
+    t = rt.Triangle(rt.Point(0, 1, 0), rt.Point(-1, 0, 0), rt.Point(1, 0, 0))
+    r = rt.Ray(rt.Point(0, 0.5, -2), rt.Vector(0, 0, 1))
+    xs = t.local_intersect(r)
+    assert len(xs) == 1
+    assert math.isclose(xs[0].t, 2)
+
+
+def rtunittest_objfile1():
+    # Ignoring unrecognized lines
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/gibberish.obj')
+    assert parser.numvertices == 0
+    assert len(parser.groupinfos) == 1
+    assert parser.numnormals == 0
+
+
+def rtunittest_objfile2():
+    # Vertex records
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/vertex_records_test.obj')
+    assert parser.numvertices == 4
+    assert parser.vertices[1] == rt.Point(-1, 1, 0)
+    assert parser.vertices[2] == rt.Point(-1, 0.5, 0)
+    assert parser.vertices[3] == rt.Point(1, 0, 0)
+    assert parser.vertices[4] == rt.Point(1, 1, 0)
+
+
+def rtunittest_objfile3():
+    # Parsing traingle faces
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/parsing_triangle_faces_test.obj')
+    assert parser.numvertices == 4
+    assert len(parser.groupinfos) == 1
+    g = parser.get_group_by_name('')
+    assert len(g.children) == 2
+    t1 = g.children[0]
+    t2 = g.children[1]
+    assert t1.p1 == parser.vertices[1]
+    assert t1.p2 == parser.vertices[2]
+    assert t1.p3 == parser.vertices[3]
+    assert t2.p1 == parser.vertices[1]
+    assert t2.p2 == parser.vertices[3]
+    assert t2.p3 == parser.vertices[4]
+
+
+def rtunittest_objfile4():
+    # Triangulating polygons
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/triangulating_polygons_test.obj')
+    assert parser.numvertices == 5
+    assert len(parser.groupinfos) == 1
+    g = parser.get_group_by_name('')
+    assert len(g.children) == 3
+    t1 = g.children[0]
+    t2 = g.children[1]
+    t3 = g.children[2]
+    assert t1.p1 == parser.vertices[1]
+    assert t1.p2 == parser.vertices[2]
+    assert t1.p3 == parser.vertices[3]
+    assert t2.p1 == parser.vertices[1]
+    assert t2.p2 == parser.vertices[3]
+    assert t2.p3 == parser.vertices[4]
+    assert t3.p1 == parser.vertices[1]
+    assert t3.p2 == parser.vertices[4]
+    assert t3.p3 == parser.vertices[5]
+
+
+def rtunittest_objfile5():
+    # Triangles in groups
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/triangles.obj')
+    assert parser.numvertices == 4
+    g1 = parser.get_group_by_name('FirstGroup')
+    g2 = parser.get_group_by_name('SecondGroup')
+    t1 = g1.children[0]
+    t2 = g2.children[0]
+    assert t1.p1 == parser.vertices[1]
+    assert t1.p2 == parser.vertices[2]
+    assert t1.p3 == parser.vertices[3]
+    assert t2.p1 == parser.vertices[1]
+    assert t2.p2 == parser.vertices[3]
+    assert t2.p3 == parser.vertices[4]
+
+
+def rtunittest_objfile6():
+    # Converting an OBJ file to a group
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/triangles.obj')
+    g = parser.obj_to_group()
+    assert parser.get_group_by_name('FirstGroup') in g.children
+    assert parser.get_group_by_name('SecondGroup') in g.children
+
+
+def rtunittest_objfile7():
+    # Vertex normal records
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/vertex_normals_test.obj')
+    assert parser.numnormals == 3
+    assert parser.normals[1] == rt.Vector(0, 0, 1)
+    assert parser.normals[2] == rt.Vector(0.707, 0, -0.707)
+    assert parser.normals[3] == rt.Vector(1, 2, 3)
+
+
+def rtunittest_objfile8():
+    # Faces with normals
+    parser = rt.Parser()
+    parser.parse_obj_file('raytracer/test_obj_files/faces_with_normals_test.obj')
+    g = parser.get_group_by_name('')
+    assert isinstance(g, rt.ObjectGroup)
+    t1 = g.children[0]
+    t2 = g.children[1]
+    assert t1.p1 == parser.vertices[1]
+    assert t1.p2 == parser.vertices[2]
+    assert t1.p3 == parser.vertices[3]
+    assert t1.n1 == parser.normals[3]
+    assert t1.n2 == parser.normals[1]
+    assert t1.n3 == parser.normals[2]
+    assert t1.p1 == t2.p1
+    assert t1.p2 == t2.p2
+    assert t1.p3 == t2.p3
+    assert t1.n1 == t2.n1
+    assert t1.n2 == t2.n2
+    assert t1.n3 == t2.n3
+
+
+def rtunittest_intersectionuv1():
+    # An intersection can encapsulate 'u' and 'v'
+    s = rt.Triangle(rt.Point(0, 1, 0), rt.Point(-1, 0, 0), rt.Point(1, 0, 0))
+    i = rt.IntersectionWithUV(s, 3.5, 0.2, 0.4)
+    assert i.u == 0.2
+    assert i.v == 0.4
+
+
+def rtunittest_smoothtriangle1():
+    # Constructing a smooth triangle
+    p1 = rt.Point(0, 1, 0)
+    p2 = rt.Point(-1, 0, 0)
+    p3 = rt.Point(1, 0, 0)
+    n1 = rt.Vector(0, 1, 0)
+    n2 = rt.Vector(-1, 0, 0)
+    n3 = rt.Vector(1, 0, 0)
+    tri = rt.SmoothTriangle(p1, p2, p3, n1, n2, n3)
+
+    assert tri.p1 == p1
+    assert tri.p2 == p2
+    assert tri.p3 == p3
+    assert tri.n1 == n1
+    assert tri.n2 == n2
+    assert tri.n3 == n3
+
+
+def rtunittest_smoothtriangle2():
+    # An intersection with a smooth triangle stores u/v
+    p1 = rt.Point(0, 1, 0)
+    p2 = rt.Point(-1, 0, 0)
+    p3 = rt.Point(1, 0, 0)
+    n1 = rt.Vector(0, 1, 0)
+    n2 = rt.Vector(-1, 0, 0)
+    n3 = rt.Vector(1, 0, 0)
+    tri = rt.SmoothTriangle(p1, p2, p3, n1, n2, n3)
+
+    r = rt.Ray(rt.Point(-0.2, 0.3, -2), rt.Vector(0, 0, 1))
+    xs = tri.local_intersect(r)
+    assert len(xs) == 1
+    assert isinstance(xs[0], rt.IntersectionWithUV)
+    assert math.isclose(xs[0].u, 0.45)
+    assert math.isclose(xs[0].v, 0.25)
+
+
+def rtunittest_smoothtriangle3():
+    # A smooth triangle uses u/v to interpolate the normal
+    p1 = rt.Point(0, 1, 0)
+    p2 = rt.Point(-1, 0, 0)
+    p3 = rt.Point(1, 0, 0)
+    n1 = rt.Vector(0, 1, 0)
+    n2 = rt.Vector(-1, 0, 0)
+    n3 = rt.Vector(1, 0, 0)
+    tri = rt.SmoothTriangle(p1, p2, p3, n1, n2, n3)
+
+    i = rt.IntersectionWithUV(tri, 1, 0.45, 0.25)
+    n = tri.normal_at(rt.Point(0, 0, 0), i)
+    assert n == rt.Vector(-0.5547, 0.83205, 0)
+
+
+def rtunittest_smoothtriangle4():
+    # Preparing the normal on a smooth triangle
+    p1 = rt.Point(0, 1, 0)
+    p2 = rt.Point(-1, 0, 0)
+    p3 = rt.Point(1, 0, 0)
+    n1 = rt.Vector(0, 1, 0)
+    n2 = rt.Vector(-1, 0, 0)
+    n3 = rt.Vector(1, 0, 0)
+    tri = rt.SmoothTriangle(p1, p2, p3, n1, n2, n3)
+
+    i = rt.IntersectionWithUV(tri, 1, 0.45, 0.25)
+    r = rt.Ray(rt.Point(-0.2, 0.3, -2), rt.Vector(0, 0, 1))
+    comps = prepare_computations(i, r, [i])
+    assert comps.normalv == rt.Vector(-0.5547, 0.83205, 0)
+
+
 def run_unit_tests():
     count = 0
     failed = 0
@@ -1828,21 +2087,25 @@ def run_unit_tests():
     
     timestart = time.time()
 
+    testlist = []
     for f in globals().values():
         if callable(f):
             n = f.__name__
             if n[:11] == 'rtunittest_':
                 if n not in tests_to_skip:
-                    try:
-                        eval(n + '()')
-                    except AssertionError:
-                        print('{} FAILED'.format(n))
-                        failed += 1
-                    else:
-                        print('{} complete'.format(n))
-                        count += 1
+                    testlist.append(n)
                 else:
                     print('{} skipped'.format(n))
+
+    for n in testlist:
+        try:
+            eval(n + '()')
+        except AssertionError:
+            print('{} FAILED'.format(n))
+            failed += 1
+        else:
+            print('{} complete'.format(n))
+            count += 1
 
     print('{} tests completed.'.format(count))
     if failed > 0:

@@ -12,6 +12,15 @@ class Intersection:
         self.t = t
 
 
+class IntersectionWithUV(Intersection):
+    __slots__ = ['u', 'v']
+
+    def __init__(self, objhit, t, u, v):
+        super().__init__(objhit, t)
+        self.u = u
+        self.v = v
+
+
 EPSILON = 0.0001
 ONEMINUSEPSILON = 1 - EPSILON
 
@@ -19,12 +28,15 @@ ONEMINUSEPSILON = 1 - EPSILON
 class HittableObject:
     __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose', 'casts_shadow', 'parent']
 
-    def __init__(self, transform=identity4(), material=None, casts_shadow=True, parent=None):
+    def __init__(self, transform=None, material=None, casts_shadow=True, parent=None):
+        if transform is None:
+            self.transform = rt.identity4()
+        else:
+            self.transform = transform
         if material is None:
             self.material = rt.Material()
         else:
             self.material = material
-        self.transform = transform
         self.casts_shadow = casts_shadow
         self.parent = parent
 
@@ -48,16 +60,18 @@ class HittableObject:
         # ray should be converted to object space by intersect() before calling this
         return []
 
-    def normal_at(self, point):
+    def normal_at(self, point, uv_intersection=None):
         object_point = self.world_to_object(point)
-        object_normal = self.local_normal_at(object_point)
+        object_normal = self.local_normal_at(object_point, uv_intersection)
         world_normal = self.normal_to_world(object_normal)
         return world_normal
 
-    def local_normal_at(self, object_point):
+    def local_normal_at(self, object_point, uv_intersection=None):
         # this method should be overridden by every base class
         # point should be converted to object space by normal_at() before calling this
-        return rt.Vector()
+
+        # uv_intersection is ignored by every class other than SmoothTriangle
+        return NotImplementedError
 
     def world_to_object(self, world_point):
         if self.parent is not None:
@@ -111,7 +125,7 @@ class Sphere(HittableObject):
             t2 = (-half_b + sqrtd) / a
             return [Intersection(self, t1), Intersection(self, t2)]
 
-    def local_normal_at(self, object_point):
+    def local_normal_at(self, object_point, uv_intersection=None):
         return object_point - self.origin
 
 
@@ -128,7 +142,7 @@ class Plane(HittableObject):
             t = -object_ray.origin.y / object_ray.direction.y
             return [Intersection(self, t)]
 
-    def local_normal_at(self, object_point):
+    def local_normal_at(self, object_point, uv_intersection=None):
         return rt.Vector(0, 1, 0)
 
 
@@ -172,7 +186,7 @@ class Cube(HittableObject):
         else:
             return [Intersection(self, tmin), Intersection(self, tmax)]
 
-    def local_normal_at(self, object_point):
+    def local_normal_at(self, object_point, uv_intersection=None):
         abs_point = (math.fabs(object_point.x), math.fabs(object_point.y), math.fabs(object_point.z))
         maxc = max(abs_point)
         if math.isclose(maxc, abs_point[0]):
@@ -273,7 +287,7 @@ class Cylinder(HittableObject):
 
         return res
 
-    def local_normal_at(self, object_point):
+    def local_normal_at(self, object_point, uv_intersection=None):
         # Remember: local_normal_at assumes object_point is on the object.
         # So for cylinder it either needs to be on an end cap (which means
         # the cylinder must be closed) or on the body.
@@ -363,7 +377,7 @@ class Cone(HittableObject):
 
         return res
 
-    def local_normal_at(self, object_point):
+    def local_normal_at(self, object_point, uv_intersection=None):
         opx = object_point.x
         opy = object_point.y
         opz = object_point.z
@@ -381,6 +395,91 @@ class Cone(HittableObject):
             normaly = -normaly
 
         return rt.Vector(opx, normaly, opz)
+
+
+class Triangle(HittableObject):
+    __slots__ = ['__p1', '__p2', '__p3', 'e1', 'e2', 'normal']
+
+    def __init__(self, p1, p2, p3):
+        super().__init__(None, None)
+        self.__p1 = p1
+        self.__p2 = p2
+        self.__p3 = p3
+        self.e1 = rt.Vector()
+        self.e2 = rt.Vector()
+        self.normal = rt.Vector()
+        self.compute_edge_vectors_and_normal()
+
+    @property
+    def p1(self):
+        return self.__p1
+
+    @p1.setter
+    def p1(self, p):
+        self.__p1 = p
+        self.compute_edge_vectors_and_normal()
+
+    @property
+    def p2(self):
+        return self.__p2
+
+    @p2.setter
+    def p2(self, p):
+        self.__p2 = p
+        self.compute_edge_vectors_and_normal()
+
+    @property
+    def p3(self):
+        return self.__p3
+
+    @p3.setter
+    def p3(self, p):
+        self.__p3 = p
+        self.compute_edge_vectors_and_normal()
+
+    def compute_edge_vectors_and_normal(self):
+        self.e1 = self.p2 - self.p1
+        self.e2 = self.p3 - self.p1
+        self.normal = rt.normalize(rt.cross(self.e2, self.e1))
+
+    def local_intersect(self, object_ray):
+        # https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
+        dir_cross_e2 = rt.cross(object_ray.direction, self.e2)
+        det = rt.dot(self.e1, dir_cross_e2)
+        if math.fabs(det) < EPSILON:
+            return []
+
+        f = 1/det
+        p1_to_origin = object_ray.origin - self.p1
+        u = f * rt.dot(p1_to_origin, dir_cross_e2)
+        if u < 0 or u > 1:
+            return []
+
+        origin_cross_e1 = rt.cross(p1_to_origin, self.e1)
+        v = f * rt.dot(object_ray.direction, origin_cross_e1)
+        if v < 0 or (u + v) > 1:
+            return []
+
+        t = f * rt.dot(self.e2, origin_cross_e1)
+        return [IntersectionWithUV(self, t, u, v)]
+
+    def local_normal_at(self, object_point, uv_intersection=None):
+        return self.normal
+
+
+class SmoothTriangle(Triangle):
+    __slots__ = ['n1', 'n2', 'n3']
+
+    def __init__(self, p1, p2, p3, n1, n2, n3):
+        super().__init__(p1, p2, p3)
+        self.n1 = n1
+        self.n2 = n2
+        self.n3 = n3
+
+    def local_normal_at(self, object_point, uv_intersection):
+        return (self.n2 * uv_intersection.u) + \
+               (self.n3 * uv_intersection.v) + \
+               (self.n1 * (1 - uv_intersection.u - uv_intersection.v))
 
 
 class ObjectGroup(HittableObject):
@@ -401,7 +500,7 @@ class ObjectGroup(HittableObject):
             if isinstance(child, ObjectGroup):
                 child.push_material_to_children()
 
-    def local_normal_at(self, object_point):
+    def local_normal_at(self, object_point, uv_intersection=None):
         raise NotImplementedError('Group objects do not have local normals')
 
     def local_intersect(self, object_ray):

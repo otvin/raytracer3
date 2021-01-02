@@ -7,9 +7,11 @@ from .materials import Pattern, TestPattern, StripePattern, GradientPattern, Rin
 from .matrices import matmul4x4, identity4, transpose4x4, inverse4x4, matmul4x1, matmul4xTuple
 from .transformations import translation, scaling, reflection, rotation_x, rotation_y, rotation_z, skew, \
                         view_transform, do_transformray, do_transform
-from .objects import Intersection, HittableObject, Sphere, Plane, Cube, Cylinder, Cone, ObjectGroup
+from .objects import Intersection, IntersectionWithUV, HittableObject, Sphere, Plane, Cube, Cylinder, Cone, \
+                        Triangle, SmoothTriangle, ObjectGroup
 from .world import World, HitRecord
 from .perfcounters import getcount_rayforpixel, getcount_objintersecttests, getcount_objintersections, \
                         getcount_colortests, getcount_reflectionrays, getcount_refractionrays
+from .objfile_reader import Parser, GroupInfo
 
 from .unit_tests import run_unit_tests

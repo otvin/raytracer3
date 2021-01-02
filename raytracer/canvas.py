@@ -86,8 +86,8 @@ def mp_render_rows(rowlist, numsamples, maxdepth, perfcount=False):
     if numsamples == 1:
         for y in rowlist:
             for x in range(MPGLOBALCAMERA.hsize):
-                r = MPGLOBALCAMERA.ray_for_pixel(x, y)
-                write_pixel(x, y, MPGLOBALWORLD.color_at(r, maxdepth))
+                r = MPGLOBALCAMERA.ray_for_pixel(x, y, perfcount)
+                write_pixel(x, y, MPGLOBALWORLD.color_at(r, maxdepth, perfcount))
             print('line {} complete'.format(y))
     else:
         for y in rowlist:

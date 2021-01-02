@@ -7,14 +7,16 @@ def render():
 
     GETPERFCOUNTERS = False
 
-    camera, w = demoscenes.chap14_demo()
+    camera, w = demoscenes.chap15_demo(50, 50)
 
     timestart = time.time()
-    rt.mp_render(camera, w, 10, 6, 5, GETPERFCOUNTERS)
+    rt.mp_render(camera, w, 1, 6, 5, GETPERFCOUNTERS)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
     if GETPERFCOUNTERS:
-        print('Objects in scene: {}'.format(len(w.objects)))
+        groups, objs = w.objectcount()
+        print('Objects in scene: {}'.format(objs))
+        print('Groups in scene: {}'.format(groups))
         print('Lights in scene: {}'.format(len(w.lights)))
         print('Rays cast into scene: {}'.format(rt.getcount_rayforpixel()))
         print('Reflection rays: {}'.format(rt.getcount_reflectionrays()))
@@ -23,7 +25,7 @@ def render():
         print('Intersection tests: {}'.format(rt.getcount_objintersecttests()))
         print('Intersections: {}'.format(rt.getcount_objintersections()))
 
-    rt.canvas_to_ppm('chap14_demo.ppm')
+    rt.canvas_to_ppm('chap15_demo2.ppm')
 
 
 if __name__ == '__main__':

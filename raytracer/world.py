@@ -5,6 +5,22 @@ from .perfcounters import increment_colortests, increment_objintersecttests, inc
                         increment_reflectionrays, increment_refractionrays
 
 
+def objectcount(objgroup):
+    # returns a tuple, number of group objects inside and number of other objects
+    groups = 0
+    objs = 0
+    for i in objgroup.children:
+        if isinstance(i, rt.ObjectGroup):
+            groups += 1
+            g, o = objectcount(i)
+            groups += g
+            objs += o
+        else:
+            objs += 1
+
+    return groups, objs
+
+
 class World:
     __slots__ = ['objects', 'lights']
 
@@ -18,6 +34,21 @@ class World:
             self.lights = []
         else:
             self.lights = lights
+
+    def objectcount(self):
+        # returns a tuple - number of groups, and number of other objects
+        groups = 0
+        objs = 0
+        for i in self.objects:
+            if isinstance(i, rt.ObjectGroup):
+                groups += 1
+                g, o = objectcount(i)
+                groups += g
+                objs += o
+            else:
+                objs += 1
+
+        return groups, objs
 
     def intersect(self, r, perfcount=False):
         res = []
@@ -171,7 +202,7 @@ def prepare_computations(i, r, xs):
 
     point = r.at(i.t)
     eyev = -r.direction
-    normalv = i.objhit.normal_at(point)
+    normalv = i.objhit.normal_at(point, i)
     if rt.dot(normalv, eyev) < 0:
         inside = True
         normalv = -normalv

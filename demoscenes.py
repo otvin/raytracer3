@@ -502,8 +502,9 @@ def chap13_demo2(width=400, height=200):
 
     # add a cone and move the light
     camera, w = chap13_demo(width, height)
-    light = rt.PointLight(rt.Point(0, 0.75, 0), rt.Color(1, 1, 1))
+    light = rt.PointLight(rt.Point(0, 0.75, 0), rt.Color(0.5, 0.5, 0.5))
     w.lights = [light]
+    w.lights.append(rt.PointLight(rt.Point(1, 6.9, -4.9), rt.Color(0.5, 0.5, 0.5)))
 
     cone1 = rt.Cone()
     A = rt.scaling(0.5, 0.5, 0.5)
@@ -712,5 +713,46 @@ def chap14_demo(width=600, height=200):
     wacky3.material.shininess = 20
     wacky3.push_material_to_children()
     w.objects.append(wacky3)
+
+    return camera, w
+
+
+def chap15_demo(width=200, height=200):
+
+    w = rt.World()
+    cameratransform = rt.view_transform(rt.Point(-3.0, 1.0, 0), rt.Point(0, 1.0, 0), rt.Point(0, 1, 0))
+    camera = rt.Camera(width, height, 0.5, cameratransform)
+
+    light = rt.PointLight(rt.Point(-4.9, 2, 3.5), rt.Color(0.5, 0.5, 0.5))
+    w.lights.append(light)
+    light2 = rt.PointLight(rt.Point(-4.9, 2, -3.5), rt.Color(0.5, 0.5, 0.5))
+    w.lights.append(light2)
+
+    floor = rt.Plane()
+    floor.transform = rt.translation(0, -0.5, 0)
+    floor.material.color = rt.Color(0.7, 0.7, 0.2)
+    floor.material.reflective = 0.7
+    floor.material.ambient = 0.3
+    floor.material.diffuse = 0.4
+    floor.material.specular = 0.8
+    w.objects.append(floor)
+
+    parser = rt.Parser()
+    # parser.parse_obj_file('raytracer/test_obj_files/tetrahedron.obj')
+    # parser.parse_obj_file('raytracer/test_obj_files/icosahedron.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/teapot-low.obj')
+    g = parser.get_group_by_name('Teapot001')
+    A = rt.rotation_x(-math.pi/2)
+    B = rt.rotation_z(-math.pi / 2)
+    C = rt.translation(2, 1, 0)
+    D = rt.rotation_y(-math.pi / 10)
+    g.transform = rt.matmul4x4(C, rt.matmul4x4(A, rt.matmul4x4(D, B)))
+    g.material.color = rt.Color(0.1, 0.5, 0.7)
+    g.material.ambient = 0.3
+    g.material.diffuse = 0.9
+    g.material.shininess = 10
+    g.material.specular = 0.4
+    g.push_material_to_children()
+    w.objects.append(g)
 
     return camera, w
