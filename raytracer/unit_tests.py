@@ -2455,6 +2455,169 @@ def rtunittest_boundingbox24():
     assert right.saved_ray is not None
 
 
+def rtunittest_bvh1():
+    # Splitting a perfect cube
+    box = rt.BoundingBox(rt.Point(-1, -4, -5), rt.Point(9, 6, 5))
+    left, right = box.split_bounds()
+    assert left.min == rt.Point(-1, -4, -5)
+    assert left.max == rt.Point(4, 6, 5)
+    assert right.min == rt.Point(4, -4, -5)
+    assert right.max == rt.Point(9, 6, 5)
+
+
+def rtunittest_bvh2():
+    # splitting an x-wide box
+    box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(9, 5.5, 3))
+    left, right = box.split_bounds()
+    assert left.min == rt.Point(-1, -2, -3)
+    assert left.max == rt.Point(4, 5.5, 3)
+    assert right.min == rt.Point(4, -2, -3)
+    assert right.max == rt.Point(9, 5.5, 3)
+
+
+def rtunittest_bvh3():
+    # splitting a y-wide box
+    box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(5, 8, 3))
+    left, right = box.split_bounds()
+    assert left.min == rt.Point(-1, -2, -3)
+    assert left.max == rt.Point(5, 3, 3)
+    assert right.min == rt.Point(-1, 3, -3)
+    assert right.max == rt.Point(5, 8, 3)
+
+
+def rtunittest_bvh4():
+    # splitting a z-wide box
+    box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(5, 3, 7))
+    left, right = box.split_bounds()
+    assert left.min == rt.Point(-1, -2, -3)
+    assert left.max == rt.Point(5, 3, 2)
+    assert right.min == rt.Point(-1, -2, 2)
+    assert right.max == rt.Point(5, 3, 7)
+
+
+def rtunittest_bvh5():
+    # Partitioning a group's children
+    s1 = rt.Sphere()
+    s1.transform = rt.translation(-2, 0, 0)
+    s2 = rt.Sphere()
+    s2.transform = rt.translation(2, 0, 0)
+    s3 = rt.Sphere()
+    g = rt.ObjectGroup()
+    g.addchild(s1)
+    g.addchild(s2)
+    g.addchild(s3)
+    left, right = g.partition_children()
+    assert len(g.children) == 1
+    assert s3 in g.children
+    assert len(left) == 1
+    assert s1 in left
+    assert len(right) == 1
+    assert s2 in right
+
+
+def rtunittest_bvh6():
+    # Creating a sub-group from a list of children
+    s1 = rt.Sphere()
+    s2 = rt.Sphere()
+    g = rt.ObjectGroup()
+    g.make_subgroup([s1, s2])
+    assert len(g.children) == 1
+    assert s1 in g.children[0].children
+    assert s2 in g.children[0].children
+
+
+def rtunittest_bvh7():
+    # Subdividing a primitive does nothing
+    shape = rt.Sphere()
+    shape.divide(1)
+    assert isinstance(shape, rt.Sphere)
+
+
+def rtunittest_bvh8():
+    # Subdividing a group partitions its children
+    s1 = rt.Sphere()
+    s1.transform = rt.translation(-2, -2, 0)
+    s2 = rt.Sphere()
+    s2.transform = rt.translation(-2, 2, 0)
+    s3 = rt.Sphere()
+    s3.transform = rt.scaling(4, 4, 4)
+    g = rt.ObjectGroup()
+    g.addchild(s1)
+    g.addchild(s2)
+    g.addchild(s3)
+    g.divide(1)
+    assert g.children[0] is s3
+    subgroup = g.children[1]
+    assert isinstance(subgroup, rt.ObjectGroup)
+    assert subgroup.parent is g
+    assert len(subgroup.children) == 2
+    assert isinstance(subgroup.children[0], rt.ObjectGroup)
+    assert subgroup.children[0].children[0] is s1
+    assert isinstance(subgroup.children[1], rt.ObjectGroup)
+    assert subgroup.children[1].children[0] is s2
+
+
+def rtunittest_bvh9():
+    # subdividing a group with too few children
+    s1 = rt.Sphere()
+    s1.transform = rt.translation(-2, 0, 0)
+    s2 = rt.Sphere()
+    s2.transform = rt.translation(2, 1, 0)
+    s3 = rt.Sphere()
+    s3.transform = rt.translation(2, -1, 0)
+    subgroup = rt.ObjectGroup()
+    subgroup.addchild(s1)
+    subgroup.addchild(s2)
+    subgroup.addchild(s3)
+    s4 = rt.Sphere()
+    g = rt.ObjectGroup()
+    g.addchild(subgroup)
+    g.addchild(s4)
+    g.divide(3)
+    assert g.children[0] is subgroup
+    assert g.children[1] is s4
+    assert len(subgroup.children) == 2
+    assert isinstance(subgroup.children[0], rt.ObjectGroup)
+    assert subgroup.children[0].children[0] is s1
+    assert isinstance(subgroup.children[1], rt.ObjectGroup)
+    assert s2 in subgroup.children[1].children
+    assert s3 in subgroup.children[1].children
+    assert len(subgroup.children[1].children) == 2
+
+
+def rtunittest_bvh10():
+    # Subdividing a CSG shape subdivides its children
+    s1 = rt.Sphere()
+    s1.transform = rt.translation(-1.5, 0, 0)
+    s2 = rt.Sphere()
+    s2.transform = rt.translation(1.5, 0, 0)
+    left = rt.ObjectGroup()
+    left.addchild(s1)
+    left.addchild(s2)
+
+    s3 = rt.Sphere()
+    s3.transform = rt.translation(0, 0, -1.5)
+    s4 = rt.Sphere()
+    s4.transform = rt.translation(0, 0, 1.5)
+    right = rt.ObjectGroup()
+    right.addchild(s3)
+    right.addchild(s4)
+
+    shape = rt.CSG('difference', left, right)
+    shape.divide(1)
+
+    assert isinstance(left.children[0], rt.ObjectGroup)
+    assert isinstance(left.children[1], rt.ObjectGroup)
+    assert s1 in left.children[0].children
+    assert len(left.children[0].children) == 1
+    assert s2 in left.children[1].children
+    assert len(left.children[1].children) == 1
+    assert s3 in right.children[0].children
+    assert len(right.children[0].children) == 1
+    assert s4 in right.children[1].children
+    assert len(right.children[1].children) == 1
+
+
 def run_unit_tests():
     count = 0
     failed = 0

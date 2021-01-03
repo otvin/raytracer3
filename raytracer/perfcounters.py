@@ -1,12 +1,13 @@
 import multiprocessing as mp
 
 
-COUNTER_RAYFORPIXEL = mp.Value('q', 0)
-COUNTER_OBJINTERSECTTESTS = mp.Value('q', 0)
-COUNTER_OBJINTERSECTIONS = mp.Value('q', 0)
-COUNTER_COLORTESTS = mp.Value('q', 0)
-COUNTER_REFLECTIONRAYS = mp.Value('q', 0)
-COUNTER_REFRACTIONRAYS = mp.Value('q', 0)
+COUNTER_RAYFORPIXEL = mp.Value('L', 0)
+COUNTER_OBJINTERSECTTESTS = mp.Value('L', 0)
+COUNTER_OBJINTERSECTIONS = mp.Value('L', 0)
+COUNTER_COLORTESTS = mp.Value('L', 0)
+COUNTER_REFLECTIONRAYS = mp.Value('L', 0)
+COUNTER_REFRACTIONRAYS = mp.Value('L', 0)
+
 
 def increment_reflectionrays():
     global COUNTER_REFLECTIONRAYS
@@ -28,6 +29,7 @@ def increment_refractionrays():
 def getcount_refractionrays():
     global COUNTER_REFRACTIONRAYS
     return COUNTER_REFRACTIONRAYS.value
+
 
 def increment_rayforpixel():
     global COUNTER_RAYFORPIXEL
@@ -71,4 +73,3 @@ def increment_colortests():
 def getcount_colortests():
     global COUNTER_COLORTESTS
     return COUNTER_COLORTESTS.value
-

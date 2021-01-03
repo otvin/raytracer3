@@ -101,7 +101,11 @@ class HittableObject:
         return self.boundingbox
 
     def parent_space_bounds_of(self):
+        # TODO: Cache this.  It seems constant.
         return self.bounds_of().transform(self.transform)
+
+    def divide(self, threshold):
+        pass
 
 
 class TestShape(HittableObject):
@@ -176,11 +180,12 @@ class Plane(HittableObject):
             self.boundingbox = rt.BoundingBox(rt.Point(-math.inf, 0, -math.inf), rt.Point(math.inf, 0, math.inf))
         return self.boundingbox
 
-def check_axis(origin, direction, min=-1, max=1):
+
+def check_axis(origin, direction, axismin=-1, axismax=1):
     # helper function for cube and bounding box intersection, but doesn't rely on cube itself
     # For cubes, min and max are -1 and 1; for bounding boxes it's based on min/max of the box
-    tmin_numerator = min - origin
-    tmax_numerator = max - origin
+    tmin_numerator = axismin - origin
+    tmax_numerator = axismax - origin
     if math.fabs(direction) >= EPSILON:
         tmin = tmin_numerator / direction
         tmax = tmax_numerator / direction
@@ -565,7 +570,6 @@ class ObjectGroup(HittableObject):
         if len(self.children) == 0:
             return []
         elif not self.bounds_of().intersects(object_ray):
-            # TODO - cache bounding box so not looking on every ray that could intersect
             return []
         else:
             xs = []
@@ -575,6 +579,46 @@ class ObjectGroup(HittableObject):
 
     def bounds_of(self):
         return self.boundingbox
+
+    def partition_children(self):
+        # returns two lists - objects that should go in the left child, and objects that
+        # should go in the right.  Removes those objects from self.children[]
+        leftbox, rightbox = self.boundingbox.split_bounds()
+        to_remove = []  # if we remove while we're iterating we break the iterator
+        left = []
+        right = []
+
+        for child in self.children:
+            if leftbox.contains_box(child.parent_space_bounds_of()):
+                to_remove.append(child)
+                left.append(child)
+            elif rightbox.contains_box(child.parent_space_bounds_of()):
+                to_remove.append(child)
+                right.append(child)
+
+        for rem in to_remove:
+            self.children.remove(rem)
+
+        return left, right
+
+    def make_subgroup(self, objlist):
+        # takes a list of objects, adds them to a group, and adds the new group to
+        # self.children
+        g = ObjectGroup()
+        for i in objlist:
+            g.addchild(i)
+        self.addchild(g)
+
+    def divide(self, threshold):
+        if len(self.children) >= threshold:
+            left, right = self.partition_children()
+            if len(left) > 0:
+                self.make_subgroup(left)
+            if len(right) > 0:
+                self.make_subgroup(right)
+
+        for i in self.children:
+            i.divide(threshold)
 
 
 def intersection_allowed(oper, lhit, inl, inr):
@@ -640,7 +684,6 @@ class CSG(HittableObject):
 
     def local_intersect(self, object_ray):
         if not self.bounds_of().intersects(object_ray):
-            # TODO - cache bounding box so not looking on every ray that could intersect
             return []
 
         xs = self.left.intersect(object_ray)
@@ -654,3 +697,7 @@ class CSG(HittableObject):
             self.boundingbox += self.left.parent_space_bounds_of()
             self.boundingbox += self.right.parent_space_bounds_of()
         return self.boundingbox
+
+    def divide(self, threshold):
+        self.left.divide(threshold)
+        self.right.divide(threshold)

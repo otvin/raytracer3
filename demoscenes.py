@@ -20,7 +20,7 @@ def chap11_demo(width=200, height=200):
     # by Jamis Buck <jamis@jamisbuck.org>
     # ======================================================
     w = rt.World()
-    cameratransform = rt.view_transform(rt.Point(-4.5, 0.85, -4), rt.Point(0, 0.85, 0), rt.Point(0, 1, 0))
+    cameratransform = rt.view_transform(rt.Point(-4.5, 0.85, -4), rt.Point(0, 0.85, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, 0.5, cameratransform)
 
     light = rt.PointLight(rt.Point(-4.9, 4.9, 1.5), rt.Color(1, 1, 1))
@@ -328,7 +328,7 @@ def chap13_demo(width=400, height=200):
     # by Jamis Buck <jamis@jamisbuck.org>
     # ======================================================
     w = rt.World()
-    cameratransform = rt.view_transform(rt.Point(8, 3.5, -9), rt.Point(0, 0.3, 0), rt.Point(0, 1, 0))
+    cameratransform = rt.view_transform(rt.Point(8, 3.5, -9), rt.Point(0, 0.3, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, 0.314, cameratransform)
 
     light = rt.PointLight(rt.Point(1, 6.9, -4.9), rt.Color(1, 1, 1))
@@ -661,7 +661,7 @@ def chap14_demo(width=600, height=200):
     # ======================================================
 
     w = rt.World()
-    cameratransform = rt.view_transform(rt.Point(0, 0, -9), rt.Point(0, 0, 0), rt.Point(0, 1, 0))
+    cameratransform = rt.view_transform(rt.Point(0, 0, -9), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, 0.9, cameratransform)
 
     w.lights.append(rt.PointLight(rt.Point(10000, 10000, -10000), rt.Color(0.25, 0.25, 0.25)))
@@ -722,7 +722,7 @@ def chap14_demo(width=600, height=200):
 def chap15_demo(width=200, height=200):
 
     w = rt.World()
-    cameratransform = rt.view_transform(rt.Point(-3.0, 1.0, 0), rt.Point(0, 1.0, 0), rt.Point(0, 1, 0))
+    cameratransform = rt.view_transform(rt.Point(-3.0, 1.0, 0), rt.Point(0, 1.0, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, 0.5, cameratransform)
 
     light = rt.PointLight(rt.Point(-4.9, 2, 3.5), rt.Color(0.5, 0.5, 0.5))
@@ -755,6 +755,7 @@ def chap15_demo(width=200, height=200):
     g.material.shininess = 10
     g.material.specular = 0.4
     g.push_material_to_children()
+    g.divide(10)
     w.objects.append(g)
 
     return camera, w
@@ -951,7 +952,7 @@ def christmas_branch():
     branch.material.diffuse = 0.6
 
     # how much branch each segment gets
-    seg_size = length / (segments -1 )
+    seg_size = length / (segments - 1)
 
     # the radial distance, in radians, between adjacent needles in a group
     theta = 2.1 * math.pi / per_segment
@@ -998,6 +999,7 @@ def christmas_branch():
         obj.addchild(subgroup)
 
     return obj
+
 
 def christmas_demo(width=400, height=300):
     # Found at https://iliathoughts.com/posts/raytracer/
@@ -1209,5 +1211,8 @@ def christmas_demo(width=400, height=300):
     E = rt.translation(1.5, -0.4, 0)
     fir_branch.transform = rt.chain_transforms(A, B, C, D, E)
     world.objects.append(fir_branch)
+
+    for i in world.objects:
+        i.divide(7)
 
     return camera, world
