@@ -81,3 +81,12 @@ def view_transform(from_pt, to_pt, up_vec):
                    [-forward.arr[0], -forward.arr[1], -forward.arr[2], -forward.arr[3]],
                    [0, 0, 0, 1.0]]
     return rt.matmul4x4(orientation, translation(-from_pt.x, -from_pt.y, -from_pt.z))
+
+
+def chain_transforms(*args):
+    res = rt.identity4()
+    i = 0
+    while i < len(args):
+        res = rt.matmul4x4(args[i], res)
+        i += 1
+    return res

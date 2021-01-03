@@ -7,7 +7,7 @@ from .transformations import do_transform, do_transformray, translation, scaling
 from .world import prepare_computations, schlick_reflectance
 from .canvas import init_canvas, write_pixel, get_canvasdims, pixel_at
 from .matrices import allclose4x4
-from .objects import EPSILON
+from .objects import EPSILON, intersection_allowed
 
 
 def compare_ppms(file1, file2):
@@ -1887,7 +1887,7 @@ def rtunittest_triangle7():
 def rtunittest_objfile1():
     # Ignoring unrecognized lines
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/gibberish.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/gibberish.obj', False)
     assert parser.numvertices == 0
     assert len(parser.groupinfos) == 1
     assert parser.numnormals == 0
@@ -1896,7 +1896,7 @@ def rtunittest_objfile1():
 def rtunittest_objfile2():
     # Vertex records
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/vertex_records_test.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/vertex_records_test.obj', False)
     assert parser.numvertices == 4
     assert parser.vertices[1] == rt.Point(-1, 1, 0)
     assert parser.vertices[2] == rt.Point(-1, 0.5, 0)
@@ -1907,7 +1907,7 @@ def rtunittest_objfile2():
 def rtunittest_objfile3():
     # Parsing traingle faces
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/parsing_triangle_faces_test.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/parsing_triangle_faces_test.obj', False)
     assert parser.numvertices == 4
     assert len(parser.groupinfos) == 1
     g = parser.get_group_by_name('')
@@ -1925,7 +1925,7 @@ def rtunittest_objfile3():
 def rtunittest_objfile4():
     # Triangulating polygons
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/triangulating_polygons_test.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/triangulating_polygons_test.obj', False)
     assert parser.numvertices == 5
     assert len(parser.groupinfos) == 1
     g = parser.get_group_by_name('')
@@ -1947,7 +1947,7 @@ def rtunittest_objfile4():
 def rtunittest_objfile5():
     # Triangles in groups
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/triangles.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/triangles.obj', False)
     assert parser.numvertices == 4
     g1 = parser.get_group_by_name('FirstGroup')
     g2 = parser.get_group_by_name('SecondGroup')
@@ -1964,7 +1964,7 @@ def rtunittest_objfile5():
 def rtunittest_objfile6():
     # Converting an OBJ file to a group
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/triangles.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/triangles.obj', False)
     g = parser.obj_to_group()
     assert parser.get_group_by_name('FirstGroup') in g.children
     assert parser.get_group_by_name('SecondGroup') in g.children
@@ -1973,7 +1973,7 @@ def rtunittest_objfile6():
 def rtunittest_objfile7():
     # Vertex normal records
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/vertex_normals_test.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/vertex_normals_test.obj', False)
     assert parser.numnormals == 3
     assert parser.normals[1] == rt.Vector(0, 0, 1)
     assert parser.normals[2] == rt.Vector(0.707, 0, -0.707)
@@ -1983,7 +1983,7 @@ def rtunittest_objfile7():
 def rtunittest_objfile8():
     # Faces with normals
     parser = rt.Parser()
-    parser.parse_obj_file('raytracer/test_obj_files/faces_with_normals_test.obj')
+    parser.parse_obj_file('raytracer/test_obj_files/faces_with_normals_test.obj', False)
     g = parser.get_group_by_name('')
     assert isinstance(g, rt.ObjectGroup)
     t1 = g.children[0]
@@ -2075,6 +2075,100 @@ def rtunittest_smoothtriangle4():
     r = rt.Ray(rt.Point(-0.2, 0.3, -2), rt.Vector(0, 0, 1))
     comps = prepare_computations(i, r, [i])
     assert comps.normalv == rt.Vector(-0.5547, 0.83205, 0)
+
+
+def rtunittest_csg1():
+    # CSG is created with an operation and two shapes
+    s1 = rt.Sphere()
+    s2 = rt.Cube()
+    c = rt.CSG("union", s1, s2)
+    assert c.operation == "union"
+    assert c.left is s1
+    assert c.right is s2
+    assert s1.parent is c
+    assert s2.parent is c
+
+
+def rtunittest_csg2():
+    # Evaluating the rule for a CSG operation
+
+    # each test has an operation, lhit, inl, inr, and expected result
+    tests = [
+        ('union', True, True, True, False),
+        ('union', True, True, False, True),
+        ('union', True, False, True, False),
+        ('union', True, False, False, True),
+        ('union', False, True, True, False),
+        ('union', False, True, False, False),
+        ('union', False, False, True, True),
+        ('union', False, False, False, True),
+        ('intersection', True, True, True, True),
+        ('intersection', True, True, False, False),
+        ('intersection', True, False, True, True),
+        ('intersection', True, False, False, False),
+        ('intersection', False, True, True, True),
+        ('intersection', False, True, False, True),
+        ('intersection', False, False, True, False),
+        ('intersection', False, False, False, False),
+        ('difference', True, True, True, False),
+        ('difference', True, True, False, True),
+        ('difference', True, False, True, False),
+        ('difference', True, False, False, True),
+        ('difference', False, True, True, True),
+        ('difference', False, True, False, True),
+        ('difference', False, False, True, False),
+        ('difference', False, False, False, False),
+    ]
+
+    for test in tests:
+        assert intersection_allowed(test[0], test[1], test[2], test[3]) == test[4]
+
+
+def rtunittest_csg3():
+    # Filtering a list of intersections
+
+    # each test contains operation, and specific intersections that should be returned
+    tests = [
+        ('union', 0, 3), ('intersection', 1, 2), ('difference', 0, 1)
+    ]
+
+    s1 = rt.Sphere()
+    s2 = rt.Cube()
+    xs = [rt.Intersection(s1, 1), rt.Intersection(s2, 2), rt.Intersection(s1, 3), rt.Intersection(s2, 4)]
+
+    for test in tests:
+        c = rt.CSG(test[0], s1, s2)
+        res = c.filter_intersections(xs)
+        assert len(res) == 2
+        assert res[0].objhit is xs[test[1]].objhit
+        assert res[0].t == xs[test[1]].t
+        assert res[1].objhit is xs[test[2]].objhit
+        assert res[1].t == xs[test[2]].t
+
+
+def rtunittest_csg4():
+    # A ray misses a CSG object
+
+    c = rt.CSG("union", rt.Sphere(), rt.Cube())
+    r = rt.Ray(rt.Point(0, 2, -5), rt.Vector(0, 0, 1))
+    xs = c.local_intersect(r)
+    assert len(xs) == 0
+
+
+def rtunittest_csg5():
+    # A ray hits a CSG object
+    s1 = rt.Sphere()
+    s2 = rt.Sphere()
+    s2.transform = rt.translation(0, 0, 0.5)
+    c = rt.CSG("union", s1, s2)
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
+    xs = c.local_intersect(r)
+
+    assert len(xs) == 2
+    assert math.isclose(xs[0].t, 4)
+    assert xs[0].objhit is s1
+    assert math.isclose(xs[1].t, 6.5)
+    assert xs[1].objhit is s2
 
 
 def run_unit_tests():

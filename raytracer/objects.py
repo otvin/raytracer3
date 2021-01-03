@@ -50,6 +50,10 @@ class HittableObject:
         self.inversetransform = rt.inverse4x4(self.__transform)
         self.__inversetransformtranspose = rt.transpose4x4(self.inversetransform)
 
+    def includes(self, obj):
+        # used for CSGs.  An object always includes itself.  Overridden for ObjectGroups and CSGs
+        return self is obj
+
     def intersect(self, r):
         # returns a list of intersections
         object_ray = rt.do_transformray(self.inversetransform, r)
@@ -493,6 +497,12 @@ class ObjectGroup(HittableObject):
         obj.parent = self
         self.children.append(obj)
 
+    def includes(self, obj):
+        for child in self.children:
+            if child.includes(obj):
+                return True
+        return False
+
     def push_material_to_children(self):
         # takes the material of the group and sets all children to have this material
         for child in self.children:
@@ -511,3 +521,71 @@ class ObjectGroup(HittableObject):
             for child in self.children:
                 xs.extend(child.intersect(object_ray))
             return xs
+
+
+def intersection_allowed(oper, lhit, inl, inr):
+    # oper = a CSGOperation
+    # lhit = true if left object (s1) is hit, false if right object (s2) is hit
+    # inl = true if the intersection is inside s1
+    # inr = true if the intersection is inside s2
+
+    # Union - true if its the left object and not inside the right, or hits the right object and not inside the left.
+    if oper == "union":
+        return (lhit and not inr) or (not lhit and not inl)
+    elif oper == "intersection":
+        return (lhit and inr) or (not lhit and inl)
+    else:
+        return (lhit and not inr) or (not lhit and inl)
+
+
+class CSG(HittableObject):
+    __slots__ = ['left', 'right', 'operation']
+
+    def __init__(self, operation, left, right):
+        super().__init__()
+        if operation not in ['union', 'intersection', 'difference']:
+            raise ValueError('Invalid operation: {}'.format(operation))
+        self.operation = operation
+        self.left = left
+        left.parent = self
+        self.right = right
+        right.parent = self
+
+    def includes(self, obj):
+        if self.left.includes(obj):
+            return True
+        else:
+            return self.right.includes(obj)
+
+    def filter_intersections(self, xs):
+        # begin outside both objects
+        inl = False
+        inr = False
+
+        result = []
+
+        for i in xs:
+            # each intersection has to be included by either left or right.  So test left, and if it's not included
+            # there, it must have been included in the right.
+            lhit = self.left.includes(i.objhit)
+            if intersection_allowed(self.operation, lhit, inl, inr):
+                result.append(i)
+
+            # depending on which object was hit, we toggle inl or inr.  Example: we were outside of l, we then
+            # intersect with l, we are now in l.
+            # QUESTION: what about rays that are tangent to spheres?  We intersect but did not go in.
+            if lhit:
+                inl = not inl
+            else:
+                inr = not inr
+
+        return result
+
+    def local_normal_at(self, object_point, uv_intersection=None):
+        return NotImplementedError
+
+    def local_intersect(self, object_ray):
+        xs = self.left.intersect(object_ray)
+        xs.extend(self.right.intersect(object_ray))
+        xs.sort(key=lambda x: x.t)  # this will lead to double-sorting but otherwise the filter algorithm doesn't work.
+        return self.filter_intersections(xs)

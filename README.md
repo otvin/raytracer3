@@ -4,7 +4,12 @@ Built using _The Ray Tracer Challenge_ by Jamis Buck
 
 To execute unit tests, run _python3 unit_tester.py_
 
-The "saved_renders" folder contains samples from the end of each chapter, once we started rendering.
+As of now, I have implemented all features in the book.  Added several performance optimizations, such as storing the inverse transform and transpose of inverse transform for each object, rather than having to compute it with every intersection.  
+
+The book lists several optional features.  So far, I have implemented anti-aliasing by shooting several rays into random spots in each pixel, instead of just pixel center.
+
+The "saved_renders" folder contains samples from the end of each chapter, once we started rendering.  I have posted PNGs of the files from chapter 11 forward below.
+
 
 * _chap5.ppm_ - rendered the silhouette of a sphere
 * _chap6.ppm_ - rendered a transformed (rotated, scaled in one dimension) sphere
@@ -19,8 +24,9 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap14_demo.ppm_ - added groups of objects, which can be transformed as a group, and support for multiple lights in a scene.
 * _chap15_demo.ppm_ - added triangles and ability to read a limited set of Wavefront .obj files
 * _chap15_demo2.ppm_ - the obligatory teapot.  Low-res.  Rendering this model, which contains 241 triangles, took over 18 minutes on my machine with 6 cores/6 threads.
+* _chap16_demo.ppm - added Constructive Solid Geometry (CSG) supports for intersections, unions, and differences.
 
-Jamis Buck posted details for the scenes shown in the book for chapters 11-14 on-line.  Links can be found in demoscenes.py.
+Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
 
 ![chap11_demo.ppm](saved_renders/chap11_demo.png)
 ![chap12_demo.ppm](saved_renders/chap12_demo.png)
@@ -29,3 +35,4 @@ Jamis Buck posted details for the scenes shown in the book for chapters 11-14 on
 ![chap14_demo.ppm](saved_renders/chap14_demo.png)
 ![chap15_demo.ppm](saved_renders/chap15_demo.png)
 ![chap15_demo2.ppm](saved_renders/chap15_demo2.png)
+![chap16_demo2.ppm](saved_renders/chap16_demo.png)

@@ -5,20 +5,30 @@ from .perfcounters import increment_colortests, increment_objintersecttests, inc
                         increment_reflectionrays, increment_refractionrays
 
 
-def objectcount(objgroup):
+def objectcount_recurse(obj):
     # returns a tuple, number of group objects inside and number of other objects
     groups = 0
     objs = 0
-    for i in objgroup.children:
-        if isinstance(i, rt.ObjectGroup):
-            groups += 1
-            g, o = objectcount(i)
+    csgs = 0
+
+    if isinstance(obj, rt.ObjectGroup):
+        groups += 1
+        for i in obj.children:
+            g, o, c = objectcount_recurse(i)
             groups += g
             objs += o
-        else:
-            objs += 1
+            csgs += c
+    elif isinstance(obj, rt.CSG):
+        csgs += 1
+        g, o, c = objectcount_recurse(obj.left)
+        g1, o1, c1 = objectcount_recurse(obj.right)
+        groups += (g + g1)
+        objs += (o + o1)
+        csgs += (c + c1)
+    else:
+        objs += 1
 
-    return groups, objs
+    return groups, objs, csgs
 
 
 class World:
@@ -39,16 +49,14 @@ class World:
         # returns a tuple - number of groups, and number of other objects
         groups = 0
         objs = 0
+        csgs = 0
         for i in self.objects:
-            if isinstance(i, rt.ObjectGroup):
-                groups += 1
-                g, o = objectcount(i)
-                groups += g
-                objs += o
-            else:
-                objs += 1
+            g, o, c = objectcount_recurse(i)
+            groups += g
+            objs += o
+            csgs += c
 
-        return groups, objs
+        return groups, objs, csgs
 
     def intersect(self, r, perfcount=False):
         res = []

@@ -26,54 +26,52 @@ class Parser:
     def numnormals(self):
         return len(self.normals) - 1
 
-    def parse_obj_file(self, filename):
+    def parse_obj_file(self, filename, autoscale=True):
         self.vertices = [None]
         self.groupinfos = []
         self.normals = [None]
 
-        # I could factor this, but it's faster this way.  First, read through file to get the bounding box.
-        minx = math.inf
-        maxx = -math.inf
-        miny = math.inf
-        maxy = -math.inf
-        minz = math.inf
-        maxz = -math.inf
-        f = open(filename, 'r')
-        line = f.readline()
-        while line:
-            linesplit = line.split()
-            if len(linesplit) > 0:
-                if linesplit[0] == 'v':
-                    assert len(linesplit) >= 4
-                    x = float(linesplit[1])
-                    y = float(linesplit[2])
-                    z = float(linesplit[3])
-                    if x < minx:
-                        minx = x
-                    if x > maxx:
-                        maxx = x
-                    if y < miny:
-                        miny = y
-                    if y > maxy:
-                        maxy = y
-                    if z < minz:
-                        minz = z
-                    if z > maxz:
-                        maxz = z
+        minx = miny = minz = math.inf
+        maxx = maxy = maxz = -math.inf
+        sx = sy = sz = scale = 0
 
+        if autoscale:
+            f = open(filename, 'r')
             line = f.readline()
-        f.close()
+            while line:
+                linesplit = line.split()
+                if len(linesplit) > 0:
+                    if linesplit[0] == 'v':
+                        assert len(linesplit) >= 4
+                        x = float(linesplit[1])
+                        y = float(linesplit[2])
+                        z = float(linesplit[3])
+                        if x < minx:
+                            minx = x
+                        if x > maxx:
+                            maxx = x
+                        if y < miny:
+                            miny = y
+                        if y > maxy:
+                            maxy = y
+                        if z < minz:
+                            minz = z
+                        if z > maxz:
+                            maxz = z
 
-        if math.isinf(minx):
-            # there were no vertices in the file, just exit
-            return
+                line = f.readline()
+            f.close()
 
-        print('Boundaries - ({}, {}, {}) to ({}, {}, {})'.format(minx, miny, minz, maxx, maxy, maxz))
-        sx = maxx-minx
-        sy = maxy-miny
-        sz = maxz-minz
-        scale = max(sx, sy, sz) / 2
-        print('Scale - {}'.format(scale))
+            if math.isinf(minx):
+                # there were no vertices in the file, just exit
+                return
+
+            print('Boundaries - ({}, {}, {}) to ({}, {}, {})'.format(minx, miny, minz, maxx, maxy, maxz))
+            sx = maxx-minx
+            sy = maxy-miny
+            sz = maxz-minz
+            scale = max(sx, sy, sz) / 2
+            print('Scale - {}'.format(scale))
 
         f = open(filename, 'r')
         current_groupname = ''
@@ -98,10 +96,11 @@ class Parser:
                         y = float(linesplit[2])
                         z = float(linesplit[3])
 
-                        # scale it - see https://forum.raytracerchallenge.com/thread/27/triangle-mesh-normalization
-                        x = (x - (minx + sx/2)) / scale
-                        y = (y - (miny + sy/2)) / scale
-                        z = (z - (minz + sz/2)) / scale
+                        if autoscale:
+                            # scale it - see https://forum.raytracerchallenge.com/thread/27/triangle-mesh-normalization
+                            x = (x - (minx + sx/2)) / scale
+                            y = (y - (miny + sy/2)) / scale
+                            z = (z - (minz + sz/2)) / scale
 
                         self.vertices.append(rt.Point(x, y, z))
                     elif linesplit[0] == 'f':
