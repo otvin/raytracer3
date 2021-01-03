@@ -1,5 +1,6 @@
 from copy import deepcopy
 import math
+import random
 import raytracer as rt
 
 
@@ -923,5 +924,290 @@ def chap16_demo(width=200, height=100):
 
     view = rt.view_transform(rt.Point(0, 2, -4.9), rt.Point(0, 0.5, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, 0.9, view)
+
+    return camera, world
+
+
+def christmas_branch():
+    # the length of the branch
+    length = 2.0
+
+    # the radius of the branch
+    radius = 0.025
+
+    # how many groups of needles to cover the branch
+    segments = 20
+
+    # how many needles per group (or segment)
+    per_segment = 24
+
+    # the branch itself, just a cylinder
+    branch = rt.Cylinder()
+    branch.min_y = 0
+    branch.max_y = length
+    branch.material.color = rt.Color(0.5, 0.35, 0.26)
+    branch.material.ambient = 0.2
+    branch.material.specular = 0
+    branch.material.diffuse = 0.6
+
+    # how much branch each segment gets
+    seg_size = length / (segments -1 )
+
+    # the radial distance, in radians, between adjacent needles in a group
+    theta = 2.1 * math.pi / per_segment
+
+    # the maximum length of each needle
+    max_length = 20.0 * radius
+
+    # the group that will contain the branch and all needles
+    obj = rt.ObjectGroup()
+
+    for y in range(segments):
+        # create a subgroup for each segment of needles
+        subgroup = rt.ObjectGroup()
+
+        for i in range(per_segment):
+            # each needle is a triangle
+            # y_base y coordinate of the base of the triangle
+            y_base = (seg_size * y) + (random.random() * seg_size)
+
+            # y_tip is the y coordinate of the tip of the triangle
+            y_tip = y_base - (random.random() * seg_size)
+
+            # y_angle is angle (in radians) that the needle should be rotated around the branch
+            y_angle = (i * theta) + (random.random() * theta)
+
+            # how long is the needle?
+            needle_length = (max_length / 2) * (1 + random.random())
+
+            # how much is the needle offset from the center of the branch?
+            ofs = radius / 2
+
+            # the three points of the triangle that form the needle
+            p1 = rt.Point(ofs, y_base, ofs)
+            p2 = rt.Point(-ofs, y_base, ofs)
+            p3 = rt.Point(0.0, y_tip, needle_length)
+
+            # create, transform, and texture the needle
+            tri = rt.Triangle(p1, p2, p3)
+            tri.transform = rt.rotation_y(y_angle)
+            tri.material.color = rt.Color(0.26, 0.36, 0.16)
+            tri.material.specular = 0.1
+            subgroup.addchild(tri)
+
+        obj.addchild(subgroup)
+
+    return obj
+
+def christmas_demo(width=400, height=300):
+    # Found at https://iliathoughts.com/posts/raytracer/
+    # ======================================================
+    # christmas.yml
+    #
+    # This file describes a scene depicting a red Christmas
+    # ornament nestled among several fir branches.
+    #
+    # by Jamis Buck <jamis@jamisbuck.org>
+    # ======================================================
+
+    cameraview = rt.view_transform(rt.Point(0, 0, -4), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, 1.047, cameraview)
+
+    world = rt.World()
+
+    # ======================================================
+    # the light sources are all coupled with physical
+    # objects, so that they appear as reflections on the
+    # ornament.
+    # ======================================================
+    light = rt.PointLight(rt.Point(-10, 10, -10), rt.Color(0.6, 0.6, 0.6))
+    sphere = rt.Sphere()
+    sphere.casts_shadow = False
+    sphere.transform = rt.chain_transforms(rt.scaling(1.5, 1.5, 1.5), rt.translation(-10, 10, -10))
+    sphere.material.color = rt.Color(1, 1, 1)
+    sphere.material.ambient = 0.6
+    sphere.material.diffuse = 0
+    sphere.material.specular = 0
+    world.lights.append(light)
+    world.objects.append(sphere)
+
+    light = rt.PointLight(rt.Point(10, 10, -10), rt.Color(0.6, 0.6, 0.6))
+    sphere = rt.Sphere()
+    sphere.casts_shadow = False
+    sphere.transform = rt.chain_transforms(rt.scaling(1.5, 1.5, 1.5), rt.translation(10, 10, -10))
+    sphere.material.color = rt.Color(1, 1, 1)
+    sphere.material.ambient = 0.6
+    sphere.material.diffuse = 0
+    sphere.material.specular = 0
+    world.lights.append(light)
+    world.objects.append(sphere)
+
+    light = rt.PointLight(rt.Point(-2, 1, -6), rt.Color(0.2, 0.1, 0.1))
+    sphere = rt.Sphere()
+    sphere.casts_shadow = False
+    sphere.transform = rt.chain_transforms(rt.scaling(0.4, 0.4, 0.4), rt.translation(-2, 1, -6))
+    sphere.material.color = rt.Color(1, 0.5, 0.5)
+    sphere.material.ambient = 0.6
+    sphere.material.diffuse = 0
+    sphere.material.specular = 0
+    world.lights.append(light)
+    world.objects.append(sphere)
+
+    light = rt.PointLight(rt.Point(-1, -2, -6), rt.Color(0.1, 0.2, 0.1))
+    sphere = rt.Sphere()
+    sphere.casts_shadow = False
+    sphere.transform = rt.chain_transforms(rt.scaling(0.4, 0.4, 0.4), rt.translation(-1, -2, -6))
+    sphere.material.color = rt.Color(0.5, 1, 0.5)
+    sphere.material.ambient = 0.6
+    sphere.material.diffuse = 0
+    sphere.material.specular = 0
+    world.lights.append(light)
+    world.objects.append(sphere)
+
+    light = rt.PointLight(rt.Point(3, -1, -6), rt.Color(0.2, 0.2, 0.2))
+    sphere = rt.Sphere()
+    sphere.casts_shadow = False
+    sphere.transform = rt.chain_transforms(rt.scaling(0.5, 0.5, 0.5), rt.translation(3, -1, -6))
+    sphere.material.color = rt.Color(1, 1, 1)
+    sphere.material.ambient = 0.6
+    sphere.material.diffuse = 0
+    sphere.material.specular = 0
+    world.lights.append(light)
+    world.objects.append(sphere)
+
+    # ======================================================
+    # the scene
+    # ======================================================
+
+    # The ornament itself. Note that specular=0, because we're
+    # making the ornament reflective and then putting each light
+    # source inside another sphere, so that they show up as
+    # reflections. The specular component of Phong shading
+    # simulates this sort of reflection, so we don't need it here.
+
+    sphere = rt.Sphere()
+    sphere.material.color = rt.Color(1, 0.25, 0.25)
+    sphere.material.ambient = 0
+    sphere.material.specular = 0
+    sphere.material.diffuse = 0.5
+    sphere.material.reflective = 0.5
+    world.objects.append(sphere)
+
+    # The silver crown atop the ornament
+    cylinder = rt.Cylinder()
+    cylinder.min_y = 0
+    cylinder.max_y = 1
+    A = rt.scaling(0.2, 0.3, 0.2)
+    B = rt.translation(0, 0.9, 0)
+    C = rt.rotation_z(-0.1)
+    cylinder.transform = rt.chain_transforms(A, B, C)
+    cylinder.material.pattern = rt.CheckersPattern(rt.scaling(0.2, 0.2, 0.2), rt.Color(1, 1, 1),
+                                                   rt.Color(0.94, 0.94, 0.94))
+    cylinder.material.ambient = 0.02
+    cylinder.material.diffuse = 0.7
+    cylinder.material.specular = 0.8
+    cylinder.material.shininess = 20
+    cylinder.material.reflective = 0.05
+    world.objects.append(cylinder)
+
+    # the branches
+    # WARNING: by default, each branch consists of 20 segments * 24 needles per
+    #   segment, or 480 triangles. There are 11 branches, so there are
+    #   5,280 triangles used by default. While bounding boxes are not necessary
+    #   to render this, you will find your ray tracer works much, MUCH more quickly
+    #   with them, than without them.
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_y(0.349)
+    D = rt.translation(-1, -1, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_y(0.349)
+    D = rt.translation(-1, 1, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_y(-0.1745)
+    D = rt.translation(1, -1, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_y(-0.349)
+    D = rt.translation(1, 1, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_y(-0.349)
+    D = rt.translation(0.2, -1.25, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_y(0.349)
+    D = rt.translation(-0.2, -1.25, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_x(0.087)
+    D = rt.rotation_y(0.5236)
+    E = rt.translation(-1.2, 0.1, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D, E)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_x(-0.1745)
+    D = rt.rotation_y(0.5236)
+    E = rt.translation(-1.2, -0.35, 0.5)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D, E)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_x(0.087)
+    D = rt.rotation_y(-0.5236)
+    E = rt.translation(-0.2, 1.5, 0.25)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D, E)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_x(-0.087)
+    D = rt.rotation_y(-0.5236)
+    E = rt.translation(1.3, 0.4, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D, E)
+    world.objects.append(fir_branch)
+
+    fir_branch = christmas_branch()
+    A = rt.translation(0, -0.5, 0)
+    B = rt.rotation_x(-1.5708)
+    C = rt.rotation_x(0.087)
+    D = rt.rotation_y(-0.1745)
+    E = rt.translation(1.5, -0.4, 0)
+    fir_branch.transform = rt.chain_transforms(A, B, C, D, E)
+    world.objects.append(fir_branch)
 
     return camera, world

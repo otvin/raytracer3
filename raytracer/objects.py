@@ -26,7 +26,8 @@ ONEMINUSEPSILON = 1 - EPSILON
 
 
 class HittableObject:
-    __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose', 'casts_shadow', 'parent']
+    __slots__ = ['material', '__transform', 'inversetransform', '__inversetransformtranspose', 'casts_shadow',
+                 'parent', 'boundingbox']
 
     def __init__(self, transform=None, material=None, casts_shadow=True, parent=None):
         if transform is None:
@@ -39,6 +40,7 @@ class HittableObject:
             self.material = material
         self.casts_shadow = casts_shadow
         self.parent = parent
+        self.boundingbox = None
 
     @property
     def transform(self):
@@ -92,6 +94,26 @@ class HittableObject:
             return self.parent.normal_to_world(n)
         else:
             return n
+
+    def bounds_of(self):
+        if self.boundingbox is None:
+            self.boundingbox = rt.BoundingBox(rt.Point(-1, -1, -1), rt.Point(1, 1, 1))
+        return self.boundingbox
+
+    def parent_space_bounds_of(self):
+        return self.bounds_of().transform(self.transform)
+
+
+class TestShape(HittableObject):
+    __slots__ = ['saved_ray']
+
+    def __init__(self, transform=None, material=None, casts_shadow=True, parent=None):
+        super().__init__(transform, material, casts_shadow, parent)
+        self.saved_ray = None
+
+    def local_intersect(self, object_ray):
+        self.saved_ray = object_ray
+        return []
 
 
 class Sphere(HittableObject):
@@ -149,11 +171,16 @@ class Plane(HittableObject):
     def local_normal_at(self, object_point, uv_intersection=None):
         return rt.Vector(0, 1, 0)
 
+    def bounds_of(self):
+        if self.boundingbox is None:
+            self.boundingbox = rt.BoundingBox(rt.Point(-math.inf, 0, -math.inf), rt.Point(math.inf, 0, math.inf))
+        return self.boundingbox
 
-def check_axis(origin, direction):
-    # helper function for cube intersection, but doesn't rely on cube itself
-    tmin_numerator = -1 - origin
-    tmax_numerator = 1 - origin
+def check_axis(origin, direction, min=-1, max=1):
+    # helper function for cube and bounding box intersection, but doesn't rely on cube itself
+    # For cubes, min and max are -1 and 1; for bounding boxes it's based on min/max of the box
+    tmin_numerator = min - origin
+    tmax_numerator = max - origin
     if math.fabs(direction) >= EPSILON:
         tmin = tmin_numerator / direction
         tmax = tmax_numerator / direction
@@ -312,6 +339,11 @@ class Cylinder(HittableObject):
         else:
             return rt.Vector(object_point.x, 0, object_point.z)
 
+    def bounds_of(self):
+        if self.boundingbox is None:
+            self.boundingbox = rt.BoundingBox(rt.Point(-1, self.min_y, -1), rt.Point(1, self.max_y, 1))
+        return self.boundingbox
+
 
 class Cone(HittableObject):
     __slots__ = ['closed', 'min_y', 'max_y']
@@ -400,6 +432,12 @@ class Cone(HittableObject):
 
         return rt.Vector(opx, normaly, opz)
 
+    def bounds_of(self):
+        if self.boundingbox is None:
+            limit = max(math.fabs(self.min_y), math.fabs(self.max_y))
+            self.boundingbox = rt.BoundingBox(rt.Point(-limit, self.min_y, -limit), rt.Point(limit, self.max_y, limit))
+        return self.boundingbox
+
 
 class Triangle(HittableObject):
     __slots__ = ['__p1', '__p2', '__p3', 'e1', 'e2', 'normal']
@@ -445,6 +483,11 @@ class Triangle(HittableObject):
         self.e1 = self.p2 - self.p1
         self.e2 = self.p3 - self.p1
         self.normal = rt.normalize(rt.cross(self.e2, self.e1))
+        res = rt.BoundingBox()
+        res.addpoint(self.p1)
+        res.addpoint(self.p2)
+        res.addpoint(self.p3)
+        self.boundingbox = res
 
     def local_intersect(self, object_ray):
         # https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
@@ -470,6 +513,9 @@ class Triangle(HittableObject):
     def local_normal_at(self, object_point, uv_intersection=None):
         return self.normal
 
+    def bounds_of(self):
+        return self.boundingbox
+
 
 class SmoothTriangle(Triangle):
     __slots__ = ['n1', 'n2', 'n3']
@@ -492,10 +538,12 @@ class ObjectGroup(HittableObject):
     def __init__(self, transform=identity4()):
         super().__init__(transform, None)
         self.children = []
+        self.boundingbox = rt.BoundingBox()
 
     def addchild(self, obj):
         obj.parent = self
         self.children.append(obj)
+        self.boundingbox += obj.parent_space_bounds_of()
 
     def includes(self, obj):
         for child in self.children:
@@ -516,11 +564,17 @@ class ObjectGroup(HittableObject):
     def local_intersect(self, object_ray):
         if len(self.children) == 0:
             return []
+        elif not self.bounds_of().intersects(object_ray):
+            # TODO - cache bounding box so not looking on every ray that could intersect
+            return []
         else:
             xs = []
             for child in self.children:
                 xs.extend(child.intersect(object_ray))
             return xs
+
+    def bounds_of(self):
+        return self.boundingbox
 
 
 def intersection_allowed(oper, lhit, inl, inr):
@@ -585,7 +639,18 @@ class CSG(HittableObject):
         return NotImplementedError
 
     def local_intersect(self, object_ray):
+        if not self.bounds_of().intersects(object_ray):
+            # TODO - cache bounding box so not looking on every ray that could intersect
+            return []
+
         xs = self.left.intersect(object_ray)
         xs.extend(self.right.intersect(object_ray))
         xs.sort(key=lambda x: x.t)  # this will lead to double-sorting but otherwise the filter algorithm doesn't work.
         return self.filter_intersections(xs)
+
+    def bounds_of(self):
+        if self.boundingbox is None:
+            self.boundingbox = rt.BoundingBox()
+            self.boundingbox += self.left.parent_space_bounds_of()
+            self.boundingbox += self.right.parent_space_bounds_of()
+        return self.boundingbox

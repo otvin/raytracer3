@@ -7,7 +7,7 @@ from .transformations import do_transform, do_transformray, translation, scaling
 from .world import prepare_computations, schlick_reflectance
 from .canvas import init_canvas, write_pixel, get_canvasdims, pixel_at
 from .matrices import allclose4x4
-from .objects import EPSILON, intersection_allowed
+from .objects import EPSILON, intersection_allowed, TestShape
 
 
 def compare_ppms(file1, file2):
@@ -1074,6 +1074,25 @@ def rtunittest_shadowed4():
     p = rt.Point(-2, 2, -2)
     assert not w.is_shadowed(p, w.lights[0])
 
+
+def rtunittest_testshape1():
+    # Intersecting a scaled shape with a ray
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
+    s = TestShape()
+    s.transform = rt.scaling(2, 2, 2)
+    xs = s.intersect(r)
+    assert s.saved_ray.origin == rt.Point(0, 0, -2.5)
+    assert s.saved_ray.direction == rt.Vector(0, 0, 0.5)
+
+
+def rtunittest_testshape2():
+    # Intersecting a translated shape with a ray
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
+    s = TestShape()
+    s.transform = rt.translation(5, 0, 0)
+    xs = s.intersect(r)
+    assert s.saved_ray.origin == rt.Point(-5, 0, -5)
+    assert s.saved_ray.direction == rt.Vector(0, 0, 1)
 
 def rtunittest_plane1():
     # The normal of a plane is constant everywhere
@@ -2169,6 +2188,271 @@ def rtunittest_csg5():
     assert xs[0].objhit is s1
     assert math.isclose(xs[1].t, 6.5)
     assert xs[1].objhit is s2
+
+
+def rtunittest_boundingbox1():
+    # Creating an empty bounding box
+    box = rt.BoundingBox()
+    assert box.min == rt.Point(math.inf, math.inf, math.inf)
+    assert box.max == rt.Point(-math.inf, -math.inf, -math.inf)
+
+
+def rtunittest_boundingbox2():
+    # Creating a bounding box with volume
+    box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(3, 2, 1))
+    assert box.min == rt.Point(-1, -2, -3)
+    assert box.max == rt.Point(3, 2, 1)
+
+def rtunittest_boundingbox3():
+    # Adding points to an empty bounding box
+    box = rt.BoundingBox()
+    box.addpoint(rt.Point(-5, 2, 0))
+    box.addpoint(rt.Point(7, 0, -3))
+    assert box.min == rt.Point(-5, 0, -3)
+    assert box.max == rt.Point(7, 2, 0)
+
+def rtunittest_boundingbox4():
+    # A sphere has a bounding box
+    shape = rt.Sphere()
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-1, -1, -1)
+    assert box.max == rt.Point(1, 1, 1)
+
+
+def rtunittest_boundingbox5():
+    # A plane has a bounding box
+    shape = rt.Plane()
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-math.inf, 0, -math.inf)
+    assert box.max == rt.Point(math.inf, 0, math.inf)
+
+
+def rtunittest_boundingbox6():
+    # A cube has a bounding box
+    shape = rt.Cube()
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-1, -1, -1)
+    assert box.max == rt.Point(1, 1, 1)
+
+
+def rtunittest_boundingbox7():
+    # An unbounded cylinder has a bounding box
+    shape = rt.Cylinder()
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-1, -math.inf, -1)
+    assert box.max == rt.Point(1, math.inf, 1)
+
+
+def rtunittest_boundingbox8():
+    # A bounded cylinder has a bounding box
+    shape = rt.Cylinder()
+    shape.min_y = -5
+    shape.max_y = 3
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-1, -5, -1)
+    assert box.max == rt.Point(1, 3, 1)
+
+
+def rtunittest_boundingbox9():
+    # An unbounded cone has a bounding box
+    shape = rt.Cone()
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-math.inf, -math.inf, -math.inf)
+    assert box.max == rt.Point(math.inf, math.inf, math.inf)
+
+
+def rtunittest_boundingbox10():
+    # A bounded cone has a bounding box
+    shape = rt.Cone()
+    shape.min_y = -5
+    shape.max_y = 3
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-5, -5, -5)
+    assert box.max == rt.Point(5, 3, 5)
+
+
+def rtunittest_boundingbox11():
+    # A triangle has a bounding box
+    p1 = rt.Point(-3, 7, 2)
+    p2 = rt.Point(6, 2, -4)
+    p3 = rt.Point(2, -1, -1)
+    shape = rt.Triangle(p1, p2, p3)
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-3, -1, -4)
+    assert box.max == rt.Point(6, 7, 2)
+
+
+def rtunittest_boundingbox12():
+    # Adding one bounding box to another
+    box1 = rt.BoundingBox(rt.Point(-5, -2, 0), rt.Point(7, 4, 4))
+    box2 = rt.BoundingBox(rt.Point(8, -7, -2), rt.Point(14, 2, 8))
+    box1 += box2
+    assert box1.min == rt.Point(-5, -7, -2)
+    assert box1.max == rt.Point(14, 4, 8)
+
+
+def rtunittest_boundingbox13():
+    # Checking to see if a box contains a given point
+    box = rt.BoundingBox(rt.Point(5, -2, 0), rt.Point(11, 4, 7))
+
+    assert box.contains_point(rt.Point(5, -2, 0))
+    assert box.contains_point(rt.Point(11, 4, 7))
+    assert box.contains_point(rt.Point(8, 1, 3))
+    assert not box.contains_point(rt.Point(3, 0, 3))
+    assert not box.contains_point(rt.Point(8, -4, 3))
+    assert not box.contains_point(rt.Point(8, 1, -1))
+    assert not box.contains_point(rt.Point(13, 1, 3))
+    assert not box.contains_point(rt.Point(8, 5, 3))
+    assert not box.contains_point(rt.Point(8, 1, 8))
+
+
+def rtunittest_boundingbox14():
+    # Checking to see if a box contains a given box
+    box = rt.BoundingBox(rt.Point(5, -2, 0), rt.Point(11, 4, 7))
+
+    assert box.contains_box(rt.BoundingBox(rt.Point(5, -2, 0), rt.Point(11, 4, 7)))
+    assert box.contains_box(rt.BoundingBox(rt.Point(6, -1, 1), rt.Point(10, 3, 6)))
+    assert not box.contains_box(rt.BoundingBox(rt.Point(4, -3, -1), rt.Point(10, 3, 6)))
+    assert not box.contains_box(rt.BoundingBox(rt.Point(6, -1, 1), rt.Point(12, 5, 8)))
+
+
+def rtunittest_boundingbox15():
+    # Transforming a bounding box
+    box = rt.BoundingBox(rt.Point(-1, -1, -1), rt.Point(1, 1, 1))
+    matrix = rt.matmul4x4(rt.rotation_x(math.pi/4), rt.rotation_y(math.pi/4))
+    box2 = box.transform(matrix)
+    assert box2.min == rt.Point(-1.4142, -1.7071, -1.7071)
+    assert box2.max == rt.Point(1.4142, 1.7071, 1.7071)
+
+
+def rtunittest_boundingbox16():
+    # Querying a shape's bounding box in its parent's space
+    shape = rt.Sphere()
+    shape.transform = rt.matmul4x4(rt.translation(1, -3, 5), rt.scaling(0.5, 2, 4))
+    box = shape.parent_space_bounds_of()
+    assert box.min == rt.Point(0.5, -5, 1)
+    assert box.max == rt.Point(1.5, -1, 9)
+
+
+def rtunittest_boundingbox17():
+    # A group has a bounding box that contains its children
+    s = rt.Sphere()
+    s.transform = rt.matmul4x4(rt.translation(2, 5, -3), rt.scaling(2, 2, 2))
+    c = rt.Cylinder()
+    c.min_y = -2
+    c.max_y = 2
+    c.transform = rt.matmul4x4(rt.translation(-4, -1, 4), rt.scaling(0.5, 1, 0.5))
+    shape = rt.ObjectGroup()
+    shape.addchild(s)
+    shape.addchild(c)
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-4.5, -3, -5)
+    assert box.max == rt.Point(4, 7, 4.5)
+
+
+def rtunittest_boundingbox18():
+    # A CSG shape has a bounding box that contains its children
+    left = rt.Sphere()
+    right = rt.Sphere()
+    right.transform = rt.translation(2, 3, 4)
+    shape = rt.CSG('difference', left, right)
+    box = shape.bounds_of()
+    assert box.min == rt.Point(-1, -1, -1)
+    assert box.max == rt.Point(3, 4, 5)
+
+
+def rtunittest_boundingbox19():
+    # Intersecting a ray with a bounding box at the origin
+
+    # each test has origin and direction of the vector, and whether or not it intersects
+    tests = [
+        (rt.Point(5, 0.5, 0), rt.Vector(-1, 0, 0), True),
+        (rt.Point(-5, 0.5, 0), rt.Vector(1, 0, 0), True),
+        (rt.Point(0.5, 5, 0), rt.Vector(0, -1, 0), True),
+        (rt.Point(0.5, -5, 0), rt.Vector(0, 1, 0), True),
+        (rt.Point(0.5, 0, 5), rt.Vector(0, 0, -1), True),
+        (rt.Point(0.5, 0, -5), rt.Vector(0, 0, 1), True),
+        (rt.Point(0, 0.5, 0), rt.Vector(0, 0, 1), True),
+        (rt.Point(-2, 0, 0), rt.Vector(2, 4, 6), False),
+        (rt.Point(0, -2, 0), rt.Vector(6, 2, 4), False),
+        (rt.Point(0, 0, -2), rt.Vector(4, 6, 2), False),
+        (rt.Point(2, 0, 2), rt.Vector(0, 0, -1), False),
+        (rt.Point(0, 2, 2), rt.Vector(0, -1, 0), False),
+        (rt.Point(2, 2, 0), rt.Vector(-1, 0, 0), False)
+    ]
+
+    box = rt.BoundingBox(rt.Point(-1, -1, -1), rt.Point(1, 1, 1))
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        assert box.intersects(r) == test[2]
+
+
+def rtunittest_boundingbox20():
+    # intersecting a ray with a non-cubic bounding box
+
+    # each test has origin and direction of the vector, and whether or not it intersects
+    tests = [
+        (rt.Point(15, 1, 2), rt.Vector(-1, 0, 0), True),
+        (rt.Point(-5, -1, 4), rt.Vector(1, 0, 0), True),
+        (rt.Point(7, 6, 5), rt.Vector(0, -1, 0), True),
+        (rt.Point(9, -5, 6), rt.Vector(0, 1, 0), True),
+        (rt.Point(8, 2, 12), rt.Vector(0, 0, -1), True),
+        (rt.Point(6, 0, -5), rt.Vector(0, 0, 1), True),
+        (rt.Point(8, 1, 3.5), rt.Vector(0, 0, 1), True),
+        (rt.Point(9, -1, -8), rt.Vector(2, 4, 6), False),
+        (rt.Point(8, 3, -4), rt.Vector(6, 2, 4), False),
+        (rt.Point(9, -1, -2), rt.Vector(4, 6, 2), False),
+        (rt.Point(4, 0, 9), rt.Vector(0, 0, -1), False),
+        (rt.Point(8, 6, -1), rt.Vector(0, -1, 0), False),
+        (rt.Point(12, 5, 4), rt.Vector(-1, 0, 0), False)
+    ]
+
+    box = rt.BoundingBox(rt.Point(5, -2, 0), rt.Point(11, 4, 7))
+    for test in tests:
+        r = rt.Ray(test[0], rt.normalize(test[1]))
+        assert box.intersects(r) == test[2]
+
+
+def rtunittest_boundingbox21():
+    # Intersecting ray+group doesn't test children if box is missed
+    child = TestShape()
+    shape = rt.ObjectGroup()
+    shape.addchild(child)
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 1, 0))
+    xs = shape.intersect(r)
+    assert child.saved_ray is None
+
+
+def rtunittest_boundingbox22():
+    # Intersecting ray+group tests children bif box is hit
+    child = TestShape()
+    shape = rt.ObjectGroup()
+    shape.addchild(child)
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
+    xs = shape.intersect(r)
+    assert child.saved_ray is not None
+
+
+def rtunittest_boundingbox23():
+    # Intersecting ray+csg doesn't test children if box is missed
+    left = TestShape()
+    right = TestShape()
+    shape = rt.CSG('difference', left, right)
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 1, 0))
+    xs = shape.intersect(r)
+    assert left.saved_ray is None
+    assert right.saved_ray is None
+
+
+def rtunittest_boundingbox24():
+    # Intersecting ray+csg tests children bif box is hit
+    left = TestShape()
+    right = TestShape()
+    shape = rt.CSG('difference', left, right)
+    r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
+    xs = shape.intersect(r)
+    assert left.saved_ray is not None
+    assert right.saved_ray is not None
 
 
 def run_unit_tests():

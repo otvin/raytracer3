@@ -13,5 +13,6 @@ from .world import World, HitRecord
 from .perfcounters import getcount_rayforpixel, getcount_objintersecttests, getcount_objintersections, \
                         getcount_colortests, getcount_reflectionrays, getcount_refractionrays
 from .objfile_reader import Parser, GroupInfo
+from .boundingboxes import BoundingBox
 
 from .unit_tests import run_unit_tests
