@@ -24,7 +24,7 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap14_demo.ppm_ - added groups of objects, which can be transformed as a group, and support for multiple lights in a scene.
 * _chap15_demo.ppm_ - added triangles and ability to read a limited set of Wavefront .obj files
 * _chap15_demo2.ppm_ - the obligatory teapot.  Low-res.  Rendering this model, which contains 241 triangles, took over 18 minutes on my machine with 6 cores/6 threads.
-* _chap16_demo.ppm - added Constructive Solid Geometry (CSG) supports for intersections, unions, and differences.
+* _chap16_demo.ppm_ - added Constructive Solid Geometry (CSG) supports for intersections, unions, and differences.
 
 Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
 
