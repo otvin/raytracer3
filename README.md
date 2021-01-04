@@ -25,6 +25,8 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap15_demo.ppm_ - added triangles and ability to read a limited set of Wavefront .obj files
 * _chap15_demo2.ppm_ - the obligatory teapot.  Low-res.  Time rendering this model, which contains 240 triangles, was reduced by 86% by adding bounding boxes and hierarchies.  It takes approx 27 seconds on my laptop with 6 cores, using pypy (vs ~150 seconds with the standard python interpreter)
 * _chap16_demo.ppm_ - added Constructive Solid Geometry (CSG) supports for intersections, unions, and differences.
+  
+* _dice_demo.ppm_ - another demo that relies on CSG.  Found on the internet (citation in demoscenes.py)
 * _christmas_demo.ppm_ - after doing the bonus chapter on bounding boxes & hierarchies, was able to add this image which contains over 5000 triangles.
 
 Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
@@ -37,4 +39,5 @@ Jamis Buck posted details for the scenes shown in the book for chapters 11-14 an
 ![chap15_demo.ppm](saved_renders/chap15_demo.png)
 ![chap15_demo2.ppm](saved_renders/chap15_demo2.png)
 ![chap16_demo2.ppm](saved_renders/chap16_demo.png)
+![dice_demo.ppm](saved_renders/dice_demo.png)
 ![christmas_demo.ppm](saved_renders/christmas_demo.png)

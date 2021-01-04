@@ -1216,3 +1216,166 @@ def christmas_demo(width=400, height=300):
         i.divide(7)
 
     return camera, world
+
+
+def die_body(material):
+    cube = rt.Cube()
+    cube.material = material
+    sphere = rt.Sphere()
+    sphere.material = material
+    sphere.transform = rt.scaling(1.5, 1.5, 1.5)
+    return rt.CSG('intersection', cube, sphere)
+
+
+def die_point(i, j, material):
+    sphere = rt.Sphere()
+    sphere.material = material
+    sphere.transform = rt.chain_transforms(rt.scaling(0.2, 0.1, 0.2), rt.translation(0.5 * i, 1, 0.5 * j))
+    return sphere
+
+
+def die_side(side_num, material):
+    ijlist = []
+    if side_num == 1:
+        ijlist.append((0, 0))
+    elif side_num == 2:
+        ijlist.extend([(-0.8, -0.8), (0.8, 0.8)])
+    elif side_num == 3:
+        ijlist.extend([(0, 0), (-1, -1), (1, 1)])
+    elif side_num == 4:
+        ijlist.extend([(-0.8, -0.8), (-0.8, 0.8), (0.8, -0.8), (0.8, 0.8)])
+    elif side_num == 5:
+        ijlist.extend([(0, 0), (-1, -1), (1, -1), (-1, 1), (1, 1)])
+    elif side_num == 6:
+        ijlist.extend([(-1, -1), (-1, 0), (-1, 1), (1, -1), (1, 0), (1, 1)])
+    else:
+        raise ValueError('invalid die side: {}'.format(side_num))
+
+    ret = rt.ObjectGroup()
+    for ij in ijlist:
+        ret.addchild(die_point(ij[0], ij[1], material))
+    return ret
+
+
+def die(material1, material2):
+    body = die_body(material1)
+    side1 = die_side(1, material2)
+    side2 = die_side(2, material2)
+    side3 = die_side(3, material2)
+    side4 = die_side(4, material2)
+    side5 = die_side(5, material2)
+    side6 = die_side(6, material2)
+
+    side2.transform = rt.rotation_x(math.pi/2)
+    side3.transform = rt.rotation_z(math.pi/2)
+    side4.transform = rt.rotation_z(-math.pi/2)
+    side5.transform = rt.rotation_x(-math.pi/2)
+    side6.transform = rt.scaling(1, -1, 1)
+
+    body = rt.CSG('difference', body, side1)
+    body = rt.CSG('difference', body, side6)
+    body = rt.CSG('difference', body, side2)
+    body = rt.CSG('difference', body, side5)
+    body = rt.CSG('difference', body, side3)
+    body = rt.CSG('difference', body, side4)
+
+    return body
+
+
+def from_hsv(hue, saturation, value):
+    # this doesn't look like the demo is using true hsv, so I'm using their algorithm to convert
+    hue = hue % 360
+    h = math.floor((hue / 60.0))
+    f = (hue / 60) - h
+    p = value * (1.0 - saturation)
+    q = value * (1.0 - (saturation * f))
+    t = value * (1.0 - (saturation * (1.0 - f)))
+    if h == 1:
+        return rt.Color(q, value, p)
+    elif h == 2:
+        return rt.Color(p, value, t)
+    elif h == 3:
+        return rt.Color(p, q, value)
+    elif h == 4:
+        return rt.Color(t, p, value)
+    elif h == 5:
+        return rt.Color(value, p, q)
+    else:
+        return rt.Color(value, t, p)
+
+
+def dice_demo(width=900, height=450):
+    # Translated from Rust.
+    # found at: https://github.com/mbillingr/raytracing/blob/master/rust/examples/chapter-16.rs
+
+    viewtransform = rt.view_transform(rt.Point(0, 0, -3), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/3, viewtransform)
+
+    world = rt.World()
+    world.lights.append(rt.PointLight(rt.Point(-9, 8, -7), rt.Color(1, 1, 1)))
+
+    floor_material = rt.Material()
+    floor_material.pattern = rt.CheckersPattern(rt.scaling(0.1, 0.1, 0.1), rt.Color(0.75, 0.75, 0.75),
+                                                rt.Color(0.9, 0.9, 0.9))
+    floor_material.diffuse = 0.5
+    floor_material.specular = 0
+
+    floor = rt.Plane()
+    floor.material = floor_material
+    floor.transform = rt.chain_transforms(rt.rotation_x(math.pi/2), rt.translation(0, 0, 2))
+    world.objects.append(floor)
+
+    glass = rt.Material()
+    glass.color = rt.Color(0, 0, 0)
+    glass.diffuse = 0
+    glass.specular = 0.9
+    glass.shininess = 500
+    glass.reflective = 1.0
+    glass.transparency = 1.0
+    glass.refractive_index = 1.5
+
+    a = rt.Sphere()
+    a.material = glass
+    a.transform = rt.translation(0, 0, 0.8)
+    b = rt.Sphere()
+    b.material = glass
+    b.transform = rt.translation(0, 0, -0.8)
+    lens = rt.CSG('intersection', a, b)
+    lens.casts_shadow = False
+    world.objects.append(lens)
+
+    dices = rt.ObjectGroup()
+    for i in range(-8, 9):
+        for j in range(-4, 5):
+            hue = random.randint(0, 360)
+            mat1 = rt.Material()
+            mat1.color = from_hsv(hue, 0.8, 1.0)
+            mat1.diffuse = 1.0
+            mat2 = rt.Material()
+            mat2.color = from_hsv(hue + 180, 0.8, 1.0)
+            mat2.diffuse = 1.0
+            size = random.uniform(0.05, 0.1)
+            pos_x = 0.4 * i + random.uniform(-0.1, 0.1)
+            pos_y = 0.4 * j + random.uniform(-0.1, 0.1)
+            rotay = random.uniform(0, math.pi * 2)
+            rotax = random.uniform(0, math.pi * 2)
+            rotaz = random.uniform(0, math.pi * 2)
+
+            mydie = die(mat1, mat2)
+            #mydie.transform = rt.chain_transforms(rt.translation(pos_x, pos_y, 1.8),
+            #                                      rt.rotation_x(rotax),
+            #                                      rt.rotation_y(rotay),
+            #                                      rt.rotation_z(rotaz),
+            #                                      rt.scaling(size, size, size))
+            mydie.transform = rt.chain_transforms(rt.scaling(size, size, size),
+                                                  rt.rotation_z(rotaz),
+                                                  rt.rotation_y(rotay),
+                                                  rt.rotation_x(rotax),
+                                                  rt.translation(pos_x, pos_y, 1.8))
+
+            dices.addchild(mydie)
+
+    dices.divide(7)
+    world.objects.append(dices)
+
+    return camera, world

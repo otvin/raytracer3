@@ -7,7 +7,7 @@ def render():
 
     GETPERFCOUNTERS = False
 
-    camera, w = demoscenes.christmas_demo()
+    camera, w = demoscenes.dice_demo()
 
     timestart = time.time()
     rt.mp_render(camera, w, 10, 6, 5, GETPERFCOUNTERS)
@@ -26,7 +26,7 @@ def render():
         print('Intersection tests: {}'.format(rt.getcount_objintersecttests()))
         print('Intersections: {}'.format(rt.getcount_objintersections()))
 
-    rt.canvas_to_ppm('christmas_demo.ppm')
+    rt.canvas_to_ppm('dice_demo.ppm')
 
 
 if __name__ == '__main__':
