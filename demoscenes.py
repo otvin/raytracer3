@@ -1362,11 +1362,6 @@ def dice_demo(width=900, height=450):
             rotaz = random.uniform(0, math.pi * 2)
 
             mydie = die(mat1, mat2)
-            #mydie.transform = rt.chain_transforms(rt.translation(pos_x, pos_y, 1.8),
-            #                                      rt.rotation_x(rotax),
-            #                                      rt.rotation_y(rotay),
-            #                                      rt.rotation_z(rotaz),
-            #                                      rt.scaling(size, size, size))
             mydie.transform = rt.chain_transforms(rt.scaling(size, size, size),
                                                   rt.rotation_z(rotaz),
                                                   rt.rotation_y(rotay),
@@ -1377,5 +1372,27 @@ def dice_demo(width=900, height=450):
 
     dices.divide(7)
     world.objects.append(dices)
+
+    return camera, world
+
+
+def texture_mapping_demo1(width=400, height=400):
+    world = rt.World()
+    cameratransform = rt.view_transform(rt.Point(0, 0, -5), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, 0.5, cameratransform)
+
+    light = rt.PointLight(rt.Point(-10, 10, -10), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+    sphere = rt.Sphere()
+    sphere.material.pattern = rt.UVCheckersPattern(20, 10)
+    sphere.material.pattern.mapfn = rt.spherical_map
+    sphere.material.pattern.color1 = rt.Color(0.0, 0.5, 0.0)
+    sphere.material.pattern.color2 = rt.Color(1, 1, 1)
+    sphere.material.shininess = 10
+    sphere.material.ambient = 0.1
+    sphere.material.diffuse = 0.6
+    sphere.material.specular = 0.4
+    world.objects.append(sphere)
 
     return camera, world

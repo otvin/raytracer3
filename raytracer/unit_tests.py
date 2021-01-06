@@ -1090,9 +1090,10 @@ def rtunittest_testshape2():
     r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
     s = TestShape()
     s.transform = rt.translation(5, 0, 0)
-    xs = s.intersect(r)
+    s.intersect(r)  # do not need the return variable
     assert s.saved_ray.origin == rt.Point(-5, 0, -5)
     assert s.saved_ray.direction == rt.Vector(0, 0, 1)
+
 
 def rtunittest_plane1():
     # The normal of a plane is constant everywhere
@@ -2193,54 +2194,56 @@ def rtunittest_csg5():
 def rtunittest_boundingbox1():
     # Creating an empty bounding box
     box = rt.BoundingBox()
-    assert box.min == rt.Point(math.inf, math.inf, math.inf)
-    assert box.max == rt.Point(-math.inf, -math.inf, -math.inf)
+    assert box.boxmin == rt.Point(math.inf, math.inf, math.inf)
+    assert box.boxmax == rt.Point(-math.inf, -math.inf, -math.inf)
 
 
 def rtunittest_boundingbox2():
     # Creating a bounding box with volume
     box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(3, 2, 1))
-    assert box.min == rt.Point(-1, -2, -3)
-    assert box.max == rt.Point(3, 2, 1)
+    assert box.boxmin == rt.Point(-1, -2, -3)
+    assert box.boxmax == rt.Point(3, 2, 1)
+
 
 def rtunittest_boundingbox3():
     # Adding points to an empty bounding box
     box = rt.BoundingBox()
     box.addpoint(rt.Point(-5, 2, 0))
     box.addpoint(rt.Point(7, 0, -3))
-    assert box.min == rt.Point(-5, 0, -3)
-    assert box.max == rt.Point(7, 2, 0)
+    assert box.boxmin == rt.Point(-5, 0, -3)
+    assert box.boxmax == rt.Point(7, 2, 0)
+
 
 def rtunittest_boundingbox4():
     # A sphere has a bounding box
     shape = rt.Sphere()
     box = shape.bounds_of()
-    assert box.min == rt.Point(-1, -1, -1)
-    assert box.max == rt.Point(1, 1, 1)
+    assert box.boxmin == rt.Point(-1, -1, -1)
+    assert box.boxmax == rt.Point(1, 1, 1)
 
 
 def rtunittest_boundingbox5():
     # A plane has a bounding box
     shape = rt.Plane()
     box = shape.bounds_of()
-    assert box.min == rt.Point(-math.inf, 0, -math.inf)
-    assert box.max == rt.Point(math.inf, 0, math.inf)
+    assert box.boxmin == rt.Point(-math.inf, 0, -math.inf)
+    assert box.boxmax == rt.Point(math.inf, 0, math.inf)
 
 
 def rtunittest_boundingbox6():
     # A cube has a bounding box
     shape = rt.Cube()
     box = shape.bounds_of()
-    assert box.min == rt.Point(-1, -1, -1)
-    assert box.max == rt.Point(1, 1, 1)
+    assert box.boxmin == rt.Point(-1, -1, -1)
+    assert box.boxmax == rt.Point(1, 1, 1)
 
 
 def rtunittest_boundingbox7():
     # An unbounded cylinder has a bounding box
     shape = rt.Cylinder()
     box = shape.bounds_of()
-    assert box.min == rt.Point(-1, -math.inf, -1)
-    assert box.max == rt.Point(1, math.inf, 1)
+    assert box.boxmin == rt.Point(-1, -math.inf, -1)
+    assert box.boxmax == rt.Point(1, math.inf, 1)
 
 
 def rtunittest_boundingbox8():
@@ -2249,16 +2252,16 @@ def rtunittest_boundingbox8():
     shape.min_y = -5
     shape.max_y = 3
     box = shape.bounds_of()
-    assert box.min == rt.Point(-1, -5, -1)
-    assert box.max == rt.Point(1, 3, 1)
+    assert box.boxmin == rt.Point(-1, -5, -1)
+    assert box.boxmax == rt.Point(1, 3, 1)
 
 
 def rtunittest_boundingbox9():
     # An unbounded cone has a bounding box
     shape = rt.Cone()
     box = shape.bounds_of()
-    assert box.min == rt.Point(-math.inf, -math.inf, -math.inf)
-    assert box.max == rt.Point(math.inf, math.inf, math.inf)
+    assert box.boxmin == rt.Point(-math.inf, -math.inf, -math.inf)
+    assert box.boxmax == rt.Point(math.inf, math.inf, math.inf)
 
 
 def rtunittest_boundingbox10():
@@ -2267,8 +2270,8 @@ def rtunittest_boundingbox10():
     shape.min_y = -5
     shape.max_y = 3
     box = shape.bounds_of()
-    assert box.min == rt.Point(-5, -5, -5)
-    assert box.max == rt.Point(5, 3, 5)
+    assert box.boxmin == rt.Point(-5, -5, -5)
+    assert box.boxmax == rt.Point(5, 3, 5)
 
 
 def rtunittest_boundingbox11():
@@ -2278,8 +2281,8 @@ def rtunittest_boundingbox11():
     p3 = rt.Point(2, -1, -1)
     shape = rt.Triangle(p1, p2, p3)
     box = shape.bounds_of()
-    assert box.min == rt.Point(-3, -1, -4)
-    assert box.max == rt.Point(6, 7, 2)
+    assert box.boxmin == rt.Point(-3, -1, -4)
+    assert box.boxmax == rt.Point(6, 7, 2)
 
 
 def rtunittest_boundingbox12():
@@ -2287,8 +2290,8 @@ def rtunittest_boundingbox12():
     box1 = rt.BoundingBox(rt.Point(-5, -2, 0), rt.Point(7, 4, 4))
     box2 = rt.BoundingBox(rt.Point(8, -7, -2), rt.Point(14, 2, 8))
     box1 += box2
-    assert box1.min == rt.Point(-5, -7, -2)
-    assert box1.max == rt.Point(14, 4, 8)
+    assert box1.boxmin == rt.Point(-5, -7, -2)
+    assert box1.boxmax == rt.Point(14, 4, 8)
 
 
 def rtunittest_boundingbox13():
@@ -2321,8 +2324,8 @@ def rtunittest_boundingbox15():
     box = rt.BoundingBox(rt.Point(-1, -1, -1), rt.Point(1, 1, 1))
     matrix = rt.matmul4x4(rt.rotation_x(math.pi/4), rt.rotation_y(math.pi/4))
     box2 = box.transform(matrix)
-    assert box2.min == rt.Point(-1.4142, -1.7071, -1.7071)
-    assert box2.max == rt.Point(1.4142, 1.7071, 1.7071)
+    assert box2.boxmin == rt.Point(-1.4142, -1.7071, -1.7071)
+    assert box2.boxmax == rt.Point(1.4142, 1.7071, 1.7071)
 
 
 def rtunittest_boundingbox16():
@@ -2330,8 +2333,8 @@ def rtunittest_boundingbox16():
     shape = rt.Sphere()
     shape.transform = rt.matmul4x4(rt.translation(1, -3, 5), rt.scaling(0.5, 2, 4))
     box = shape.parent_space_bounds_of()
-    assert box.min == rt.Point(0.5, -5, 1)
-    assert box.max == rt.Point(1.5, -1, 9)
+    assert box.boxmin == rt.Point(0.5, -5, 1)
+    assert box.boxmax == rt.Point(1.5, -1, 9)
 
 
 def rtunittest_boundingbox17():
@@ -2346,8 +2349,8 @@ def rtunittest_boundingbox17():
     shape.addchild(s)
     shape.addchild(c)
     box = shape.bounds_of()
-    assert box.min == rt.Point(-4.5, -3, -5)
-    assert box.max == rt.Point(4, 7, 4.5)
+    assert box.boxmin == rt.Point(-4.5, -3, -5)
+    assert box.boxmax == rt.Point(4, 7, 4.5)
 
 
 def rtunittest_boundingbox18():
@@ -2357,8 +2360,8 @@ def rtunittest_boundingbox18():
     right.transform = rt.translation(2, 3, 4)
     shape = rt.CSG('difference', left, right)
     box = shape.bounds_of()
-    assert box.min == rt.Point(-1, -1, -1)
-    assert box.max == rt.Point(3, 4, 5)
+    assert box.boxmin == rt.Point(-1, -1, -1)
+    assert box.boxmax == rt.Point(3, 4, 5)
 
 
 def rtunittest_boundingbox19():
@@ -2429,7 +2432,7 @@ def rtunittest_boundingbox22():
     shape = rt.ObjectGroup()
     shape.addchild(child)
     r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
-    xs = shape.intersect(r)
+    shape.intersect(r)  # do not need the return variable
     assert child.saved_ray is not None
 
 
@@ -2439,18 +2442,18 @@ def rtunittest_boundingbox23():
     right = TestShape()
     shape = rt.CSG('difference', left, right)
     r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 1, 0))
-    xs = shape.intersect(r)
+    shape.intersect(r)  # do not need the return variable
     assert left.saved_ray is None
     assert right.saved_ray is None
 
 
 def rtunittest_boundingbox24():
-    # Intersecting ray+csg tests children bif box is hit
+    # Intersecting ray+csg tests children if box is hit
     left = TestShape()
     right = TestShape()
     shape = rt.CSG('difference', left, right)
     r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
-    xs = shape.intersect(r)
+    shape.intersect(r)  # do not need the return variable
     assert left.saved_ray is not None
     assert right.saved_ray is not None
 
@@ -2459,40 +2462,40 @@ def rtunittest_bvh1():
     # Splitting a perfect cube
     box = rt.BoundingBox(rt.Point(-1, -4, -5), rt.Point(9, 6, 5))
     left, right = box.split_bounds()
-    assert left.min == rt.Point(-1, -4, -5)
-    assert left.max == rt.Point(4, 6, 5)
-    assert right.min == rt.Point(4, -4, -5)
-    assert right.max == rt.Point(9, 6, 5)
+    assert left.boxmin == rt.Point(-1, -4, -5)
+    assert left.boxmax == rt.Point(4, 6, 5)
+    assert right.boxmin == rt.Point(4, -4, -5)
+    assert right.boxmax == rt.Point(9, 6, 5)
 
 
 def rtunittest_bvh2():
     # splitting an x-wide box
     box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(9, 5.5, 3))
     left, right = box.split_bounds()
-    assert left.min == rt.Point(-1, -2, -3)
-    assert left.max == rt.Point(4, 5.5, 3)
-    assert right.min == rt.Point(4, -2, -3)
-    assert right.max == rt.Point(9, 5.5, 3)
+    assert left.boxmin == rt.Point(-1, -2, -3)
+    assert left.boxmax == rt.Point(4, 5.5, 3)
+    assert right.boxmin == rt.Point(4, -2, -3)
+    assert right.boxmax == rt.Point(9, 5.5, 3)
 
 
 def rtunittest_bvh3():
     # splitting a y-wide box
     box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(5, 8, 3))
     left, right = box.split_bounds()
-    assert left.min == rt.Point(-1, -2, -3)
-    assert left.max == rt.Point(5, 3, 3)
-    assert right.min == rt.Point(-1, 3, -3)
-    assert right.max == rt.Point(5, 8, 3)
+    assert left.boxmin == rt.Point(-1, -2, -3)
+    assert left.boxmax == rt.Point(5, 3, 3)
+    assert right.boxmin == rt.Point(-1, 3, -3)
+    assert right.boxmax == rt.Point(5, 8, 3)
 
 
 def rtunittest_bvh4():
     # splitting a z-wide box
     box = rt.BoundingBox(rt.Point(-1, -2, -3), rt.Point(5, 3, 7))
     left, right = box.split_bounds()
-    assert left.min == rt.Point(-1, -2, -3)
-    assert left.max == rt.Point(5, 3, 2)
-    assert right.min == rt.Point(-1, -2, 2)
-    assert right.max == rt.Point(5, 3, 7)
+    assert left.boxmin == rt.Point(-1, -2, -3)
+    assert left.boxmax == rt.Point(5, 3, 2)
+    assert right.boxmin == rt.Point(-1, -2, 2)
+    assert right.boxmax == rt.Point(5, 3, 7)
 
 
 def rtunittest_bvh5():
@@ -2616,6 +2619,71 @@ def rtunittest_bvh10():
     assert len(right.children[0].children) == 1
     assert s4 in right.children[1].children
     assert len(right.children[1].children) == 1
+
+
+def rtunittest_texturemap1():
+    # Checker pattern in 2D
+    black = rt.Color(0, 0, 0)
+    white = rt.Color(1, 1, 1)
+    checkers = rt.UVCheckersPattern(2, 2, black, white)
+
+    # each test has a u, v, and expected result
+    tests = [
+        (0.0, 0.0, black),
+        (0.5, 0.0, white),
+        (0.0, 0.5, white),
+        (0.5, 0.5, black),
+        (1.0, 1.0, black)
+    ]
+
+    for test in tests:
+        assert checkers.uv_color_at(test[0], test[1]) == test[2]
+
+
+def rtunittest_texturemap2():
+    # Using a Spherical mapping on a 3D point
+
+    # each test is a point and expected u, v that are returned
+    tests = [
+        (rt.Point(0, 0, -1), 0.0, 0.5),
+        (rt.Point(1, 0, 0), 0.25, 0.5),
+        (rt.Point(0, 0, 1), 0.5, 0.5),
+        (rt.Point(-1, 0, 0), 0.75, 0.5),
+        (rt.Point(0, 1, 0), 0.5, 1.0),
+        (rt.Point(0, -1, 0), 0.5, 0.0),
+        (rt.Point(math.sqrt(2)/2, math.sqrt(2)/2, 0), 0.25, 0.75)
+    ]
+
+    for test in tests:
+        u, v = rt.spherical_map(test[0])
+        assert math.isclose(u, test[1])
+        assert math.isclose(v, test[2])
+
+
+def rtunittest_texturemap3():
+    # Using a texture map pattern with a spherical map
+
+    black = rt.Color(0, 0, 0)
+    white = rt.Color(1, 1, 1)
+
+    # each test has a point and an expected color
+    tests = [
+        (rt.Point(0.4315, 0.4670, 0.7719), white),
+        (rt.Point(-0.9654, 0.2552, -0.0534), black),
+        (rt.Point(0.1039, 0.7090, 0.6975), white),
+        (rt.Point(-0.4986, -0.7856, -0.3663), black),
+        (rt.Point(-0.0317, -0.9395, 0.3411), black),
+        (rt.Point(0.4809, -0.7721, 0.4154), black),
+        (rt.Point(0.0285, -0.9612, -0.2745), black),
+        (rt.Point(-0.5734, -0.2162, -0.7903), white),
+        (rt.Point(0.7688, -0.1470, 0.6223), black),
+        (rt.Point(-0.7652, 0.2175, 0.6060), black)
+    ]
+
+    pattern = rt.UVCheckersPattern(16, 8, black, white, rt.spherical_map)
+
+    for test in tests:
+        assert pattern.color_at(test[0]) == test[1]
 
 
 def run_unit_tests():
