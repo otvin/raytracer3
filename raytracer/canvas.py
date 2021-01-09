@@ -79,34 +79,59 @@ def canvas_to_ppm(filename):
 
 MPGLOBALWORLD = World()
 MPGLOBALCAMERA = Camera()
+LHS_SAMPLE_LIST = []
+LHS_DELTA = 0
 
 
-def mp_render_rows(rowlist, numsamples, maxdepth, perfcount=False):
+def init_LHS_sample_list(numsamples):
+    # this range is constant for every sample we do
+    global LHS_SAMPLE_LIST, LHS_DELTA
+    for i in range(1, numsamples + 1):
+        LHS_SAMPLE_LIST.append((-0.5 + (i / (numsamples + 1))))
+    LHS_DELTA = 1 / (2 + (numsamples + 1))
 
-    if numsamples == 1:
-        for y in rowlist:
-            for x in range(MPGLOBALCAMERA.hsize):
-                r = MPGLOBALCAMERA.ray_for_pixel(x, y, perfcount)
-                write_pixel(x, y, MPGLOBALWORLD.color_at(r, maxdepth, perfcount))
-            print('line {} complete'.format(y))
+
+def LHS_samples(x, y):
+    # Latin Hypercube samples
+
+    # degenerate case:
+    if len(LHS_SAMPLE_LIST) == 1:
+        return [(x, y)]
     else:
-        for y in rowlist:
-            for x in range(MPGLOBALCAMERA.hsize):
-                c = Color(0, 0, 0)
-                for i in range(numsamples):
-                    rndx = x + random.uniform(-0.5, 0.5)
-                    rndy = y + random.uniform(-0.5, 0.5)
-                    r = MPGLOBALCAMERA.ray_for_pixel(rndx, rndy, perfcount)
-                    c += MPGLOBALWORLD.color_at(r, maxdepth, perfcount)
-                c = c / numsamples
-                write_pixel(x, y, c)
-            print('line {} complete'.format(y))
+        xlist = []
+        ylist = []
+        for i in LHS_SAMPLE_LIST:
+            xlist.append(random.uniform(x + i - LHS_DELTA, x + i + LHS_DELTA))
+            ylist.append(random.uniform(y + i - LHS_DELTA, y + i + LHS_DELTA))
+
+        random.shuffle(xlist)
+        random.shuffle(ylist)
+        retlist = []
+        for i in range(len(xlist)):
+            retlist.append((xlist[i], ylist[i]))
+
+        return retlist
+
+
+def mp_render_rows(rowlist, maxdepth, perfcount=False):
+
+    for y in rowlist:
+        for x in range(MPGLOBALCAMERA.hsize):
+            c = Color(0, 0, 0)
+            samples = LHS_samples(x, y)
+            for q in samples:
+                r = MPGLOBALCAMERA.ray_for_pixel(q[0], q[1], perfcount)
+                c += MPGLOBALWORLD.color_at(r, maxdepth, perfcount)
+            c = c / len(samples)
+            write_pixel(x, y, c)
+        print('line {} complete'.format(y))
 
 
 def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5, perfcount=False):
     global MPGLOBALWORLD
     global MPGLOBALCAMERA
     init_canvas(camera.hsize, camera.vsize)
+    init_LHS_sample_list(numsamples)
     MPGLOBALWORLD = world
     MPGLOBALCAMERA = camera
 
@@ -119,7 +144,7 @@ def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5, perfcoun
 
     procArr = []
     for s in rowlists:
-        p = multiprocessing.Process(target=mp_render_rows, args=(s, numsamples, maxdepth, perfcount))
+        p = multiprocessing.Process(target=mp_render_rows, args=(s, maxdepth, perfcount))
         procArr.append(p)
 
     for p in procArr:

@@ -6,7 +6,7 @@ To execute unit tests, run _python3 unit_tester.py_
 
 As of now, I have implemented all features in the book.  Added several performance optimizations, such as storing the inverse transform and transpose of inverse transform for each object, rather than having to compute it with every intersection.  I have also done the bonus chapter "Bounding boxes and hierarchies" published on the book's webpage at http://www.raytracerchallenge.com  
 
-The book lists several optional features.  So far, I have implemented anti-aliasing by shooting several rays into random spots in each pixel, instead of just pixel center.
+The book lists several optional features.  So far, I have implemented anti-aliasing via the Latin Hypercube method.
 
 The "saved_renders" folder contains samples from the end of each chapter, once we started rendering.  I have posted PNGs of the files from chapter 11 forward below.
 

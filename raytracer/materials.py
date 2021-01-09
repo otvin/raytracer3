@@ -128,6 +128,33 @@ class CheckersPattern(Pattern):
             return self.color2
 
 
+class GridPattern(Pattern):
+    __slots__ = ['color1', 'color2', 'thickness']
+
+    def __init__(self, transform=None, color1=None, color2=None, thickness=0.05):
+        assert 0 <= thickness <= 1
+        super().__init__(transform)
+        if color1 is None:
+            self.color1 = rt.Color(1.0, 1.0, 1.0)
+        else:
+            self.color1 = color1
+        if color2 is None:
+            self.color2 = rt.Color(0.0, 0.0, 0.0)
+        else:
+            self.color2 = color2
+        self.thickness = thickness
+
+    def color_at(self, pattern_point):
+
+        s = pattern_point.x - math.floor(pattern_point.x)
+        if s < self.thickness or s > (1 - self.thickness):
+            return self.color2
+        s = pattern_point.z - math.floor(pattern_point.z)
+        if s < self.thickness or s > (1 - self.thickness):
+            return self.color2
+        return self.color1
+
+
 class BlendedPattern(Pattern):
     __slots__ = ['pattern1', 'pattern2']
 
