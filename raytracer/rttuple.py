@@ -108,15 +108,24 @@ class Point(RT_Tuple):
     def __init__(self, x=0.0, y=0.0, z=0.0):
         super().__init__(x, y, z, 1.0)
 
+    def __str__(self):
+        return 'Point({}, {}, {})'.format(self.arr[0], self.arr[1], self.arr[2])
+
 
 class Vector(RT_Tuple):
     def __init__(self, x=0.0, y=0.0, z=0.0):
         super().__init__(x, y, z, 0.0)
 
+    def __str__(self):
+        return 'Vector({}, {}, {})'.format(self.arr[0], self.arr[1], self.arr[2])
+
 
 class Color(RT_Tuple):
     def __init__(self, r=0.0, g=0.0, b=0.0):
         super().__init__(r, g, b, 0.0)
+
+    def __str__(self):
+        return 'Color({}, {}, {})'.format(self.arr[0], self.arr[1], self.arr[2])
 
     @property
     def r(self):

@@ -2809,6 +2809,60 @@ def rtunittest_texturemap8():
         assert math.isclose(v, test[2])
 
 
+def rtunittest_texturemap9():
+    # Finding the colors on a mapped cube
+    red = rt.Color(1, 0, 0)
+    yellow = rt.Color(1, 1, 0)
+    brown = rt.Color(1, 0.5, 0)
+    green = rt.Color(0, 1, 0)
+    cyan = rt.Color(0, 1, 1)
+    blue = rt.Color(0, 0, 1)
+    purple = rt.Color(1, 0, 1)
+    white = rt.Color(1, 1, 1)
+
+    # each test is a point and the expected color result.  First 5 tests are left face,
+    # next 5 are front, then right, back, up, down.
+    tests = [
+        (rt.Point(-1, 0, 0), yellow),
+        (rt.Point(-1, 0.9, -0.9), cyan),
+        (rt.Point(-1, 0.9, 0.9), red),
+        (rt.Point(-1, -0.9, -0.9), blue),
+        (rt.Point(-1, -0.9, 0.9), brown),
+        (rt.Point(0, 0, 1), cyan),
+        (rt.Point(-0.9, 0.9, 1), red),
+        (rt.Point(0.9, 0.9, 1), yellow),
+        (rt.Point(-0.9, -0.9, 1), brown),
+        (rt.Point(0.9, -0.9, 1), green),
+        (rt.Point(1, 0, 0), red),
+        (rt.Point(1, 0.9, 0.9), yellow),
+        (rt.Point(1, 0.9, -0.9), purple),
+        (rt.Point(1, -0.9, 0.9), green),
+        (rt.Point(1, -0.9, -0.9), white),
+        (rt.Point(0, 0, -1), green),
+        (rt.Point(0.9, 0.9, -1), purple),
+        (rt.Point(-0.9, 0.9, -1), cyan),
+        (rt.Point(0.9, -0.9, -1), white),
+        (rt.Point(-0.9, -0.9, -1), blue),
+        (rt.Point(0, 1, 0), brown),
+        (rt.Point(-0.9, 1, -0.9), cyan),
+        (rt.Point(0.9, 1, -0.9), purple),
+        (rt.Point(-0.9, 1, 0.9), red),
+        (rt.Point(0.9, 1, 0.9), yellow),
+        (rt.Point(0, -1, 0), purple),
+        (rt.Point(-0.9, -1, 0.9), brown),
+        (rt.Point(0.9, -1, 0.9), green),
+        (rt.Point(-0.9, -1, -0.9), blue),
+        (rt.Point(0.9, -1, -0.9), white)
+    ]
+
+    cube = rt.CubeMap()
+    cube.setupdemo()
+
+    for test in tests:
+        c = cube.color_at(test[0])
+        assert c == test[1]
+
+
 def run_unit_tests():
     count = 0
     failed = 0

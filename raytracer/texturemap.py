@@ -155,13 +155,13 @@ class UVPattern(Pattern):
 class UVAlignCheckPattern(UVPattern):
     __slots__ = ['main', 'ul', 'ur', 'bl', 'br']
 
-    def __init__(self):
-        super().__init__(planar_map)
-        self.main = rt.Color(1, 1, 1)
-        self.ul = rt.Color(1, 0, 0)
-        self.ur = rt.Color(1, 1, 0)
-        self.bl = rt.Color(0, 1, 0)
-        self.br = rt.Color(0, 1, 1)
+    def __init__(self, main=None, ul=None, ur=None, bl=None, br=None, mapfn=None):
+        super().__init__(mapfn or planar_map)
+        self.main = main or rt.Color(1, 1, 1)
+        self.ul = ul or rt.Color(1, 0, 0)
+        self.ur = ur or rt.Color(1, 1, 0)
+        self.bl = bl or rt.Color(0, 1, 0)
+        self.br = br or rt.Color(0, 1, 1)
 
     def uv_color_at(self, u, v):
         if u > 0.8:
@@ -207,6 +207,46 @@ class CubeMap(Pattern):
 
     def __init__(self):
         super().__init__(None)
+        self.leftpattern = None
+        self.rightpattern = None
+        self.frontpattern = None
+        self.backpattern = None
+        self.uppattern = None
+        self.downpattern = None
 
+    def setupdemo(self):
+        red = rt.Color(1, 0, 0)
+        yellow = rt.Color(1, 1, 0)
+        brown = rt.Color(1, 0.5, 0)
+        green = rt.Color(0, 1, 0)
+        cyan = rt.Color(0, 1, 1)
+        blue = rt.Color(0, 0, 1)
+        purple = rt.Color(1, 0, 1)
+        white = rt.Color(1, 1, 1)
+
+        self.leftpattern = UVAlignCheckPattern(yellow, cyan, red, blue, brown, rt.cube_uv_left)
+        self.rightpattern = UVAlignCheckPattern(red, yellow, purple, green, white, rt.cube_uv_right)
+        self.frontpattern = UVAlignCheckPattern(cyan, red, yellow, brown, green, rt.cube_uv_front)
+        self.backpattern = UVAlignCheckPattern(green, purple, cyan, white, blue, rt.cube_uv_back)
+        self.uppattern = UVAlignCheckPattern(brown, cyan, purple, red, yellow, rt.cube_uv_up)
+        self.downpattern = UVAlignCheckPattern(purple, brown, green, blue, white, rt.cube_uv_down)
+
+    def color_at(self, pattern_point):
+        face = face_from_point(pattern_point)
+        if face == FACELEFT:
+            pat = self.leftpattern
+        elif face == FACERIGHT:
+            pat = self.rightpattern
+        elif face == FACEFRONT:
+            pat = self.frontpattern
+        elif face == FACEBACK:
+            pat = self.backpattern
+        elif face == FACEUP:
+            pat = self.uppattern
+        else:
+            pat = self.downpattern
+
+        u, v = pat.mapfn(pattern_point)
+        return pat.uv_color_at(u, v)
 
 
