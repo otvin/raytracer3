@@ -8,6 +8,7 @@ from .world import prepare_computations, schlick_reflectance
 from .canvas import init_canvas, write_pixel, get_canvasdims, pixel_at
 from .matrices import allclose4x4
 from .objects import EPSILON, intersection_allowed, TestShape
+from .texturemap import FACELEFT, FACERIGHT, FACEFRONT, FACEBACK, FACEUP, FACEDOWN, face_from_point
 
 
 def compare_ppms(file1, file2):
@@ -2684,6 +2685,128 @@ def rtunittest_texturemap3():
 
     for test in tests:
         assert pattern.color_at(test[0]) == test[1]
+
+
+def rtunittest_texturemap4():
+    # Using planar mapping on a 3D point
+
+    # each test is a point, and an expected u and v that are returned
+    tests = [
+        (rt.Point(0.25, 0, 0.5), 0.25, 0.5),
+        (rt.Point(0.25, 0., -0.25), 0.25, 0.75),
+        (rt.Point(0.25, 0.5, -0.25), 0.25, 0.75),
+        (rt.Point(1.25, 0, 0.5), 0.25, 0.5),
+        (rt.Point(0.25, 0, -1.75), 0.25, 0.25),
+        (rt.Point(1, -0, -1), 0, 0),
+        (rt.Point(0, 0, 0), 0, 0)
+    ]
+
+    for test in tests:
+        u, v = rt.planar_map(test[0])
+        assert math.isclose(u, test[1])
+        assert math.isclose(v, test[2])
+
+
+def rtunittest_teturemap5():
+    # Using cylindrical mapping on a 3D point
+
+    # each test is a point, and an expected u and v that are returned
+    tests = [
+        (rt.Point(0, 0, -1), 0, 0),
+        (rt.Point(0, 0.5, -1), 0, 0.5),
+        (rt.Point(0, 1, -1), 0, 0),
+        (rt.Point(0.70711, 0.5, -0.70711), 0.125, 0.5),
+        (rt.Point(1, 0.5, 0), 0.25, 0.5),
+        (rt.Point(0.70711, 0.5, 0.70711), 0.375, 0.5),
+        (rt.Point(0, -0.25, 1), 0.5, 0.75),
+        (rt.Point(-0.70711, 0.5, 0.70711), 0.625, 0.5),
+        (rt.Point(-1, 1.25, 0), 0.75, 0.25),
+        (rt.Point(-0.70711, 0.5, -0.70711), 0.875, 0.5)
+    ]
+
+    for test in tests:
+        u, v = rt.cylindrical_map(test[0])
+        assert math.isclose(u, test[1])
+        assert math.isclose(v, test[2])
+
+
+def rtunittest_texturemap6():
+    # Layout of the "align check" pattern
+
+    main = rt.Color(1, 1, 1)
+    ul = rt.Color(1, 0, 0)
+    ur = rt.Color(1, 1, 0)
+    bl = rt.Color(0, 1, 0)
+    br = rt.Color(0, 1, 1)
+
+    # each test is a u, a v, and a color
+    tests = [
+        (0.5, 0.5, main),
+        (0.1, 0.9, ul),
+        (0.9, 0.9, ur),
+        (0.1, 0.1, bl),
+        (0.9, 0.1, br)
+    ]
+    pattern = rt.UVAlignCheckPattern()
+
+    for test in tests:
+        assert pattern.uv_color_at(test[0], test[1]) == test[2]
+
+
+def rtunittest_texturemap7():
+    # Identifying the face of a cube from a point
+    
+    # each test is a point and the face that it should show
+    tests = [
+        (rt.Point(-1, 0.5, -0.25), FACELEFT),
+        (rt.Point(1.1, -0.75, 0.8), FACERIGHT),
+        (rt.Point(0.1, 0.6, 0.9), FACEFRONT),
+        (rt.Point(-0.7, 0, -2), FACEBACK),
+        (rt.Point(0.5, 1, 0.9), FACEUP),
+        (rt.Point(-0.2, -1.3, 1.1), FACEDOWN)
+    ]
+
+    for test in tests:
+        assert face_from_point(test[0]) == test[1]
+
+def rtunittest_texturemap8():
+    # UV mapping the faces of a cube
+
+    # each test is a point, and the expected u and v
+    tests = [
+        (rt.Point(-0.5, 0.5, 1), 0.25, 0.75),
+        (rt.Point(0.5, -0.5, 1), 0.75, 0.25),
+        (rt.Point(0.5, 0.5, -1), 0.25, 0.75),
+        (rt.Point(-0.5, -0.5, -1), 0.75, 0.25),
+        (rt.Point(1, 0.5, 0.5), 0.25, 0.75),
+        (rt.Point(1, -0.5, -0.5), 0.75, 0.25),
+        (rt.Point(-1, 0.5, -0.5), 0.25, 0.75),
+        (rt.Point(-1, -0.5, 0.5), 0.75, 0.25),
+        (rt.Point(-0.5, 1, -0.5), 0.25, 0.75),
+        (rt.Point(0.5, 1, 0.5), 0.75, 0.25),
+        (rt.Point(-0.5, -1, 0.5), 0.25, 0.75),
+        (rt.Point(0.5, -1, -0.5), 0.75, 0.25)
+    ]
+
+    for test in tests:
+        point = test[0]
+        face = face_from_point(point)
+        if face == FACEFRONT:
+            fn = rt.cube_uv_front
+        elif face == FACEBACK:
+            fn = rt.cube_uv_back
+        elif face == FACELEFT:
+            fn = rt.cube_uv_left
+        elif face == FACERIGHT:
+            fn = rt.cube_uv_right
+        elif face == FACEUP:
+            fn = rt.cube_uv_up
+        else:
+            fn = rt.cube_uv_down
+
+        u, v = fn(point)
+        assert math.isclose(u, test[1])
+        assert math.isclose(v, test[2])
 
 
 def run_unit_tests():

@@ -36,24 +36,154 @@ def spherical_map(point):
     return u, v
 
 
+def planar_map(point):
+    return point.x % 1, point.z % 1
+
+
+def cylindrical_map(point):
+    # u is computed based on the azimuthal angle, same as with spherical_map()
+    theta = math.atan2(point.x, point.z)
+    raw_u = theta / (2 * math.pi)
+    u = 1 - (raw_u + 0.5)
+
+    # v goes from 0 to 1 between whole units of y
+    v = point.y % 1
+    return u, v
+
+
+FACELEFT = 0
+FACERIGHT = 1
+FACEFRONT = 2
+FACEBACK = 3
+FACEUP = 4
+FACEDOWN = 5
+
+
+def face_from_point(point):
+    absx = math.fabs(point.x)
+    absy = math.fabs(point.y)
+    absz = math.fabs(point.z)
+
+    if absx > absy and absx > absz:
+        if point.x < 0:
+            return FACELEFT
+        else:
+            return FACERIGHT
+    elif absy > absz:
+        if point.y < 0:
+            return FACEDOWN
+        else:
+            return FACEUP
+    elif point.z < 0:
+        return FACEBACK
+    else:
+        return FACEFRONT
+
+
+def cube_uv_front(point):
+    # u goes -1 .. 1 on the x axis
+    # v goes -1 .. 1 on the y axis
+    # add 1 to x so range goes from 0 .. 2
+    # mod 2 so points outside the range repeat
+    # divide by 2 so final range is between 0..1
+    # v is same.
+    u = ((point.x + 1) % 2) / 2
+    v = ((point.y + 1) % 2) / 2
+    return u, v
+
+
+def cube_uv_back(point):
+    # u goes 1 .. -1 on the x axis
+    # v goes -1 .. 1 on the y axis
+    # take 1 - x so range goes from 0 .. 2
+    # then repeat steps from above
+    u = ((1 - point.x) % 2) / 2
+    v = ((point.y + 1) % 2) / 2
+    return u, v
+
+
+def cube_uv_up(point):
+    # u goes -1 .. 1 on the x axis (diagram in book is incorrect, see errata)
+    # v goes 1 .. -1 on the z axis
+    u = ((point.x + 1) % 2) / 2
+    v = ((1 - point.z) % 2) / 2
+    return u, v
+
+
+def cube_uv_down(point):
+    # u goes -1 .. 1 on the x axis (diagram in book is incorrect, see errata)
+    # v goes -1 .. 1 on the z axis
+    u = ((point.x + 1) % 2) / 2
+    v = ((point.z + 1) % 2) / 2
+    return u, v
+
+
+def cube_uv_left(point):
+    # u goes -1 .. 1 on the z axis
+    # v goes -1 .. 1 on the y axis
+    u = ((point.z + 1) % 2) / 2
+    v = ((point.y + 1) % 2) / 2
+    return u, v
+
+
+def cube_uv_right(point):
+    # u goes from 1 .. -1 on the z axis
+    # v goes from -1 .. 1 on the y axis
+    u = ((1 - point.z) % 2) / 2
+    v = ((point.y + 1) % 2) / 2
+    return u, v
+
+
 class UVPattern(Pattern):
     __slots__ = ['width', 'height', 'mapfn']
 
-    def __init__(self, width, height, mapfn=None):
+    def __init__(self, mapfn=None):
         super().__init__(None)
-        self.width = width
-        self.height = height
         if mapfn is None:
             self.mapfn = spherical_map
         else:
             self.mapfn = mapfn
 
+    def uv_color_at(self, u, v):
+        raise NotImplementedError
+
+    def color_at(self, pattern_point):
+        u, v = self.mapfn(pattern_point)
+        return self.uv_color_at(u, v)
+
+
+class UVAlignCheckPattern(UVPattern):
+    __slots__ = ['main', 'ul', 'ur', 'bl', 'br']
+
+    def __init__(self):
+        super().__init__(planar_map)
+        self.main = rt.Color(1, 1, 1)
+        self.ul = rt.Color(1, 0, 0)
+        self.ur = rt.Color(1, 1, 0)
+        self.bl = rt.Color(0, 1, 0)
+        self.br = rt.Color(0, 1, 1)
+
+    def uv_color_at(self, u, v):
+        if u > 0.8:
+            if v < 0.2:
+                return self.br
+            elif v > 0.8:
+                return self.ur
+        elif u < 0.2:
+            if v < 0.2:
+                return self.bl
+            elif v > 0.8:
+                return self.ul
+        return self.main
+
 
 class UVCheckersPattern(UVPattern):
-    __slots__ = ['color1', 'color2']
+    __slots__ = ['width', 'height', 'color1', 'color2']
 
     def __init__(self, width=2, height=2, color1=None, color2=None, mapfn=None):
-        super().__init__(width, height, mapfn)
+        super().__init__(mapfn)
+        self.width = width
+        self.height = height
         if color1 is None:
             self.color1 = rt.Color(0, 0, 0)
         else:
@@ -71,6 +201,12 @@ class UVCheckersPattern(UVPattern):
         else:
             return self.color2
 
-    def color_at(self, pattern_point):
-        u, v = self.mapfn(pattern_point)
-        return self.uv_color_at(u, v)
+
+class CubeMap(Pattern):
+    __slots__ = ["leftpattern", "rightpattern", "frontpattern", "backpattern", "uppattern", "downpattern"]
+
+    def __init__(self):
+        super().__init__(None)
+
+
+
