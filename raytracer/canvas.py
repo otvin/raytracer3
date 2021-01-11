@@ -4,14 +4,82 @@ from .rttuple import Color
 from .camera import Camera
 from .world import World
 
-# This needs to be in global space so that the mp array can be shared when we do multiprocessing.
-# It means that the raytracer can only have a single canvas at a time, which from a practical perspective
-# is also fine.  Bottom line - this file is not object-oriented and I'm ok with it.
 
-GLOBALCANVAS = multiprocessing.Array('d', 300)  # init to 10x10
-CANVASWIDTH = 0
-CANVASHEIGHT = 0
-MAXCOLORS = 255
+class Canvas():
+    __slots__ = ['arr', 'width', 'height', 'maxcolors']
+
+    def __init__(self, width, height, maxcolors):
+        self.width = width
+        self.height = height
+        self.maxcolors = maxcolors
+        # multiprocessing arrays are initially zeroed.  We do not specify a lock here because when we do write,
+        # each process will write to different cells, so there is no collision risk.
+        self.arr = multiprocessing.Array('d', 3 * width * height)
+
+    def __getitem__(self, key):
+        return self.arr[key]
+
+    def __setitem__(self, key, value):
+        self.arr[key] = value
+
+    def write_pixel(self, x, y, color):
+        assert 0 <= x < self.width
+        assert 0 <= y < self.height
+        startcell = (y * self.width * 3) + (x * 3)
+        # TODO - cannot use r, g, b any more because I'm dealing with tuples not colors
+        self.arr[startcell] = color.arr[0]
+        self.arr[startcell + 1] = color.arr[1]
+        self.arr[startcell + 2] = color.arr[2]
+
+
+    def pixel_at(self, x, y):
+        startcell = (y * self.width * 3) + (x * 3)
+        res = Color(self.arr[startcell], self.arr[startcell + 1], self.arr[startcell + 2])
+        return res
+
+    def canvas_to_ppm(self, filename):
+        f = open(filename, 'w')
+        f.write("P3\n")
+        f.write("{} {}\n".format(self.width, self.height))
+        f.write("255\n")
+
+        for h in range(self.height):
+            for w in range(self.width):
+                startcell = (h * self.width * 3) + (w * 3)
+
+                r = self.arr[startcell]
+                g = self.arr[startcell + 1]
+                b = self.arr[startcell + 2]
+
+                r = int((self.maxcolors + 1) * clamp(r, 0.0, 0.999))
+                g = int((self.maxcolors + 1) * clamp(g, 0.0, 0.999))
+                b = int((self.maxcolors + 1) * clamp(b, 0.0, 0.999))
+                f.write('{} {} {}\n'.format(r, g, b))
+        f.close()
+
+    def canvas_from_ppm(self, filename):
+        f = open(filename, 'r')
+        lines = f.readlines()
+        filestr = ''
+        for line in lines:
+            if line[0] != '#':
+                filestr += line
+        data = filestr.split()
+        assert data[0] == 'P3'
+        assert data[1].isnumeric()
+        assert data[2].isnumeric()
+        assert data[3].isnumeric()
+        self.width = int(data[1])
+        self.height = int(data[2])
+        self.maxcolors = int(data[3])
+        self.arr = multiprocessing.Array('d', 3 * self.width * self.height)
+        for i in range(4, len(data)):
+            self.arr[i-4] = int(data[i]) / self.maxcolors
+
+
+
+GLOBALCANVAS = Canvas(10, 10, 255)
+GLOBALTEXTUREPATTERN = Canvas(10, 10, 255)
 
 
 def clamp(x, minimum, maximum):
@@ -24,57 +92,36 @@ def clamp(x, minimum, maximum):
 
 def init_canvas(width=10, height=10):
     global GLOBALCANVAS
-    global CANVASHEIGHT
-    global CANVASWIDTH
-    # multiprocessing arrays are initially zeroed.  We do not specify a lock here because when we do write,
-    # each process will write to different cells, so there is no collision risk.
-    GLOBALCANVAS = multiprocessing.Array('d', width * height * 3)
-    CANVASHEIGHT = height
-    CANVASWIDTH = width
+    GLOBALCANVAS = Canvas(width, height, 255)
 
 
-def get_canvasdims():
-    return CANVASWIDTH, CANVASHEIGHT
+def get_canvasdims(texturepattern=False):
+    if texturepattern:
+        return GLOBALTEXTUREPATTERN.width, GLOBALTEXTUREPATTERN.height
+    else:
+        return GLOBALCANVAS.width, GLOBALCANVAS.height
 
 
 def write_pixel(x, y, color):
     global GLOBALCANVAS
-
-    assert 0 <= x < CANVASWIDTH
-    assert 0 <= y < CANVASHEIGHT
-
-    startcell = (y * CANVASWIDTH * 3) + (x * 3)
-    # TODO - cannot use r, g, b any more because I'm dealing with tuples not colors
-    GLOBALCANVAS[startcell] = color.arr[0]
-    GLOBALCANVAS[startcell + 1] = color.arr[1]
-    GLOBALCANVAS[startcell + 2] = color.arr[2]
+    GLOBALCANVAS.write_pixel(x, y, color)
 
 
-def pixel_at(x, y):
-    startcell = (y * CANVASWIDTH * 3) + (x * 3)
-    res = Color(GLOBALCANVAS[startcell], GLOBALCANVAS[startcell + 1], GLOBALCANVAS[startcell + 2])
-    return res
+def pixel_at(x, y, texturepattern=False):
+    if texturepattern:
+        return GLOBALTEXTUREPATTERN.pixel_at(x, y)
+    else:
+        return GLOBALCANVAS.pixel_at(x, y)
 
 
 def canvas_to_ppm(filename):
-    f = open(filename, "w")
-    f.write("P3\n")
-    f.write("{} {}\n".format(CANVASWIDTH, CANVASHEIGHT))
-    f.write("255\n")
+    GLOBALCANVAS.canvas_to_ppm(filename)
 
-    for h in range(CANVASHEIGHT):
-        for w in range(CANVASWIDTH):
-            startcell = (h * CANVASWIDTH * 3) + (w * 3)
 
-            r = GLOBALCANVAS[startcell]
-            g = GLOBALCANVAS[startcell + 1]
-            b = GLOBALCANVAS[startcell + 2]
+def canvas_from_ppm(filename):
+    global GLOBALTEXTUREPATTERN
+    GLOBALTEXTUREPATTERN.canvas_from_ppm(filename)
 
-            r = int((MAXCOLORS + 1) * clamp(r, 0.0, 0.999))
-            g = int((MAXCOLORS + 1) * clamp(g, 0.0, 0.999))
-            b = int((MAXCOLORS + 1) * clamp(b, 0.0, 0.999))
-            f.write('{} {} {}\n'.format(r, g, b))
-    f.close()
 
 
 MPGLOBALWORLD = World()

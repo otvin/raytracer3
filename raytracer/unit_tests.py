@@ -5,7 +5,7 @@ import raytracer as rt
 from .transformations import do_transform, do_transformray, translation, scaling, reflection, rotation_x, rotation_y, \
                             rotation_z, skew, view_transform
 from .world import prepare_computations, schlick_reflectance
-from .canvas import init_canvas, write_pixel, get_canvasdims, pixel_at
+from .canvas import init_canvas, write_pixel, pixel_at, get_canvasdims
 from .matrices import allclose4x4
 from .objects import EPSILON, intersection_allowed, TestShape
 from .texturemap import FACELEFT, FACERIGHT, FACEFRONT, FACEBACK, FACEUP, FACEDOWN, face_from_point
@@ -2861,6 +2861,68 @@ def rtunittest_texturemap9():
     for test in tests:
         c = cube.color_at(test[0])
         assert c == test[1]
+
+
+def rtunittest_texturemap10():
+    # Reading a file with the wrong magic number
+    try:
+        rt.canvas_from_ppm('raytracer/test_ppm_files/wrong_magic_number.ppm')
+    except AssertionError:
+        pass
+    else:
+        raise
+
+
+def rtunittest_texturemap11():
+    # Reading a PPM returns a canvas of the right size
+    rt.canvas_from_ppm('raytracer/test_ppm_files/test_canvas_size.ppm')
+    width, height = get_canvasdims(True)
+    assert width == 10
+    assert height == 2
+
+
+def rtunittest_texturemap12():
+    # Reading pixel data from a PPM file
+
+    # each test is an x, a y, and the expected value:
+    tests = [
+        (0, 0, rt.Color(1, 0.49804, 0)),
+        (1, 0, rt.Color(0, 0.49804, 1)),
+        (2, 0, rt.Color(0.49804, 1, 0)),
+        (3, 0, rt.Color(1, 1, 1)),
+        (0, 1, rt.Color(0, 0, 0)),
+        (1, 1, rt.Color(1, 0, 0)),
+        (2, 1, rt.Color(0, 1, 0)),
+        (3, 1, rt.Color(0, 0, 1)),
+        (0, 2, rt.Color(1, 1, 0)),
+        (1, 2, rt.Color(0, 1, 1)),
+        (2, 2, rt.Color(1, 0, 1)),
+        (3, 2, rt.Color(0.49804, 0.49804, 0.49804))
+    ]
+
+    rt.canvas_from_ppm('raytracer/test_ppm_files/read_pixel_data.ppm')
+    for test in tests:
+        c = pixel_at(test[0], test[1], True)
+        assert c == test[2]
+
+
+def rtunittest_texturemap13():
+    # PPM parsing ignores comment lines
+    rt.canvas_from_ppm('raytracer/test_ppm_files/comments_test.ppm')
+    assert pixel_at(0, 0, True) == rt.Color(1, 1, 1)
+    assert pixel_at(1, 0, True) == rt.Color(1, 0, 1)
+
+
+def rtunittest_texturemap14():
+    # PPM parsing allows an RGB triple to span lines
+    rt.canvas_from_ppm('raytracer/test_ppm_files/triple_spans_lines.ppm')
+    assert pixel_at(0, 0, True) == rt.Color(0.2, 0.6, 0.8)
+
+
+def rtunittest_texturemap15():
+    # PPM parsing respects the scale setting
+    rt.canvas_from_ppm('raytracer/test_ppm_files/respect_scale_setting.ppm')
+    assert pixel_at(0, 1, True) == rt.Color(0.75, 0.5, 0.25)
 
 
 def run_unit_tests():
