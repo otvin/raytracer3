@@ -1,5 +1,6 @@
 import math
 from .materials import Pattern
+from .canvas import get_canvasdims, pixel_at
 import raytracer as rt
 
 
@@ -202,6 +203,24 @@ class UVCheckersPattern(UVPattern):
             return self.color2
 
 
+# TODO - support more than one image pattern at a time
+class UVImagePattern(UVPattern):
+    __slots__ = ['width', 'height']
+
+    def __init__(self, filename, mapfn=None):
+        super().__init__(mapfn or planar_map)
+        rt.canvas_from_ppm(filename)
+        self.width, self.height = get_canvasdims(True)
+
+    def uv_color_at(self, u, v):
+        # flip v over so it matches the image layout, with y at the top
+        realv = 1 - v
+
+        x = round(u * (self.width - 1))
+        y = round(realv * (self.height - 1))
+        return pixel_at(x, y, True)
+
+
 class CubeMap(Pattern):
     __slots__ = ["leftpattern", "rightpattern", "frontpattern", "backpattern", "uppattern", "downpattern"]
 
@@ -248,5 +267,3 @@ class CubeMap(Pattern):
 
         u, v = pat.mapfn(pattern_point)
         return pat.uv_color_at(u, v)
-
-

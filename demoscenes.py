@@ -1376,23 +1376,101 @@ def dice_demo(width=900, height=450):
     return camera, world
 
 
-def texture_mapping_demo1(width=400, height=400):
+def texture_mapping_cubetest(width=800, height=400):
     world = rt.World()
-    cameratransform = rt.view_transform(rt.Point(0, 0, -5), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
-    camera = rt.Camera(width, height, 0.5, cameratransform)
+    cameratransform = rt.view_transform(rt.Point(0, 0, -20), rt.Point(0, 0, 0), rt.Point(0, 1, 0))
+    camera = rt.Camera(width, height, 0.8, cameratransform)
 
-    light = rt.PointLight(rt.Point(-10, 10, -10), rt.Color(1, 1, 1))
+    light = rt.PointLight(rt.Point(0, 100, -100), rt.Color(0.25, 0.25, 0.25))
+    world.lights.append(light)
+    light = rt.PointLight(rt.Point(0, -100, -100), rt.Color(0.25, 0.25, 0.25))
+    world.lights.append(light)
+    light = rt.PointLight(rt.Point(-100, 0, -100), rt.Color(0.25, 0.25, 0.25))
+    world.lights.append(light)
+    light = rt.PointLight(rt.Point(100, 0, -100), rt.Color(0.25, 0.25, 0.25))
     world.lights.append(light)
 
+    cube = rt.Cube()
+    cube.material.pattern = rt.CubeMap()
+    cube.material.pattern.setupdemo()
+    cube.material.ambient = 0.2
+    cube.material.specular = 0
+    cube.material.diffuse = 0.8
+
+    c1 = deepcopy(cube)
+    c1.transform = rt.chain_transforms(rt.rotation_y(0.7854), rt.rotation_x(0.7854), rt.translation(-6, 2, 0))
+    world.objects.append(c1)
+
+    c2 = deepcopy(cube)
+    c2.transform = rt.chain_transforms(rt.rotation_y(2.3562), rt.rotation_x(0.7854), rt.translation(-2, 2, 0))
+    world.objects.append(c2)
+
+    c3 = deepcopy(cube)
+    c3.transform = rt.chain_transforms(rt.rotation_y(3.927), rt.rotation_x(0.7854), rt.translation(2, 2, 0))
+    world.objects.append(c3)
+
+    c4 = deepcopy(cube)
+    c4.transform = rt.chain_transforms(rt.rotation_y(5.4978), rt.rotation_x(0.7854), rt.translation(6, 2, 0))
+    world.objects.append(c4)
+
+    c5 = deepcopy(cube)
+    c5.transform = rt.chain_transforms(rt.rotation_y(0.7854), rt.rotation_x(-0.7854), rt.translation(-6, -2, 0))
+    world.objects.append(c5)
+
+    c6 = deepcopy(cube)
+    c6.transform = rt.chain_transforms(rt.rotation_y(2.3562), rt.rotation_x(-0.7854), rt.translation(-2, -2, 0))
+    world.objects.append(c6)
+
+    c7 = deepcopy(cube)
+    c7.transform = rt.chain_transforms(rt.rotation_y(3.927), rt.rotation_x(-0.7854), rt.translation(2, -2, 0))
+    world.objects.append(c7)
+
+    c8 = deepcopy(cube)
+    c8.transform = rt.chain_transforms(rt.rotation_y(5.4978), rt.rotation_x(-0.7854), rt.translation(6, -2, 0))
+    world.objects.append(c8)
+
+    return camera, world
+
+
+def texture_mapped_earth(width=800, height=400):
+    cameratransform = rt.view_transform(rt.Point(1, 2, -10), rt.Point(0, 1.1, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, 0.8, cameratransform)
+
+    world = rt.World()
+    light = rt.PointLight(rt.Point(-100, 100, -100), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+    plane = rt.Plane()
+    plane.material.color = rt.Color(1, 1, 1)
+    plane.material.diffuse = 0.1
+    plane.material.ambient = 0
+    plane.material.specular = 0
+    plane.material.reflective = 0.4
+    world.objects.append(plane)
+
+    cylinder = rt.Cylinder()
+    cylinder.min_y = 0
+    cylinder.max_y = 0.1
+    cylinder.closed = True
+    cylinder.material.color = rt.Color(1, 1, 1)
+    cylinder.material.diffuse = 0.2
+    cylinder.material.specular = 0
+    cylinder.material.ambient = 0
+    cylinder.material.reflective = 0.1
+    world.objects.append(cylinder)
+
     sphere = rt.Sphere()
-    sphere.material.pattern = rt.UVCheckersPattern(20, 10)
-    sphere.material.pattern.mapfn = rt.spherical_map
-    sphere.material.pattern.color1 = rt.Color(0.0, 0.5, 0.0)
-    sphere.material.pattern.color2 = rt.Color(1, 1, 1)
+    sphere.transform = rt.chain_transforms(rt.rotation_y(1.9), rt.translation(0, 1.1, 0))
+    sphere.material.diffuse = 0.9
+    sphere.material.specular = 0.1
     sphere.material.shininess = 10
     sphere.material.ambient = 0.1
-    sphere.material.diffuse = 0.6
-    sphere.material.specular = 0.4
+    # the earth image map is from
+    # http://planetpixelemporium.com/earth.html (see "color map")
+    #
+    # converted from JPG to PPM via ImageMagick with:
+    # $ convert earthmap1k.jpg -compress none earthmap1k.ppm
+    sphere.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/earthmap1k.ppm', rt.spherical_map)
     world.objects.append(sphere)
 
     return camera, world

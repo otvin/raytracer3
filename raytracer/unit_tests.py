@@ -1081,7 +1081,7 @@ def rtunittest_testshape1():
     r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 0, 1))
     s = TestShape()
     s.transform = rt.scaling(2, 2, 2)
-    xs = s.intersect(r)
+    s.intersect(r)  # we do not need the return value
     assert s.saved_ray.origin == rt.Point(0, 0, -2.5)
     assert s.saved_ray.direction == rt.Vector(0, 0, 0.5)
 
@@ -2423,7 +2423,7 @@ def rtunittest_boundingbox21():
     shape = rt.ObjectGroup()
     shape.addchild(child)
     r = rt.Ray(rt.Point(0, 0, -5), rt.Vector(0, 1, 0))
-    xs = shape.intersect(r)
+    shape.intersect(r)  # we do not need the return value
     assert child.saved_ray is None
 
 
@@ -2769,6 +2769,7 @@ def rtunittest_texturemap7():
     for test in tests:
         assert face_from_point(test[0]) == test[1]
 
+
 def rtunittest_texturemap8():
     # UV mapping the faces of a cube
 
@@ -2867,10 +2868,10 @@ def rtunittest_texturemap10():
     # Reading a file with the wrong magic number
     try:
         rt.canvas_from_ppm('raytracer/test_ppm_files/wrong_magic_number.ppm')
-    except AssertionError:
+    except AssertionError:  # what we raise if the file has wrong magic number
         pass
     else:
-        raise
+        raise AssertionError('Test Failed')  # if we didn't get an error... we raise an error to fail the test
 
 
 def rtunittest_texturemap11():
@@ -2923,6 +2924,24 @@ def rtunittest_texturemap15():
     # PPM parsing respects the scale setting
     rt.canvas_from_ppm('raytracer/test_ppm_files/respect_scale_setting.ppm')
     assert pixel_at(0, 1, True) == rt.Color(0.75, 0.5, 0.25)
+
+
+def rtunittest_texturemap16():
+    # Checker pattern in 2D
+
+    # each test is a u, v and an expected color
+    tests = [
+        (0, 0, rt.Color(0.9, 0.9, 0.9)),
+        (0.3, 0, rt.Color(0.2, 0.2, 0.2)),
+        (0.6, 0.3, rt.Color(0.1, 0.1, 0.1)),
+        (1, 1, rt.Color(0.9, 0.9, 0.9))
+    ]
+
+    pattern = rt.UVImagePattern('raytracer/test_ppm_files/test_checkers_pattern.ppm')
+
+    for test in tests:
+        color = pattern.uv_color_at(test[0], test[1])
+        assert color == test[2]
 
 
 def run_unit_tests():

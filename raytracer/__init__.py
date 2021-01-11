@@ -6,7 +6,7 @@ from .materials import Pattern, TestPattern, StripePattern, GradientPattern, Rin
                         BlendedPattern, NestedCheckersPattern, GridPattern, Material
 from .texturemap import UVCheckersPattern, UVAlignCheckPattern, spherical_map, planar_map, cylindrical_map, \
                         cube_uv_up, cube_uv_back, cube_uv_down, cube_uv_left, cube_uv_front, cube_uv_right, \
-                        CubeMap
+                        CubeMap, UVImagePattern
 from .matrices import matmul4x4, identity4, transpose4x4, inverse4x4, matmul4x1, matmul4xTuple
 from .transformations import translation, scaling, reflection, rotation_x, rotation_y, rotation_z, skew, \
                         view_transform, do_transformray, do_transform, chain_transforms
