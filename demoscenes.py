@@ -1474,3 +1474,229 @@ def texture_mapped_earth(width=800, height=400):
     world.objects.append(sphere)
 
     return camera, world
+
+
+def texture_mapped_chapel(width=800, height=400):
+
+    cameratransform = rt.view_transform(rt.Point(0, 0, 0), rt.Point(0, 0, 5), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, 1.2, cameratransform)
+
+    world = rt.World()
+    light = rt.PointLight(rt.Point(0, 100, 0), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+    sphere = rt.Sphere()
+    sphere.transform = rt.chain_transforms(rt.scaling(0.75, 0.75, 0.75), rt.translation(0, 0, 5))
+    sphere.material.diffuse = 0.4
+    sphere.material.specular = 0.6
+    sphere.material.shininess = 20
+    sphere.material.reflective = 0.6
+    sphere.material.ambient = 0
+    world.objects.append(sphere)
+
+    # the cube map image is from Lancellotti Chapel from
+    # http://www.humus.name/index.php?page=Textures
+    # It is the work of Emil Persson, a.k.a. Humus
+    # It is licensed under a Creative Commons Attribution 3.0 Unported License
+    # http://creativecommons.org/licenses/by/3.0
+    cube = rt.Cube()
+    cube.transform = rt.scaling(1000, 1000, 1000)
+    cube.material.pattern = rt.CubeMap()
+
+    cube.material.pattern.leftpattern = rt.UVImagePattern('raytracer/test_ppm_files/chapel_negx.ppm', rt.cube_uv_left)
+    cube.material.pattern.rightpattern = rt.UVImagePattern('raytracer/test_ppm_files/chapel_posx.ppm', rt.cube_uv_right)
+    cube.material.pattern.frontpattern = rt.UVImagePattern('raytracer/test_ppm_files/chapel_posz.ppm', rt.cube_uv_front)
+    cube.material.pattern.backpattern = rt.UVImagePattern('raytracer/test_ppm_files/chapel_negz.ppm', rt.cube_uv_back)
+    cube.material.pattern.uppattern = rt.UVImagePattern('raytracer/test_ppm_files/chapel_posy.ppm', rt.cube_uv_up)
+    cube.material.pattern.downpattern = rt.UVImagePattern('raytracer/test_ppm_files/chapel_negy.ppm', rt.cube_uv_down)
+
+    cube.material.diffuse = 0
+    cube.material.specular = 0
+    cube.material.ambient = 1
+    world.objects.append(cube)
+
+    return camera, world
+
+
+def orrery_notch(theta=0.0):
+    left = rt.Cube()
+    left.transform = rt.chain_transforms(rt.scaling(1, 0.25, 1), rt.translation(1, 0, 1), rt.rotation_y(0.7854),
+                                         rt.scaling(1, 1, 0.1))
+    right = rt.Cylinder()
+    right.min_y = -0.26
+    right.max_y = 0.26
+    right.closed = True
+    right.transform = rt.scaling(0.8, 1, 0.8)
+
+    notch = rt.CSG('difference', left, right)
+    notch.transform = rt.rotation_y(theta)
+    return notch
+
+
+def orrery_gear():
+    left = rt.Cylinder()
+    left.min_y = -0.025
+    left.max_y = 0.025
+    left.closed = True
+
+    right = rt.ObjectGroup()
+    centerhole = rt.Cylinder()
+    centerhole.min_y = -0.06
+    centerhole.max_y = 0.06
+    centerhole.closed = True
+    centerhole.transform = rt.scaling(0.1, 1, 0.1)
+    right.addchild(centerhole)
+
+    crescentleft = rt.Cylinder()
+    crescentleft.min_y = -0.06
+    crescentleft.max_y = 0.06
+    crescentleft.closed = True
+    crescentleft.transform = rt.scaling(0.7, 1, 0.7)
+    crescentright = rt.Cube()
+    crescentright.transform = rt.scaling(1, 0.1, 0.2)
+    crescent = rt.CSG('difference', crescentleft, crescentright)
+    right.addchild(crescent)
+
+    for i in range(-9, 11):
+        right.addchild(orrery_notch(i * math.pi / 10))
+
+    gear = rt.CSG('difference', left, right)
+    return gear
+
+
+def orrery_demo(width=800, height=400):
+    # ======================================================
+    # orrery.yml
+    #
+    # This file describes the title image for the "Texture
+    # Mapping" bonus chapter at:
+    #
+    # http://www.raytracerchallenge.com/bonus/texture-mapping.html
+    #
+    # It requires several additional resources, provided as a
+    # separate download. The resources were found on the following
+    # sites:
+    #
+    # * https://www.bittbox.com/freebies/free-hi-resolution-wood-textures
+    #   : the wooden texture for the table
+    # * https://astrogeology.usgs.gov/search/map/Mercury/Messenger/Global/Mercury_MESSENGER_MDIS_Basemap_LOI_Mosaic_Global_166m
+    #   : the map of Mercury
+    # * http://planetpixelemporium.com/planets.html
+    #   : maps of Earth, Mars, Jupiter, Saturn, Uranus, and Neptune
+    # * https://hdrihaven.com/hdri/?c=indoor&h=artist_workshop
+    #   : the "artist workshop" environment map
+    #
+    # by Jamis Buck <jamis@jamisbuck.org>
+    # ======================================================
+
+    cameratransform = rt.view_transform(rt.Point(2, 4, -10), rt.Point(-1, -1, 0), rt.Point(0, 1, 0))
+    camera = rt.Camera(width, height, 1.2, cameratransform)
+
+    world = rt.World()
+    light = rt.PointLight(rt.Point(0, 2.5, -10), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+    GOLD = rt.Material()
+    GOLD.color = rt.Color(1, 0.8, 0.1)
+    GOLD.ambient = 0.1
+    GOLD.diffuse = 0.6
+    GOLD.specular = 0.3
+    GOLD.shininess = 15
+
+    SILVER = rt.Material()
+    SILVER.color = rt.Color(1, 1, 1)
+    SILVER.ambient = 0.1
+    SILVER.diffuse = 0.7
+    SILVER.specular = 0.3
+    SILVER.shininess = 15
+
+    topplateleft = rt.Cylinder()
+    topplateleft.min_y = -1.51
+    topplateleft.max_y = -1.5
+    topplateleft.closed = True
+    topplateright = rt.ObjectGroup()
+    child1 = rt.Cylinder()
+    child1.min_y = -1.52
+    child1.max_y = -1.49
+    child1.closed = True
+    child1.transform = rt.scaling(0.1, 1, 0.1)
+    child2left = rt.Cylinder()
+    child2left.min_y = -1.52
+    child2left.max_y = -1.49
+    child2left.closed = True
+    child2left.transform = rt.scaling(0.75, 1, 0.75)
+    child2right = rt.Cube()
+    child2right.transform = rt.chain_transforms(rt.scaling(1, 0.1, 0.2), rt.translation(0, -1.5, 0))
+    child2 = rt.CSG('difference', child2left, child2right)
+    topplateright.addchild(child1)
+    topplateright.addchild(child2)
+    topplate = rt.CSG('difference', topplateleft, topplateright)
+    topplate.transform = rt.rotation_y(-1)
+    topplate.material = GOLD
+    topplate.push_material_to_children()
+    world.objects.append(topplate)
+
+    gear = orrery_gear()
+    gear.transform = rt.chain_transforms(rt.scaling(0.5, 0.5, 0.5), rt.translation(0.4, -1.45, -0.4))
+    gear.material = SILVER
+    world.objects.append(gear)
+
+    gear = orrery_gear()
+    gear.transform = rt.chain_transforms(rt.rotation_y(0.8), rt.scaling(0.4, 0.4, 0.4),
+                                         rt.translation(-0.4, -1.45, 0.2))
+    gear.material = SILVER
+    world.objects.append(gear)
+
+
+    sun = rt.ObjectGroup()
+    child = rt.Sphere()
+    child.casts_shadow = False  # TODO - change this to True
+    child.material.color = rt.Color(1, 1, 0)
+    child.material.ambient = 0.1
+    child.material.diffuse = 0.6
+    child.material.specular = 0  # TODO - change this because we aren't using skybox
+    child.material.reflective = 0.2
+    sun.addchild(child)
+    child = rt.Cylinder()
+    child.min_y = -4
+    child.max_y = -0.5
+    child.transform = rt.scaling(0.025, 1, 0.025)
+    child.material = GOLD
+    sun.addchild(child)
+    world.objects.append(sun)
+
+    base = rt.Sphere()
+    base.transform = rt.translation(0, -4, 0)
+    base.material.pattern = rt.UVCheckersPattern(16, 8, rt.Color(0, 0, 0), rt.Color(0.5, 0.5, 0.5), rt.spherical_map)
+    base.material.diffuse = 0.6
+    base.material.specular = 0  # TODO - change this because we aren't using skybox
+    base.material.ambient = 0.1
+    base.material.reflective = 0.2
+    world.objects.append(base)
+
+    table = rt.Cube()
+    table.transform = rt.chain_transforms(rt.scaling(5, 0.1, 5), rt.translation(0, -4, 0))
+    table.material.diffuse = 0.9
+    table.material.ambient = 0.1
+    table.material.specular = 0
+    table.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/woodgrain.ppm', rt.planar_map)
+    table.material.pattern.transform = rt.scaling(0.5, 0.5, 0.5)
+    world.objects.append(table)
+
+
+
+    environment = rt.Sphere()
+    environment.transform = rt.scaling(1000, 1000, 1000)
+    environment.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/artist_workshop_4k.ppm',
+                                                     rt.spherical_map)
+    environment.material.pattern.transform = rt.rotation_y(-2.7)
+    environment.material.diffuse = 0
+    environment.material.specular = 0
+    environment.material.ambient = 1
+    world.objects.append(environment)
+
+
+    for i in world.objects:
+        i.divide(7)
+
+    return camera, world

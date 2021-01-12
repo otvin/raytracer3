@@ -1,5 +1,6 @@
 import multiprocessing
 import random
+import time
 from .rttuple import Color
 from .camera import Camera
 from .world import World
@@ -58,12 +59,12 @@ class Canvas():
         f.close()
 
     def canvas_from_ppm(self, filename):
+        print('Loading {}'.format(filename))
+        timestart = time.time()
         f = open(filename, 'r')
         lines = f.readlines()
-        filestr = ''
-        for line in lines:
-            if line[0] != '#':
-                filestr += line
+        comments_removed = [i for i in lines if i[0] != '#']
+        filestr = ' '.join(comments_removed)
         data = filestr.split()
         assert data[0] == 'P3'
         assert data[1].isnumeric()
@@ -75,11 +76,9 @@ class Canvas():
         self.arr = multiprocessing.Array('d', 3 * self.width * self.height)
         for i in range(4, len(data)):
             self.arr[i-4] = int(data[i]) / self.maxcolors
-
-
-
-GLOBALCANVAS = Canvas(10, 10, 255)
-GLOBALTEXTUREPATTERN = Canvas(10, 10, 255)
+        timeend = time.time()
+        print('{} loaded.'.format(filename))
+        print('Elapsed time: {} seconds'.format(timeend - timestart))
 
 
 def clamp(x, minimum, maximum):
@@ -90,14 +89,26 @@ def clamp(x, minimum, maximum):
     return x
 
 
+# Using these wrapper functions is a bit messy.  However, with python multiprocessing, global objects declared
+# before the Process.start() can be shared.  The Canvas objects have multiprocessing.arrays as members and that seems
+# to work.  What I discovered, however, is that the global objects only seem to retain state if they are accessed by
+# functions in this file.  So the wrapper functions below allow me to do that.  There may be other ways, but since
+# this works, I'll keep it.
+
+
+GLOBALCANVAS = Canvas(10, 10, 255)
+GLOBALTEXTUREPATTERNDICT = {}
+
+
 def init_canvas(width=10, height=10):
     global GLOBALCANVAS
     GLOBALCANVAS = Canvas(width, height, 255)
 
 
-def get_canvasdims(texturepattern=False):
+def get_canvasdims(texturepattern=False, texturename='default'):
     if texturepattern:
-        return GLOBALTEXTUREPATTERN.width, GLOBALTEXTUREPATTERN.height
+        canvas = GLOBALTEXTUREPATTERNDICT[texturename]
+        return canvas.width, canvas.height
     else:
         return GLOBALCANVAS.width, GLOBALCANVAS.height
 
@@ -107,9 +118,10 @@ def write_pixel(x, y, color):
     GLOBALCANVAS.write_pixel(x, y, color)
 
 
-def pixel_at(x, y, texturepattern=False):
+def pixel_at(x, y, texturepattern=False, texturename='default'):
     if texturepattern:
-        return GLOBALTEXTUREPATTERN.pixel_at(x, y)
+        canvas = GLOBALTEXTUREPATTERNDICT[texturename]
+        return canvas.pixel_at(x, y)
     else:
         return GLOBALCANVAS.pixel_at(x, y)
 
@@ -118,10 +130,11 @@ def canvas_to_ppm(filename):
     GLOBALCANVAS.canvas_to_ppm(filename)
 
 
-def canvas_from_ppm(filename):
-    global GLOBALTEXTUREPATTERN
-    GLOBALTEXTUREPATTERN.canvas_from_ppm(filename)
-
+def canvas_from_ppm(filename, texturename='default'):
+    global GLOBALTEXTUREPATTERNDICT
+    canvas = Canvas(1, 1, 255)
+    canvas.canvas_from_ppm(filename)
+    GLOBALTEXTUREPATTERNDICT[texturename] = canvas
 
 
 MPGLOBALWORLD = World()

@@ -209,8 +209,8 @@ class UVImagePattern(UVPattern):
 
     def __init__(self, filename, mapfn=None):
         super().__init__(mapfn or planar_map)
-        rt.canvas_from_ppm(filename)
-        self.width, self.height = get_canvasdims(True)
+        rt.canvas_from_ppm(filename, str(id(self)))
+        self.width, self.height = get_canvasdims(True, str(id(self)))
 
     def uv_color_at(self, u, v):
         # flip v over so it matches the image layout, with y at the top
@@ -218,7 +218,7 @@ class UVImagePattern(UVPattern):
 
         x = round(u * (self.width - 1))
         y = round(realv * (self.height - 1))
-        return pixel_at(x, y, True)
+        return pixel_at(x, y, True, str(id(self)))
 
 
 class CubeMap(Pattern):

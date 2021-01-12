@@ -107,6 +107,20 @@ class HittableObject:
     def divide(self, threshold):
         pass
 
+    # TODO - this could be done more cleanly but it works
+    def push_material_to_children(self):
+        # takes the material of the group and sets all children to have this material
+        if isinstance(self, ObjectGroup):
+            childlist = self.children
+        elif isinstance(self, CSG):
+            childlist = [self.left, self.right]
+        else:
+            childlist = []
+        for child in childlist:
+            child.material = deepcopy(self.material)
+            if isinstance(child, ObjectGroup) or isinstance(child, CSG):
+                child.push_material_to_children()
+
 
 class TestShape(HittableObject):
     __slots__ = ['saved_ray']
@@ -555,13 +569,6 @@ class ObjectGroup(HittableObject):
             if child.includes(obj):
                 return True
         return False
-
-    def push_material_to_children(self):
-        # takes the material of the group and sets all children to have this material
-        for child in self.children:
-            child.material = deepcopy(self.material)
-            if isinstance(child, ObjectGroup):
-                child.push_material_to_children()
 
     def local_normal_at(self, object_point, uv_intersection=None):
         raise NotImplementedError('Group objects do not have local normals')
