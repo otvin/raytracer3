@@ -4,7 +4,7 @@ Built using _The Ray Tracer Challenge_ by Jamis Buck
 
 To execute unit tests, run _python3 unit_tester.py_
 
-As of now, I have implemented all features in the book.  Added several performance optimizations, such as storing the inverse transform and transpose of inverse transform for each object, rather than having to compute it with every intersection.  I have also done the bonus chapter "Bounding boxes and hierarchies" and most of the bonus chapter "texture mapping" published on the book's webpage at http://www.raytracerchallenge.com  
+As of now, I have implemented all features in the book.  Added several performance optimizations, such as storing the inverse transform and transpose of inverse transform for each object, rather than having to compute it with every intersection.  I have also done the bonus chapters "Bounding boxes and hierarchies" and "texture mapping" published on the book's webpage at http://www.raytracerchallenge.com  
 
 The book lists several optional features.  So far, I have implemented anti-aliasing via the Latin Hypercube method.
 
@@ -29,8 +29,10 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _dice_demo.ppm_ - another demo that relies on CSG.  Found on the internet (citation in demoscenes.py)
 * _christmas_demo.ppm_ - after doing the bonus chapter on bounding boxes & hierarchies, was able to add this image which contains over 5000 triangles.
 * _texture_mapped_earth.ppm_ - after doing the bonus chapter on texture mapping, was able to take a rectangular image of the earth and map it to a sphere.
+* _texture_mapped_chapel.ppm_ - demo using a skybox
+* _orrery_demo.ppm_ - the final demo from the texture map chapter.
 
-Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
+While not included in the print copy, Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
 
 ![chap11_demo.ppm](saved_renders/chap11_demo.png)
 ![chap12_demo.ppm](saved_renders/chap12_demo.png)
@@ -43,3 +45,5 @@ Jamis Buck posted details for the scenes shown in the book for chapters 11-14 an
 ![dice_demo.ppm](saved_renders/dice_demo.png)
 ![christmas_demo.ppm](saved_renders/christmas_demo.png)
 ![texture_mapped_earth.ppm](saved_renders/texture_mapped_earth.png)
+![texture_mapped_chapel.ppm](saved_renders/texture_mapped_chapel.png)
+![orrery_demo.ppm](saved_renders/orrery_demo.png)

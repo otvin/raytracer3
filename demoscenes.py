@@ -1647,7 +1647,6 @@ def orrery_demo(width=800, height=400):
     gear.material = SILVER
     world.objects.append(gear)
 
-
     sun = rt.ObjectGroup()
     child = rt.Sphere()
     child.casts_shadow = False  # TODO - change this to True
@@ -1781,7 +1780,6 @@ def orrery_demo(width=800, height=400):
     earth.addchild(stand)
     world.objects.append(earth)
 
-
     # gear-plate between Earth and Mars
     gear = orrery_gear()
     gear.material = SILVER
@@ -1815,7 +1813,6 @@ def orrery_demo(width=800, height=400):
     mars.addchild(stand)
     world.objects.append(mars)
 
-
     # gear-plate between Mars and Jupiter
     gear = orrery_gear()
     gear.material = SILVER
@@ -1848,7 +1845,6 @@ def orrery_demo(width=800, height=400):
     jupiter.addchild(stand)
     world.objects.append(jupiter)
 
-
     # gear-plate between Jupiter and Saturn
     gear = orrery_gear()
     gear.material = SILVER
@@ -1862,7 +1858,7 @@ def orrery_demo(width=800, height=400):
     planet.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/saturnmap.ppm', rt.spherical_map)
     saturn.addchild(planet)
 
-    # rings.  TODO: use ring texture map instead of the ring pattern
+    # rings.  TODO: separate the rings somehow or use a better pattern
     left = rt.Cylinder()
     left.min_y = -0.01
     left.max_y = 0.01
@@ -1876,8 +1872,6 @@ def orrery_demo(width=800, height=400):
     right.transform = rt.scaling(0.75, 1, 0.75)
     rings = rt.CSG('difference', left, right)
     rings.transform = rt.rotation_z(0.2)
-    #rings.material.pattern = rt.RingPattern(rt.scaling(0.05, 1, 0.05), rt.Color(1, 1, 0.5), rt.Color(1, 1, 0))
-    #rings.push_material_to_children()
     saturn.addchild(rings)
 
     stand = rt.ObjectGroup()
@@ -1899,20 +1893,83 @@ def orrery_demo(width=800, height=400):
     stand.push_material_to_children()
     saturn.addchild(stand)
     world.objects.append(saturn)
-    
-    '''
+
+    # gear-plate between Saturn & Uranus
+    gear = orrery_gear()
+    gear.material = SILVER
+    gear.transform = rt.chain_transforms(rt.scaling(0.9, 0.9, 0.9), rt.rotation_y(1), rt.translation(0, -2.55, 0))
+    world.objects.append(gear)
+
+    uranus = rt.ObjectGroup()
+    uranus.transform = rt.chain_transforms(rt.translation(9, 0, 0), rt.rotation_y(-3))
+    planet = rt.Sphere()
+    planet.transform = rt.scaling(0.4, 0.4, 0.4)
+    planet.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/uranusmap.ppm', rt.spherical_map)
+    uranus.addchild(planet)
+    stand = rt.ObjectGroup()
+    cylinder = rt.Cylinder()
+    cylinder.min_y = -2.6
+    cylinder.max_y = 0
+    cylinder.transform = rt.scaling(0.025, 1, 0.025)
+    stand.addchild(cylinder)
+    sphere = rt.Sphere()
+    sphere.transform = rt.chain_transforms(rt.scaling(0.025, 0.025, 0.025), rt.translation(0, -2.6, 0))
+    stand.addchild(sphere)
+    cylinder = rt.Cylinder()
+    cylinder.min_y = 0
+    cylinder.max_y = 9
+    cylinder.transform = rt.chain_transforms(rt.scaling(0.025, 1, 0.025), rt.rotation_z(1.5708),
+                                             rt.translation(0, -2.6, 0))
+    stand.addchild(cylinder)
+    stand.material = GOLD
+    stand.push_material_to_children()
+    uranus.addchild(stand)
+    world.objects.append(uranus)
+
+    # gear-plate between Uranus & Neptune
+    gear = orrery_gear()
+    gear.material = SILVER
+    gear.transform = rt.chain_transforms(rt.rotation_y(-1), rt.translation(0, -2.65, 0))
+    world.objects.append(gear)
+
+    neptune = rt.ObjectGroup()
+    neptune.transform = rt.chain_transforms(rt.translation(10, 0, 0), rt.rotation_y(-1.25))
+    planet = rt.Sphere()
+    planet.transform = rt.scaling(0.4, 0.4, 0.4)
+    planet.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/neptunemap.ppm', rt.spherical_map)
+    neptune.addchild(planet)
+    stand = rt.ObjectGroup()
+    cylinder = rt.Cylinder()
+    cylinder.min_y = -2.7
+    cylinder.max_y = 0
+    cylinder.transform = rt.scaling(0.025, 1, 0.025)
+    stand.addchild(cylinder)
+    sphere = rt.Sphere()
+    sphere.transform = rt.chain_transforms(rt.scaling(0.025, 0.025, 0.025), rt.translation(0, -2.7, 0))
+    stand.addchild(sphere)
+    cylinder = rt.Cylinder()
+    cylinder.min_y = 0
+    cylinder.max_y = 10
+    cylinder.transform = rt.chain_transforms(rt.scaling(0.025, 1, 0.025), rt.rotation_z(1.5708),
+                                             rt.translation(0, -2.7, 0))
+    stand.addchild(cylinder)
+    stand.material = GOLD
+    stand.push_material_to_children()
+    neptune.addchild(stand)
+    world.objects.append(neptune)
+
+    for i in world.objects:
+        i.divide(7)
+
     environment = rt.Sphere()
     environment.transform = rt.scaling(1000, 1000, 1000)
-    environment.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/artist_workshop_4k.ppm',
+    # Note - I used the 4k version to generate the demo image, but that is too large for github.
+    environment.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/artist_workshop_2k.ppm',
                                                      rt.spherical_map)
     environment.material.pattern.transform = rt.rotation_y(-2.7)
     environment.material.diffuse = 0
     environment.material.specular = 0
     environment.material.ambient = 1
     world.objects.append(environment)
-    '''
-
-    for i in world.objects:
-        i.divide(7)
 
     return camera, world
