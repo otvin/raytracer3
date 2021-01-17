@@ -1312,7 +1312,8 @@ def dice_demo(width=900, height=450):
     camera = rt.Camera(width, height, math.pi/3, viewtransform)
 
     world = rt.World()
-    world.lights.append(rt.PointLight(rt.Point(-9, 8, -7), rt.Color(1, 1, 1)))
+    light = rt.AreaLight(rt.Point(-8, 8, -6), rt.Vector(2, 0, 0), 4, rt.Vector(0, 0, 2), 4, True, rt.Color(1, 1, 1))
+    world.lights.append(light)
 
     floor_material = rt.Material()
     floor_material.pattern = rt.CheckersPattern(rt.scaling(0.1, 0.1, 0.1), rt.Color(0.75, 0.75, 0.75),
@@ -1593,7 +1594,7 @@ def orrery_demo(width=800, height=400):
     camera = rt.Camera(width, height, 1.2, cameratransform)
 
     world = rt.World()
-    light = rt.PointLight(rt.Point(0, 2.5, -10), rt.Color(1, 1, 1))
+    light = rt.AreaLight(rt.Point(-5, 0, -10), rt.Vector(10, 0, 0), 10, rt.Vector(0, 5, 0), 5, True, rt.Color(1, 1, 1))
     world.lights.append(light)
 
     GOLD = rt.Material()
@@ -1822,7 +1823,7 @@ def orrery_demo(width=800, height=400):
     jupiter = rt.ObjectGroup()
     jupiter.transform = rt.chain_transforms(rt.translation(6.5, 0, 0), rt.rotation_y(-0.75))
     planet = rt.Sphere()
-    planet.transform = rt.scaling(0.67, 0.67, 0.67)
+    planet.transform = rt.chain_transforms(rt.rotation_y(math.pi), rt.scaling(0.67, 0.67, 0.67))
     planet.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/jupitermap.ppm', rt.spherical_map)
     jupiter.addchild(planet)
     stand = rt.ObjectGroup()
@@ -1964,12 +1965,162 @@ def orrery_demo(width=800, height=400):
     environment = rt.Sphere()
     environment.transform = rt.scaling(1000, 1000, 1000)
     # Note - I used the 4k version to generate the demo image, but that is too large for github.
-    environment.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/artist_workshop_2k.ppm',
+    environment.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/artist_workshop_4k.ppm',
                                                      rt.spherical_map)
     environment.material.pattern.transform = rt.rotation_y(-2.7)
     environment.material.diffuse = 0
     environment.material.specular = 0
     environment.material.ambient = 1
     world.objects.append(environment)
+
+    return camera, world
+
+
+def shadow_glamour_shot(width=400, height=160):
+    cameratransform = rt.view_transform(rt.Point(-3, 1, 2.5), rt.Point(0, 0.5, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, 0.7854, cameratransform)
+
+    world = rt.World()
+    light = rt.AreaLight(rt.Point(-1, 2, 4), rt.Vector(2, 0, 0), 10, rt.Vector(0, 2, 0), 10,
+                         True, rt.Color(1.5, 1.5, 1.5))
+    world.lights.append(light)
+
+    cube = rt.Cube()
+    cube.material.color = rt.Color(1.5, 1.5, 1.5)  # make it a shining cube
+    cube.material.ambient = 1
+    cube.material.diffuse = 0
+    cube.material.specular = 0
+    cube.transform = rt.chain_transforms(rt.scaling(1, 1, 0.01), rt.translation(0, 3, 4))
+    cube.casts_shadow = False
+    world.objects.append(cube)
+
+    plane = rt.Plane()
+    plane.material.color = rt.Color(1, 1, 1)
+    plane.material.ambient = 0.025
+    plane.material.diffuse = 0.67
+    plane.material.specular = 0.9
+    world.objects.append(plane)
+
+    sphere = rt.Sphere()
+    sphere.transform = rt.chain_transforms(rt.scaling(0.5, 0.5, 0.5), rt.translation(0.5, 0.5, 0))
+    sphere.material.color = rt.Color(1, 0, 0)
+    sphere.material.ambient = 0.1
+    sphere.material.specular = 0
+    sphere.material.diffuse = 0.6
+    sphere.material.reflective = 0.3
+    world.objects.append(sphere)
+
+    sphere = rt.Sphere()
+    sphere.transform = rt.chain_transforms(rt.scaling(0.33, 0.33, 0.33), rt.translation(-0.25, 0.33, 0))
+    sphere.material.color = rt.Color(0.5, 0.5, 1)
+    sphere.material.ambient = 0.1
+    sphere.material.specular = 0
+    sphere.material.diffuse = 0.6
+    sphere.material.reflective = 0.3
+    world.objects.append(sphere)
+
+    return camera, world
+
+
+def spheres_demo1(width=400, height=300):
+    cameratransform = rt.view_transform(rt.Point(6, 1, -2.5), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/2, cameratransform)
+
+    world = rt.World()
+    light = rt.PointLight(rt.Point(7, 10, -7), rt.Color(0.5, 0.5, 0.5))
+    world.lights.append(light)
+    light = rt.PointLight(rt.Point(-3, 10, -7), rt.Color(0.5, 0.5, 0.5))
+    world.lights.append(light)
+
+    plane = rt.Plane()
+    plane.material.color = rt.Color(0.52, 0.6, 0.71)
+    plane.material.shininess = 0
+    plane.material.specular = 0
+    plane.material.reflective = 0
+    world.objects.append(plane)
+
+    plane = rt.Plane()
+    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.translation(-25, 0, 0))
+    plane.material.color = rt.Color(0.87, 0.92, 1)
+    plane.material.shininess = 0
+    plane.material.specular = 0
+    plane.material.diffuse = 1
+    plane.material.ambient = 0
+    plane.material.reflective = 0
+    world.objects.append(plane)
+
+    metal = rt.Material()
+    # metal.reflective = 0.6
+    # metal.diffuse = 0.4
+    # metal.shininess = 20
+    # metal.specular = 0.6
+    # metal.ambient = 0
+
+    # metal.diffuse = 0.1
+    # metal.specular = 0.9
+    # metal.shininess = 300
+    # metal.reflective = 0.9
+
+    metal.reflective = 0.4
+    metal.diffuse = 0.55
+    metal.ambient = 0.15
+    metal.shininess = 300
+    metal.specular = 0.1
+
+    glass = rt.Material()
+    glass.color = rt.Color(0.8, 0.8, 0.9)
+    glass.ambient = 0
+    glass.diffuse = 0.2
+    glass.specular = 0.9
+    glass.shininess = 300
+    glass.transparency = 0.8
+    glass.refractive_index = 1.57
+
+    matte = rt.Material()
+    matte.specular = 0
+    matte.shininess = 0
+    matte.reflective = 0
+
+    big_glass = rt.Sphere()
+    big_glass.transform = rt.translation(0, 1, 0)
+    big_glass.material = deepcopy(glass)
+    world.objects.append(big_glass)
+
+    big_diffuse = rt.Sphere()
+    big_diffuse.transform = rt.translation(-4, 1, 0)
+    big_diffuse.material = deepcopy(matte)
+    big_diffuse.material.color = rt.Color(0.4, 0.2, 0.1)
+    world.objects.append(big_diffuse)
+
+    big_metal = rt.Sphere()
+    big_metal.transform = rt.translation(4, 1, 0)
+    big_metal.material = deepcopy(metal)
+    big_metal.material.color = rt.Color(0.7, 0.6, 0.5)
+    world.objects.append(big_metal)
+
+    g = rt.ObjectGroup()
+    for a in range(-11, 12):
+        for b in range(-11, 12):
+            mat = random.random()
+            sphere = rt.Sphere()
+            translation = rt.translation(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random())
+            sphere.transform = rt.chain_transforms(rt.scaling(0.2, 0.2, 0.2), translation)
+            if mat < 0.8:
+                sphere.material = deepcopy(matte)
+                sphere.material.color = rt.Color(random.random() * random.random(),
+                                                 random.random() * random.random(),
+                                                 random.random() * random.random())
+            elif mat < 0.95:
+                sphere.material = deepcopy(metal)
+                sphere.material.color = rt.Color(random.uniform(0.5, 1.0), random.uniform(0.5, 1.0),
+                                                 random.uniform(0.5, 1.0))
+
+            else:
+                sphere.material = deepcopy(glass)
+
+            g.addchild(sphere)
+
+    g.divide(5)
+    world.objects.append(g)
 
     return camera, world

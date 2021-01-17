@@ -1,7 +1,7 @@
 from .rttuple import RT_Tuple, Point, Vector, Color, BLACK, WHITE, Ray, normalize, dot, cross, reflect
 from .canvas import Canvas, mp_render, canvas_to_ppm, canvas_from_ppm
 from .camera import Camera
-from .lights import Light, PointLight
+from .lights import Light, PointLight, AreaLight
 from .materials import Pattern, TestPattern, StripePattern, GradientPattern, RingPattern, CheckersPattern, \
                         BlendedPattern, NestedCheckersPattern, GridPattern, Material
 from .texturemap import UVCheckersPattern, UVAlignCheckPattern, spherical_map, planar_map, cylindrical_map, \

@@ -70,9 +70,8 @@ class World:
         res.sort(key=lambda x: x.t)
         return res
 
-    def is_shadowed(self, point, light):
-        # TODO if we add multiple lights we need to do something here too.
-        v = light.position - point
+    def is_shadowed(self, point, light_position):
+        v = light_position - point
         distance = v.magnitude()
         direction = rt.normalize(v)
 
@@ -91,9 +90,9 @@ class World:
     def shade_hit(self, hitrecord, depth, perfcount=False):
         surface = rt.Color(0, 0, 0)
         for light in self.lights:
-            shadowed = self.is_shadowed(hitrecord.over_point, light)
+            intensity_pct = light.intensity_at(self, hitrecord.over_point)
             surface += light.lighting(hitrecord.objhit.material, hitrecord.objhit, hitrecord.point, hitrecord.eyev,
-                                      hitrecord.normalv, shadowed)
+                                      hitrecord.normalv, intensity_pct)
         reflected = self.reflected_color(hitrecord, depth, perfcount)
         refracted = self.refracted_color(hitrecord, depth, perfcount)
         material = hitrecord.objhit.material

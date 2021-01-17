@@ -772,8 +772,109 @@ def rtunittest_lighting6():
     eyev = rt.Vector(0, 0, -1)
     normalv = rt.Vector(0, 0, -1)
     light = rt.PointLight(rt.Point(0, 0, -10), rt.Color(1, 1, 1))
-    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv, True) \
+    assert light.lighting(m, rt.HittableObject(), position, eyev, normalv, 0) \
            == rt.Color(0.1, 0.1, 0.1)
+
+
+def rtunittest_lighting7():
+    # lighting() uses light intensity to attenuate color
+    w = default_world()
+    w.lights[0] = rt.PointLight(rt.Point(0, 0, -10), rt.Color(1, 1, 1))
+    w.objects[0].material.ambient = 0.1
+    w.objects[0].material.diffuse = 0.9
+    w.objects[0].material.specular = 0
+    w.objects[0].material.color = rt.Color(1, 1, 1)
+    pt = rt.Point(0, 0, -1)
+    eyev = rt.Vector(0, 0, -1)
+    normalv = rt.Vector(0, 0, -1)
+
+    assert w.lights[0].lighting(w.objects[0].material, w.objects[0], pt, eyev, normalv, 1.0) == rt.Color(1, 1, 1)
+    assert w.lights[0].lighting(w.objects[0].material, w.objects[0], pt, eyev, normalv, 0.5) == \
+           rt.Color(0.55, 0.55, 0.55)
+    assert w.lights[0].lighting(w.objects[0].material, w.objects[0], pt, eyev, normalv, 0.0) == rt.Color(0.1, 0.1, 0.1)
+
+
+def rtunittest_lighting8():
+    # Creating an area light
+    corner = rt.Point(0, 0, 0)
+    v1 = rt.Vector(2, 0, 0)
+    v2 = rt.Vector(0, 0, 1)
+    light = rt.AreaLight(corner, v1, 4, v2, 2, False, rt.Color(1, 1, 1))
+    assert light.corner == corner
+    assert light.uvec == rt.Vector(0.5, 0, 0)
+    assert light.usteps == 4
+    assert light.vvec == rt.Vector(0, 0, 0.5)
+    assert light.vsteps == 2
+    assert light.samples == 8
+    assert light.position == rt.Point(1, 0, 0.5)
+
+
+def rtunittest_lighting9():
+    # Finding a single point on an area light
+
+    # each test is a u, v and an expected result
+    tests = [
+        (0, 0, rt.Point(0.25, 0, 0.25)),
+        (1, 0, rt.Point(0.75, 0, 0.25)),
+        (0, 1, rt.Point(0.25, 0, 0.75)),
+        (2, 0, rt.Point(1.25, 0, 0.25)),
+        (3, 1, rt.Point(1.75, 0, 0.75))
+    ]
+
+    corner = rt.Point(0, 0, 0)
+    v1 = rt.Vector(2, 0, 0)
+    v2 = rt.Vector(0, 0, 1)
+    light = rt.AreaLight(corner, v1, 4, v2, 2, False, rt.Color(1, 1, 1))
+
+    for test in tests:
+        assert light.point_on_light(test[0], test[1]) == test[2]
+
+
+def rtunittest_lighting10():
+    # The area light intensity function
+
+    # each test is a point and expected intensity_pct result
+    tests = [
+        (rt.Point(0, 0, 2), 0.0),
+        (rt.Point(1, -1, 2), 0.25),
+        (rt.Point(1.5, 0, 2), 0.5),
+        (rt.Point(1.25, 1.25, 3), 0.75),
+        (rt.Point(0, 0, -2), 1.0)
+    ]
+
+    w = default_world()
+    corner = rt.Point(-0.5, -0.5, -5)
+    v1 = rt.Vector(1, 0, 0)
+    v2 = rt.Vector(0, 1, 0)
+    light = rt.AreaLight(corner, v1, 2, v2, 2, False, rt.Color(1, 1, 1))
+
+    for test in tests:
+        assert math.isclose(light.intensity_at(w, test[0]), test[1])
+
+
+def rtunittest_lighting11():
+    corner = rt.Point(-0.5, -0.5, -5)
+    v1 = rt.Vector(1, 0, 0)
+    v2 = rt.Vector(0, 1, 0)
+    light = rt.AreaLight(corner, v1, 2, v2, 2, False, rt.Color(1, 1, 1))
+    shape = rt.Sphere()
+    shape.material.ambient = 0.1
+    shape.material.diffuse = 0.9
+    shape.material.specular = 0
+    shape.material.color = rt.Color(1, 1, 1)
+    eye = rt.Point(0, 0, -5)
+
+    pt = rt.Point(0, 0, -1)
+    eyev = rt.normalize(eye - pt)
+    normalv = rt.Vector(pt.x, pt.y, pt.z)
+    result = light.lighting(shape.material, shape, pt, eyev, normalv, 1.0)
+    assert result == rt.Color(0.9965, 0.9965, 0.9965)
+
+    pt = rt.Point(0, 0.7071, -0.7071)
+    eyev = rt.normalize(eye - pt)
+    normalv = rt.Vector(pt.x, pt.y, pt.z)
+    result = light.lighting(shape.material, shape, pt, eyev, normalv, 1.0)
+    assert result == rt.Color(0.62318, 0.62318, 0.62318)
 
 
 def rtunittest_world1():
@@ -1049,31 +1150,34 @@ def rtunittest_render1():
 
 
 def rtunittest_shadowed1():
-    # There is no shadow when nothing is collinear with point and light
+    # is_shadowed tests for occlusion between two points
     w = default_world()
-    p = rt.Point(0, 10, 0)
-    assert not w.is_shadowed(p, w.lights[0])
+    light_position = rt.Point(-10, -10, -10)
+
+    assert not w.is_shadowed(rt.Point(-10, -10, 10), light_position)
+    assert w.is_shadowed(rt.Point(10, 10, 10), light_position)
+    assert not w.is_shadowed(rt.Point(-20, -20, -20), light_position)
+    assert not w.is_shadowed(rt.Point(-5, -5, -5), light_position)
 
 
 def rtunittest_shadowed2():
-    # There is no shadow when an object is between the point and the light
+    # Point lights evaluate the light intensity at a given bpoint
+
+    # each test is a point and an intensity result
+    tests = [
+        (rt.Point(0, 1.0001, 0), 1.0),
+        (rt.Point(-1.0001, 0, 0), 1.0),
+        (rt.Point(0, 0, -1.0001), 1.0),
+        (rt.Point(0, 0, 1.0001), 0.0),
+        (rt.Point(1.0001, 0, 0), 0.0),
+        (rt.Point(0, -1.0001, 0), 0.0),
+        (rt.Point(0, 0, 0), 0.0)
+    ]
+
     w = default_world()
-    p = rt.Point(10, -10, 10)
-    assert w.is_shadowed(p, w.lights[0])
-
-
-def rtunittest_shadowed3():
-    # There is no shadow when an object is behind the light
-    w = default_world()
-    p = rt.Point(-20, 20, -20)
-    assert not w.is_shadowed(p, w.lights[0])
-
-
-def rtunittest_shadowed4():
-    # There is no shadow when an object is behind the point
-    w = default_world()
-    p = rt.Point(-2, 2, -2)
-    assert not w.is_shadowed(p, w.lights[0])
+    light = w.lights[0]
+    for test in tests:
+        assert math.isclose(light.intensity_at(w, test[0]), test[1])
 
 
 def rtunittest_testshape1():
@@ -1200,8 +1304,8 @@ def rtunittest_stripepattern5():
 
     light = rt.PointLight(rt.Point(0, 0, -10), rt.Color(1, 1, 1))
 
-    c1 = light.lighting(m, rt.HittableObject(), rt.Point(0.9, 0, 0), eyev, normalv, False)
-    c2 = light.lighting(m, rt.HittableObject(), rt.Point(1.1, 0, 0), eyev, normalv, False)
+    c1 = light.lighting(m, rt.HittableObject(), rt.Point(0.9, 0, 0), eyev, normalv, 1)
+    c2 = light.lighting(m, rt.HittableObject(), rt.Point(1.1, 0, 0), eyev, normalv, 1)
 
     assert c1 == w
     assert c2 == b
@@ -2971,7 +3075,7 @@ def run_unit_tests():
             print('{} FAILED'.format(n))
             failed += 1
         else:
-            print('{} complete'.format(n))
+            # print('{} complete'.format(n))
             count += 1
 
     print('{} tests completed.'.format(count))
