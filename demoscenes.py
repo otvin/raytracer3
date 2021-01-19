@@ -2022,31 +2022,59 @@ def shadow_glamour_shot(width=400, height=160):
     return camera, world
 
 
-def spheres_demo1(width=400, height=300):
-    cameratransform = rt.view_transform(rt.Point(6, 1, -2.5), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
+def spheres_demo1(width=800, height=533):
+    cameratransform = rt.view_transform(rt.Point(6, 1.25, -2), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, math.pi/2, cameratransform)
 
     world = rt.World()
-    light = rt.PointLight(rt.Point(7, 10, -7), rt.Color(0.5, 0.5, 0.5))
-    world.lights.append(light)
-    light = rt.PointLight(rt.Point(-3, 10, -7), rt.Color(0.5, 0.5, 0.5))
+    # light = rt.PointLight(rt.Point(7, 10, -7), rt.Color(1, 1, 1))
+    light = rt.AreaLight(rt.Point(-3, 10, -7), rt.Vector(6, 0, 0), 12, rt.Vector(0, 0, 6), 12, False, rt.Color(1, 1, 1))
+
     world.lights.append(light)
 
+    wallmaterial = rt.Material()
+    wallmaterial.shininess = 0
+    wallmaterial.specular = 0
+    wallmaterial.reflective = 0
+    wallmaterial.diffuse = 0
+    wallmaterial.ambient = 1
+
+
     plane = rt.Plane()
+    plane.material = deepcopy(wallmaterial)
+    plane.material.diffuse = 1
+    plane.material.ambient = 0
     plane.material.color = rt.Color(0.52, 0.6, 0.71)
-    plane.material.shininess = 0
-    plane.material.specular = 0
-    plane.material.reflective = 0
     world.objects.append(plane)
 
     plane = rt.Plane()
-    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.translation(-25, 0, 0))
+    plane.material = deepcopy(wallmaterial)
     plane.material.color = rt.Color(0.87, 0.92, 1)
-    plane.material.shininess = 0
-    plane.material.specular = 0
-    plane.material.diffuse = 1
-    plane.material.ambient = 0
-    plane.material.reflective = 0
+    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.translation(-25, 0, 0))
+    world.objects.append(plane)
+
+    plane = rt.Plane()
+    plane.material = deepcopy(wallmaterial)
+    plane.material.color = rt.Color(0.87, 0.92, 1)
+    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi / 2), rt.translation(25, 0, 0))
+    world.objects.append(plane)
+
+    plane = rt.Plane()
+    plane.material = deepcopy(wallmaterial)
+    plane.material.color = rt.Color(0.87, 0.92, 1)
+    plane.transform = rt.translation(0, 25, 0)
+    world.objects.append(plane)
+
+    plane = rt.Plane()
+    plane.material = deepcopy(wallmaterial)
+    plane.material.color = rt.Color(0.87, 0.92, 1)
+    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.rotation_y(math.pi/2), rt.translation(0, 0, -25))
+    world.objects.append(plane)
+
+    plane = rt.Plane()
+    plane.material = deepcopy(wallmaterial)
+    plane.material.color = rt.Color(0.87, 0.92, 1)
+    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.rotation_y(math.pi/2), rt.translation(0, 0, 25))
     world.objects.append(plane)
 
     metal = rt.Material()
@@ -2082,12 +2110,12 @@ def spheres_demo1(width=400, height=300):
     matte.reflective = 0
 
     big_glass = rt.Sphere()
-    big_glass.transform = rt.translation(0, 1, 0)
+    big_glass.transform = rt.translation(2, 1, 0)
     big_glass.material = deepcopy(glass)
     world.objects.append(big_glass)
 
     big_diffuse = rt.Sphere()
-    big_diffuse.transform = rt.translation(-4, 1, 0)
+    big_diffuse.transform = rt.translation(0, 1, 0)
     big_diffuse.material = deepcopy(matte)
     big_diffuse.material.color = rt.Color(0.4, 0.2, 0.1)
     world.objects.append(big_diffuse)
@@ -2107,13 +2135,13 @@ def spheres_demo1(width=400, height=300):
             sphere.transform = rt.chain_transforms(rt.scaling(0.2, 0.2, 0.2), translation)
             if mat < 0.8:
                 sphere.material = deepcopy(matte)
-                sphere.material.color = rt.Color(random.random() * random.random(),
-                                                 random.random() * random.random(),
-                                                 random.random() * random.random())
+                sphere.material.color = rt.Color(random.uniform(0.2, 1.0),
+                                                 random.uniform(0.2, 1.0),
+                                                 random.uniform(0.2, 1.0))
             elif mat < 0.95:
                 sphere.material = deepcopy(metal)
-                sphere.material.color = rt.Color(random.uniform(0.5, 1.0), random.uniform(0.5, 1.0),
-                                                 random.uniform(0.5, 1.0))
+                sphere.material.color = rt.Color(random.uniform(0.75, 1.0), random.uniform(0.75, 1.0),
+                                                 random.uniform(0.75, 1.0))
 
             else:
                 sphere.material = deepcopy(glass)

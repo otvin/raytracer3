@@ -14,7 +14,7 @@ from .objects import Intersection, IntersectionWithUV, HittableObject, Sphere, P
                         Cone, Triangle, SmoothTriangle, ObjectGroup, CSG
 from .world import World, HitRecord
 from .perfcounters import getcount_rayforpixel, getcount_objintersecttests, getcount_objintersections, \
-                        getcount_colortests, getcount_reflectionrays, getcount_refractionrays
+                        getcount_colortests, getcount_reflectionrays, getcount_refractionrays, save_raycount
 from .objfile_reader import Parser, GroupInfo
 from .boundingboxes import BoundingBox
 

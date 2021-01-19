@@ -7,6 +7,7 @@ COUNTER_OBJINTERSECTIONS = mp.Value('L', 0)
 COUNTER_COLORTESTS = mp.Value('L', 0)
 COUNTER_REFLECTIONRAYS = mp.Value('L', 0)
 COUNTER_REFRACTIONRAYS = mp.Value('L', 0)
+COUNTER_RAYCOUNT = mp.Array('l',1)
 
 
 def increment_reflectionrays():
@@ -73,3 +74,32 @@ def increment_colortests():
 def getcount_colortests():
     global COUNTER_COLORTESTS
     return COUNTER_COLORTESTS.value
+
+
+def init_raycount(w, h):
+    global COUNTER_RAYCOUNT
+    COUNTER_RAYCOUNT = mp.Array('l', h * w)
+
+
+def add_raycount(w, x, y, numrays):
+    global COUNTER_RAYCOUNT
+    COUNTER_RAYCOUNT[(y * w) + x] += numrays
+
+
+def save_raycount(width, height, filename):
+    maxv = -1
+    for i in range(width * height):
+        if COUNTER_RAYCOUNT[i] > maxv:
+            maxv = COUNTER_RAYCOUNT[i]
+
+    f = open(filename, 'w')
+    f.write("P3\n")
+    f.write("{} {}\n".format(width, height))
+    f.write("255\n")
+
+    for h in range(height):
+        for w in range(width):
+            val = int((COUNTER_RAYCOUNT[(h * width) + w] / maxv) * 255)
+            f.write('{} {} {}\n'.format(val, val, val))
+    f.close()
+    return maxv

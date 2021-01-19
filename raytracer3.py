@@ -6,11 +6,12 @@ import raytracer as rt
 def render():
 
     GETPERFCOUNTERS = False
+    ADAPTIVE = True
 
-    camera, w = demoscenes.dice_demo()
+    camera, w = demoscenes.spheres_demo1()
 
     timestart = time.time()
-    rt.mp_render(camera, w, 10, 6, 5, GETPERFCOUNTERS)
+    rt.mp_render(camera, w, 500, 6, 25, ADAPTIVE, GETPERFCOUNTERS)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
     if GETPERFCOUNTERS:
@@ -25,8 +26,11 @@ def render():
         print('Color tests: {}'.format(rt.getcount_colortests()))
         print('Intersection tests: {}'.format(rt.getcount_objintersecttests()))
         print('Intersections: {}'.format(rt.getcount_objintersections()))
+        if ADAPTIVE:
+            maxv = rt.save_raycount(camera.hsize, camera.vsize, 'raycount.ppm')
+            print('Max rays per pixel: {}'.format(maxv))
 
-    rt.canvas_to_ppm('dice_demo.ppm')
+    rt.canvas_to_ppm('spheres_demo_sides.ppm')
 
 
 if __name__ == '__main__':
