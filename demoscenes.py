@@ -2039,7 +2039,6 @@ def spheres_demo1(width=800, height=533):
     wallmaterial.diffuse = 0
     wallmaterial.ambient = 1
 
-
     plane = rt.Plane()
     plane.material = deepcopy(wallmaterial)
     plane.material.diffuse = 1
@@ -2151,4 +2150,27 @@ def spheres_demo1(width=800, height=533):
     g.divide(5)
     world.objects.append(g)
 
+    return camera, world
+
+
+def dof_demo(width=800, height=600):
+    cameratransform = rt.view_transform(rt.Point(0, 1, -1), rt.Point(0, 0.5, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi / 2, cameratransform, 0.075, 2.2361)
+
+    world = rt.World()
+    light = rt.PointLight(rt.Point(0, 5, -3), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+    group = rt.ObjectGroup()
+    for x in [-2.0, -1, 0, 1, 2]:
+        for z in [0, 0.5, 1, 1.5, 2, 2.5]:
+            sphere = rt.Sphere()
+            sphere.transform = rt.chain_transforms(rt.scaling(0.25, 0.25, 0.25), rt.translation(x, 0, z))
+            r = (z + 2) / 4
+            g = (x + z + 2) / 6.5
+            b = ((-math.fabs(x) + 2) + (-math.fabs(z - 1) + 1.5)) / 3.5
+            sphere.material.color = rt.Color(r, g, b)
+            group.addchild(sphere)
+    group.divide(3)
+    world.objects.append(group)
     return camera, world

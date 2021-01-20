@@ -6,7 +6,7 @@ To execute unit tests, run _python3 unit_tester.py_
 
 As of now, I have implemented all features in the book.  Added several performance optimizations, such as storing the inverse transform and transpose of inverse transform for each object, rather than having to compute it with every intersection.  I have also done the three bonus chapters "Bounding boxes and hierarchies," "texture mapping," and "soft shadows" published on the book's webpage at http://www.raytracerchallenge.com  
 
-The book lists several optional features for people to research on their own and implement.  So far, I have implemented anti-aliasing via a Latin Hypercube (LHC) method, and an adaptive sampling method which starts looking at the four corners and center of a pixel, and then will add additional samples via iterations LHC until the new samples do not materially change the average for the pixel.
+The book lists several optional features for people to research on their own and implement.  So far, I have implemented anti-aliasing via a Latin Hypercube (LHC) method, and an adaptive sampling method which starts looking at the four corners and center of a pixel, and then will add additional samples via iterations LHC until the new samples do not materially change the average for the pixel.  I have also implemented depth of field, by giving camera optional aperture (zero means a pinhole camera, the default) and optional focal length (default of 1).
 
 The "saved_renders" folder contains samples from the end of each chapter, once we started rendering.  I have posted PNGs of the files from chapter 11 forward below.
 
@@ -26,12 +26,16 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _chap15_demo2.ppm_ - the obligatory teapot.  Low-res.  Time rendering this model, which contains 240 triangles, was reduced by 86% by adding bounding boxes and hierarchies.  It takes approx 27 seconds on my laptop with 6 cores, using pypy (vs ~150 seconds with the standard python interpreter)
 * _chap16_demo.ppm_ - added Constructive Solid Geometry (CSG) supports for intersections, unions, and differences.
   
+
 * _dice_demo.ppm_ - another demo that relies on CSG.  Found on the internet (citation in demoscenes.py)
 * _christmas_demo.ppm_ - after doing the bonus chapter on bounding boxes & hierarchies, was able to add this image which contains over 5000 triangles.
 * _texture_mapped_earth.ppm_ - after doing the bonus chapter on texture mapping, was able to take a rectangular image of the earth and map it to a sphere.
 * _texture_mapped_chapel.ppm_ - demo using a skybox
 * _orrery_demo.ppm_ - the final demo from the texture map bonus chapter.
 * _shadow_glamour_shot.ppm_ - the final demo from the soft shadows bonus chapter
+
+
+* _dof_demo.ppm_ - simple demo of depth of field
 
 While not included in the print copy, Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
 
@@ -49,3 +53,4 @@ While not included in the print copy, Jamis Buck posted details for the scenes s
 ![texture_mapped_chapel.ppm](saved_renders/texture_mapped_chapel.png)
 ![orrery_demo.ppm](saved_renders/orrery_demo.png)
 ![shadow_glamour_shot.ppm](saved_renders/shadow_glamour_shot.png)
+![dof_demo.ppm](saved_renders/dof_demo.png)

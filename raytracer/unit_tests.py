@@ -2,6 +2,7 @@ import math
 import time
 import os
 import raytracer as rt
+from .rttuple import random_in_unit_disk
 from .transformations import do_transform, do_transformray, translation, scaling, reflection, rotation_x, rotation_y, \
                             rotation_z, skew, view_transform
 from .world import prepare_computations, schlick_reflectance
@@ -3046,6 +3047,16 @@ def rtunittest_texturemap16():
     for test in tests:
         color = pattern.uv_color_at(test[0], test[1])
         assert color == test[2]
+
+
+def rtunittest_randomvector1():
+    # Fred test: ensure random_in_unit_disk creates vectors that have magnitude < 1.
+    for i in range(10):
+        r = random_in_unit_disk()
+        assert -1.0 <= r.x <= 1.0
+        assert -1.0 <= r.y <= 1.0
+        assert math.isclose(r.z, 0)
+        assert r.magnitude() <= 1.0
 
 
 def run_unit_tests():

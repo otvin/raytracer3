@@ -6,12 +6,12 @@ import raytracer as rt
 def render():
 
     GETPERFCOUNTERS = False
-    ADAPTIVE = True
+    ADAPTIVE = False
 
-    camera, w = demoscenes.spheres_demo1()
+    camera, w = demoscenes.dof_demo()
 
     timestart = time.time()
-    rt.mp_render(camera, w, 500, 6, 25, ADAPTIVE, GETPERFCOUNTERS)
+    rt.mp_render(camera, w, 100, 6, 5, ADAPTIVE, GETPERFCOUNTERS)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
     if GETPERFCOUNTERS:
@@ -30,7 +30,7 @@ def render():
             maxv = rt.save_raycount(camera.hsize, camera.vsize, 'raycount.ppm')
             print('Max rays per pixel: {}'.format(maxv))
 
-    rt.canvas_to_ppm('spheres_demo_sides.ppm')
+    rt.canvas_to_ppm('dof_demo.ppm')
 
 
 if __name__ == '__main__':

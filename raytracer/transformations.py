@@ -84,6 +84,14 @@ def view_transform(from_pt, to_pt, up_vec):
 
 
 def chain_transforms(*args):
+    # p.54 - can either do:
+    #       take first transform and mult it by starting matrix
+    #       take second transform and mult it by result from first
+    #       take third and mult it by result from first, etc.
+    # -OR-
+    #       multiply third transform by second by first, and then
+    #       take that combo and multiply it by the starting matrix
+    # We implement the first method.
     res = rt.identity4()
     i = 0
     while i < len(args):

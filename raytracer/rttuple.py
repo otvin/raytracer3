@@ -1,4 +1,5 @@
 import math
+import random
 from .matrices import allclose4x1
 
 
@@ -217,3 +218,28 @@ def cross(vec1, vec2):
 
 def reflect(v, n):
     return v - (n * (dot(v, n) * 2))
+
+
+def random_vector():
+    return Vector(random.random(), random.random(), random.random())
+
+
+def random_vector_range(rangemin, rangemax):
+    return Vector(random.uniform(rangemin, rangemax), random.uniform(rangemin, rangemax),
+                  random.uniform(rangemin, rangemax))
+
+
+def random_unit_vector():
+    return normalize(random_vector())
+
+
+def random_in_unit_disk():
+    done = False
+    p = None
+    while not done:
+        x = random.uniform(-1.0, 1.0)
+        y = random.uniform(-1.0, 1.0)
+        if (x * x) + (y * y) < 1:
+            p = Vector(x, y, 0)
+            done = True
+    return p
