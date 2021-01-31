@@ -2023,12 +2023,13 @@ def shadow_glamour_shot(width=400, height=160):
 
 
 def spheres_demo1(width=800, height=533):
-    cameratransform = rt.view_transform(rt.Point(6, 1.25, -2), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
-    camera = rt.Camera(width, height, math.pi/2, cameratransform)
+    cameratransform = rt.view_transform(rt.Point(6.5, 1.25, -3), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/2, cameratransform, 0.04, 6.27)
 
     world = rt.World()
+    light = rt.PointLight(rt.Point(1, 10, 0), rt.Color(1, 1, 1))
     # light = rt.PointLight(rt.Point(7, 10, -7), rt.Color(1, 1, 1))
-    light = rt.AreaLight(rt.Point(-3, 10, -7), rt.Vector(6, 0, 0), 12, rt.Vector(0, 0, 6), 12, False, rt.Color(1, 1, 1))
+    # light = rt.AreaLight(rt.Point(-3, 10, -7), rt.Vector(6, 0, 0), 12, rt.Vector(0, 0, 6), 12, False, rt.Color(1, 1, 1))
 
     world.lights.append(light)
 
@@ -2041,8 +2042,8 @@ def spheres_demo1(width=800, height=533):
 
     plane = rt.Plane()
     plane.material = deepcopy(wallmaterial)
-    plane.material.diffuse = 1
-    plane.material.ambient = 0
+    plane.material.diffuse = 0.8
+    plane.material.ambient = 0.2
     plane.material.color = rt.Color(0.52, 0.6, 0.71)
     world.objects.append(plane)
 
@@ -2088,11 +2089,17 @@ def spheres_demo1(width=800, height=533):
     # metal.shininess = 300
     # metal.reflective = 0.9
 
-    metal.reflective = 0.4
-    metal.diffuse = 0.55
-    metal.ambient = 0.15
+    # metal.reflective = 0.4
+    # metal.diffuse = 0.55
+    # metal.ambient = 0.15
+    # metal.shininess = 300
+    # metal.specular = 0.1
+
+    metal.reflective = 0.4  # 0.4
+    metal.diffuse = 0.4  # 0.55
+    metal.ambient = 0.2  # 0.15
     metal.shininess = 300
-    metal.specular = 0.1
+    metal.specular = 0.1  # 0.1
 
     glass = rt.Material()
     glass.color = rt.Color(0.8, 0.8, 0.9)
@@ -2107,14 +2114,16 @@ def spheres_demo1(width=800, height=533):
     matte.specular = 0
     matte.shininess = 0
     matte.reflective = 0
+    matte.ambient = 0.2
+    matte.diffuse = 0.8
 
     big_glass = rt.Sphere()
-    big_glass.transform = rt.translation(2, 1, 0)
+    big_glass.transform = rt.translation(1, 1, 0)
     big_glass.material = deepcopy(glass)
     world.objects.append(big_glass)
 
     big_diffuse = rt.Sphere()
-    big_diffuse.transform = rt.translation(0, 1, 0)
+    big_diffuse.transform = rt.translation(-2, 1, 0)
     big_diffuse.material = deepcopy(matte)
     big_diffuse.material.color = rt.Color(0.4, 0.2, 0.1)
     world.objects.append(big_diffuse)
@@ -2132,15 +2141,15 @@ def spheres_demo1(width=800, height=533):
             sphere = rt.Sphere()
             translation = rt.translation(a + 0.9 * random.random(), 0.2, b + 0.9 * random.random())
             sphere.transform = rt.chain_transforms(rt.scaling(0.2, 0.2, 0.2), translation)
-            if mat < 0.8:
+            if mat < 0.7:
                 sphere.material = deepcopy(matte)
                 sphere.material.color = rt.Color(random.uniform(0.2, 1.0),
                                                  random.uniform(0.2, 1.0),
                                                  random.uniform(0.2, 1.0))
-            elif mat < 0.95:
+            elif mat < 0.9:
                 sphere.material = deepcopy(metal)
-                sphere.material.color = rt.Color(random.uniform(0.75, 1.0), random.uniform(0.75, 1.0),
-                                                 random.uniform(0.75, 1.0))
+                sphere.material.color = rt.Color(random.uniform(0.5, 1.0), random.uniform(0.5, 1.0),
+                                                 random.uniform(0.5, 1.0))
 
             else:
                 sphere.material = deepcopy(glass)
@@ -2155,11 +2164,19 @@ def spheres_demo1(width=800, height=533):
 
 def dof_demo(width=800, height=600):
     cameratransform = rt.view_transform(rt.Point(0, 1, -1), rt.Point(0, 0.5, 0), rt.Vector(0, 1, 0))
-    camera = rt.Camera(width, height, math.pi / 2, cameratransform, 0.075, 2.2361)
+    camera = rt.Camera(width, height, math.pi / 2, cameratransform, 0.04, 2.2361)
 
     world = rt.World()
     light = rt.PointLight(rt.Point(0, 5, -3), rt.Color(1, 1, 1))
     world.lights.append(light)
+
+    metal = rt.Material()
+    metal.reflective = 0.4 # 0.4
+    metal.diffuse = 0.4 # 0.55
+    metal.ambient = 0.2 # 0.15
+    metal.shininess = 300
+    metal.specular = 0.1 # 0.1
+
 
     group = rt.ObjectGroup()
     for x in [-2.0, -1, 0, 1, 2]:
@@ -2169,8 +2186,39 @@ def dof_demo(width=800, height=600):
             r = (z + 2) / 4
             g = (x + z + 2) / 6.5
             b = ((-math.fabs(x) + 2) + (-math.fabs(z - 1) + 1.5)) / 3.5
+            sphere.material = deepcopy(metal)
             sphere.material.color = rt.Color(r, g, b)
             group.addchild(sphere)
     group.divide(3)
     world.objects.append(group)
+
+    plane = rt.Plane()
+    plane.transform = rt.translation(0, -0.25, 0)
+    plane.material.color = rt.Color(0.52, 0.6, 0.71)
+    plane.material.reflective = 0.1
+    world.objects.append(plane)
+
+    plane = rt.Plane()
+    plane.transform = rt.translation(0, 10, 0)
+    plane.material.color = rt.Color(1, 1, 1)
+    plane.material.reflective = 0
+    world.objects.append(plane)
+
+    return camera, world
+
+
+def torus_demo(width=200, height=200):
+    cameratransform = rt.view_transform(rt.Point(-4, 2, 0), rt.Point(-1, 0.75, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/2, cameratransform)
+    world = rt.World()
+    light = rt.PointLight(rt.Point(0, 10, 0), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+    torus = rt.Torus()
+    torus.transform = rt.scaling(1.25, 1.25, 1.25)
+    torus.material.color = rt.Color(0.75, 0, 1.0)
+    torus.material.ambient = 0.2
+    torus.material.diffuse = 0.8
+    world.objects.append(torus)
+
     return camera, world

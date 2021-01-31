@@ -6,7 +6,11 @@ To execute unit tests, run _python3 unit_tester.py_
 
 As of now, I have implemented all features in the book.  Added several performance optimizations, such as storing the inverse transform and transpose of inverse transform for each object, rather than having to compute it with every intersection.  I have also done the three bonus chapters "Bounding boxes and hierarchies," "texture mapping," and "soft shadows" published on the book's webpage at http://www.raytracerchallenge.com  
 
-The book lists several optional features for people to research on their own and implement.  So far, I have implemented anti-aliasing via a Latin Hypercube (LHC) method, and an adaptive sampling method which starts looking at the four corners and center of a pixel, and then will add additional samples via iterations LHC until the new samples do not materially change the average for the pixel.  I have also implemented depth of field, by giving camera optional aperture (zero means a pinhole camera, the default) and optional focal length (default of 1).
+The book lists several optional features for people to research on their own and implement.  So far, I have implemented the following:
+
+* anti-aliasing via a Latin Hypercube (LHC) method, and an adaptive sampling method which starts looking at the four corners and center of a pixel, and then will add additional samples via iterations LHC until the new samples do not materially change the average for the pixel.
+* depth of field, by giving camera optional aperture (zero means a pinhole camera, the default) and optional focal length (default of 1).
+* a torus primitive
 
 The "saved_renders" folder contains samples from the end of each chapter, once we started rendering.  I have posted PNGs of the files from chapter 11 forward below.
 

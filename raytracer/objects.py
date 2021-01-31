@@ -547,10 +547,22 @@ class Torus(HittableObject):
 
         # Note the paper has the torus in the xy plane and my model has it in the xz plane, hence the tweak below.
 
-        px2 = object_point.x * object_point.x
-        pz2 = object_point.z * object_point.z
-        oneminusalpha = 1 - (self.R / math.sqrt(px2 + pz2))
-        return rt.Vector(oneminusalpha * object_point.x, object_point.y, oneminusalpha * object_point.z)
+        # px2 = object_point.x * object_point.x
+        # pz2 = object_point.z * object_point.z
+        # oneminusalpha = 1 - (self.R / math.sqrt(px2 + pz2))
+        # return rt.normalize(rt.Vector(oneminusalpha * object_point.x, object_point.y, oneminusalpha * object_point.z))
+
+        # This version of the code comes from https://github.com/marcin-chwedczuk/ray_tracing_torus_js
+        # I have verified that the results are identical, and this version is ~10% faster.
+        paramSquared = self.R * self.R + self.r * self.r
+        x = object_point.x
+        y = object_point.y
+        z = object_point.z
+        sumSquared = x * x + y * y + z * z
+        return rt.normalize(
+            rt.Vector(4 * x * (sumSquared - paramSquared), 4 * y * (sumSquared - paramSquared + 2 * self.R * self.R),
+                      4 * z * (sumSquared - paramSquared))
+        )
 
 
 class Triangle(HittableObject):
