@@ -11,7 +11,7 @@ from .matrices import matmul4x4, identity4, transpose4x4, inverse4x4, matmul4x1,
 from .transformations import translation, scaling, reflection, rotation_x, rotation_y, rotation_z, skew, \
                         view_transform, do_transformray, do_transform, chain_transforms
 from .objects import Intersection, IntersectionWithUV, HittableObject, Sphere, Plane, Cube, Cylinder, \
-                        Cone, Triangle, SmoothTriangle, ObjectGroup, CSG
+                        Cone, Triangle, SmoothTriangle, ObjectGroup, CSG, Torus
 from .world import World, HitRecord
 from .perfcounters import getcount_rayforpixel, getcount_objintersecttests, getcount_objintersections, \
                         getcount_colortests, getcount_reflectionrays, getcount_refractionrays, save_raycount

@@ -2,6 +2,7 @@ import math
 from copy import deepcopy
 import raytracer as rt
 from .matrices import identity4
+from .quarticsolver import quartic_solver
 
 
 class Intersection:
@@ -30,14 +31,8 @@ class HittableObject:
                  'parent', 'boundingbox']
 
     def __init__(self, transform=None, material=None, casts_shadow=True, parent=None):
-        if transform is None:
-            self.transform = rt.identity4()
-        else:
-            self.transform = transform
-        if material is None:
-            self.material = rt.Material()
-        else:
-            self.material = material
+        self.transform = transform or rt.identity4()
+        self.material = material or rt.Material()
         self.casts_shadow = casts_shadow
         self.parent = parent
         self.boundingbox = None
@@ -456,6 +451,65 @@ class Cone(HittableObject):
             limit = max(math.fabs(self.min_y), math.fabs(self.max_y))
             self.boundingbox = rt.BoundingBox(rt.Point(-limit, self.min_y, -limit), rt.Point(limit, self.max_y, limit))
         return self.boundingbox
+
+
+class Torus(HittableObject):
+    __slots__ = ['r', 'R']
+
+    # Torus is centered at 0, 0, 0, on the XZ plane, with major radius R and minor radius r
+    def __init__(self, transform=identity4(), material=None, R=1.0, r=0.25):
+        super().__init__(transform, material)
+        self.R = R
+        self.r = r
+
+    def local_intersect(self, object_ray):
+        # http://blog.marcinchwedczuk.pl/ray-tracing-torus
+        rd = object_ray.direction
+        ro = object_ray.origin
+        rdx = rd.x
+        rdz = rd.z
+        rox = ro.x
+        roz = ro.z
+        roy = ro.y
+        rdy = rd.y
+
+        res = []
+
+
+        # Some common subterms
+        dx2 = rdx * rdx
+        dy2 = rdy * rdy
+        dz2 = rdz * rdz
+        ox2 = rox * rox
+        oy2 = roy * roy
+        oz2 = roz * roz
+        r2 = self.r * self.r
+        R2 = self.R * self.R
+
+        oxdx = rox * rdx
+        oydy = roy * rdy
+        ozdz = roz * rdz
+
+        sum_d_squared = dx2 + dy2 + dz2
+        e = ox2 + oy2 + oz2 - r2 - R2
+        f = oxdx + oydy + ozdz
+        four_a_squared = 4 * R2
+
+        c4 = sum_d_squared * sum_d_squared
+        c3 = 4 * sum_d_squared * f
+        c2 = (2 * sum_d_squared * e) + (4 * f * f) + (four_a_squared * dy2)
+        c1 = (4 * f * e) + (2 * four_a_squared * oydy)
+        c0 = (e * e) - (four_a_squared * (r2 - oy2))
+
+        roots = quartic_solver(c4, c3, c2, c1, c0)
+        res = []
+        for root in roots:
+            res.append(Intersection(self, root))
+        return res
+
+
+    def local_normal_at(self, object_point, uv_intersection=None):
+        return object_point - rt.Point(0, 0, 0)
 
 
 class Triangle(HittableObject):

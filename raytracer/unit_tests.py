@@ -3097,7 +3097,7 @@ def rtunittest_randomvector1():
         assert r.magnitude() <= 1.0
 
 
-def rtunittest_quarticsolver1():
+def rtunittest_quadraticsolver1():
     # Fred test: verify that we can solve quadratics
 
     res = quadratic_solver(2, 3, -5)
@@ -3207,3 +3207,68 @@ def rtunittest_quarticsolver4():
     assert math.isclose(res[1], -3)
     assert math.isclose(res[2], 3)
     assert math.isclose(res[3], 9)
+
+
+def rtunittest_torus1():
+    # Fred test: verify we can create a Torus and assign its major and minor radii
+    t = rt.Torus()
+    t.R = 2.5
+    t.r = 0.3
+    assert math.isclose(t.R, 2.5)
+    assert math.isclose(t.r, 0.3)
+
+
+def rtunittest_torus2():
+    # Fred test: a ray misses a Torus
+    t = rt.Torus()
+    r = rt.Ray(rt.Point(-2, 0, 2), rt.Vector(1, 0, 0))
+    xs = t.intersect(r)
+    assert len(xs) == 0
+
+
+def rtunittest_torus3():
+    # Fred test: a ray hits a torus at the tangent of the outside, so
+    # there is one intersection.
+    t = rt.Torus()
+    r = rt.Ray(rt.Point(-2, 0, 1.25), rt.Vector(1, 0, 0))
+    xs = t.intersect(r)
+    assert len(xs) == 1
+    assert math.isclose(xs[0].t, 2)
+
+
+def rtunittest_torus4():
+    # Fred test: a ray hits a torus hitting at the z value equal to the major
+    # radius, so there are two intersections
+    t = rt.Torus()
+    r = rt.Ray(rt.Point(-2, 0, 1), rt.Vector(1, 0, 0))
+    xs = t.intersect(r)
+    assert len(xs) == 2
+    assert math.isclose(xs[0].t, 1.25)
+    assert math.isclose(xs[1].t, 2.75)
+
+
+def rtunittest_torus5():
+    # Fred test: a ray hits a torus hitting at the tangent of the inside, so
+    # there are three intersections.  Note we return 3 unique and one is duplicated.
+    t = rt.Torus()
+    r = rt.Ray(rt.Point(-2, 0, 0.75), rt.Vector(1, 0, 0))
+    xs = t.intersect(r)
+    xs.sort(key=lambda x: x.t)
+    assert len(xs) == 4
+    assert math.isclose(xs[0].t, 1)
+    assert math.isclose(xs[1].t, 2)
+    assert math.isclose(xs[2].t, 2)
+    assert math.isclose(xs[3].t, 3)
+
+
+def rtunittest_torus6():
+    # Fred test: a ray hits a torus in the middle, so there are four intersections
+    t = rt.Torus()
+    r = rt.Ray(rt.Point(-2, 0, 0), rt.Vector(1, 0, 0))
+    xs = t.intersect(r)
+    xs.sort(key=lambda x: x.t)
+    assert len(xs) == 4
+    assert math.isclose(xs[0].t, 0.75)
+    assert math.isclose(xs[1].t, 1.25)
+    assert math.isclose(xs[2].t, 2.75)
+    assert math.isclose(xs[3].t, 3.25)
