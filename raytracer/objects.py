@@ -454,13 +454,38 @@ class Cone(HittableObject):
 
 
 class Torus(HittableObject):
-    __slots__ = ['r', 'R']
+    __slots__ = ['__r', '__R']
 
     # Torus is centered at 0, 0, 0, on the XZ plane, with major radius R and minor radius r
     def __init__(self, transform=identity4(), material=None, R=1.0, r=0.25):
         super().__init__(transform, material)
         self.R = R
         self.r = r
+
+    @property
+    def r(self):
+        return self.__r
+
+    @r.setter
+    def r(self, x):
+        self.__r = x
+        self.boundingbox = None  # force recalculation next time it is needed
+
+    @property
+    def R(self):
+        return self.__R
+
+    @R.setter
+    def R(self, x):
+        self.__R = x
+        self.boundingbox = None  # force recalculation next time it is needed
+
+
+    def bounds_of(self):
+        if self.boundingbox is None:
+            self.boundingbox = rt.BoundingBox(rt.Point(-self.R - self.r, -self.r, -self.R - self.r),
+                                              rt.Point(self.R + self.r, self.r, self.R + self.r))
+        return self.boundingbox
 
     def local_intersect(self, object_ray):
         # http://blog.marcinchwedczuk.pl/ray-tracing-torus
@@ -509,7 +534,21 @@ class Torus(HittableObject):
 
 
     def local_normal_at(self, object_point, uv_intersection=None):
-        return object_point - rt.Point(0, 0, 0)
+        # http://cosinekitty.com/raytrace/chapter13_torus.html
+        # When reading through this, note that P is object_point and A (the distance from the center of the torus hole
+        # to any point on the center of the solid tube is self.R.  Note later in the article, the author uses "R"
+        # The final step of the math:
+
+        # alpha = R / (sqrt (Px^2 + Py^2))
+        # N = the vector from Q to P which is
+        # (Px, Py, Pz) - (alpha * Px, alpha * Py, 0)
+        # which then resolves to the vector
+        # ((1 - alpha) * Px, ((1 - alpha) * Py, Pz)
+
+        px2 = object_point.x * object_point.x
+        py2 = object_point.y * object_point.y
+        oneminusalpha = 1 - (self.R / math.sqrt(px2 + py2))
+        return rt.Vector(oneminusalpha * object_point.x, oneminusalpha * object_point.y, object_point.z)
 
 
 class Triangle(HittableObject):
