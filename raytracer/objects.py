@@ -545,10 +545,12 @@ class Torus(HittableObject):
         # which then resolves to the vector
         # ((1 - alpha) * Px, ((1 - alpha) * Py, Pz)
 
+        # Note the paper has the torus in the xy plane and my model has it in the xz plane, hence the tweak below.
+
         px2 = object_point.x * object_point.x
-        py2 = object_point.y * object_point.y
-        oneminusalpha = 1 - (self.R / math.sqrt(px2 + py2))
-        return rt.Vector(oneminusalpha * object_point.x, oneminusalpha * object_point.y, object_point.z)
+        pz2 = object_point.z * object_point.z
+        oneminusalpha = 1 - (self.R / math.sqrt(px2 + pz2))
+        return rt.Vector(oneminusalpha * object_point.x, object_point.y, oneminusalpha * object_point.z)
 
 
 class Triangle(HittableObject):
