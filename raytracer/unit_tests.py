@@ -10,6 +10,44 @@ from .canvas import init_canvas, write_pixel, pixel_at, get_canvasdims
 from .matrices import allclose4x4
 from .objects import EPSILON, intersection_allowed, TestShape
 from .texturemap import FACELEFT, FACERIGHT, FACEFRONT, FACEBACK, FACEUP, FACEDOWN, face_from_point
+from .quarticsolver import quadratic_solver, cube_root, cubic_solver, quartic_solver
+
+
+def run_unit_tests():
+    count = 0
+    failed = 0
+
+    # some tests take longer and we can skip unless we're explicitly testing a change to that feature.
+    tests_to_skip = ['rtunittest_canvas3', 'rtunittest_render1']
+    # tests_to_skip = []
+
+    timestart = time.time()
+
+    testlist = []
+    for f in globals().values():
+        if callable(f):
+            n = f.__name__
+            if n[:11] == 'rtunittest_':
+                if n not in tests_to_skip:
+                    testlist.append(n)
+                else:
+                    print('{} skipped'.format(n))
+
+    for n in testlist:
+        try:
+            eval(n + '()')
+        except AssertionError:
+            print('{} FAILED'.format(n))
+            failed += 1
+        else:
+            # print('{} complete'.format(n))
+            count += 1
+
+    print('{} tests completed.'.format(count))
+    if failed > 0:
+        print('{} tests FAILED'.format(failed))
+    timeend = time.time()
+    print('Elapsed time: {} seconds'.format(timeend - timestart))
 
 
 def compare_ppms(file1, file2):
@@ -3059,38 +3097,113 @@ def rtunittest_randomvector1():
         assert r.magnitude() <= 1.0
 
 
-def run_unit_tests():
-    count = 0
-    failed = 0
+def rtunittest_quarticsolver1():
+    # Fred test: verify that we can solve quadratics
 
-    # some tests take longer and we can skip unless we're explicitly testing a change to that feature.
-    tests_to_skip = ['rtunittest_canvas3', 'rtunittest_render1']
-    # tests_to_skip = []
-    
-    timestart = time.time()
+    res = quadratic_solver(2, 3, -5)
+    assert len(res) == 2
+    assert math.isclose(res[0], -2.5)
+    assert math.isclose(res[1], 1)
 
-    testlist = []
-    for f in globals().values():
-        if callable(f):
-            n = f.__name__
-            if n[:11] == 'rtunittest_':
-                if n not in tests_to_skip:
-                    testlist.append(n)
-                else:
-                    print('{} skipped'.format(n))
+    res = quadratic_solver(-1, 74, -18)
+    assert len(res) == 2
+    assert math.isclose(res[0], 0.24405, rel_tol=1e-05, abs_tol=1e-05)
+    assert math.isclose(res[1], 73.75595, rel_tol=1e-05, abs_tol=1e-05)
 
-    for n in testlist:
-        try:
-            eval(n + '()')
-        except AssertionError:
-            print('{} FAILED'.format(n))
-            failed += 1
-        else:
-            # print('{} complete'.format(n))
-            count += 1
+    res = quadratic_solver(3, 2, 1)
+    assert len(res) == 0
 
-    print('{} tests completed.'.format(count))
-    if failed > 0:
-        print('{} tests FAILED'.format(failed))
-    timeend = time.time()
-    print('Elapsed time: {} seconds'.format(timeend - timestart))
+    res = quadratic_solver(-1, 0, 0)
+    assert len(res) == 1
+    assert math.isclose(res[0], 0)
+
+
+def rtunittest_cuberoot1():
+    # Fred test: verify we can take cube roots of positive and negative numbers
+    assert math.isclose(cube_root(125), 5)
+    assert math.isclose(cube_root(-125), -5)
+    assert math.isclose(cube_root(1.758), 1.2069046, rel_tol=1e-05, abs_tol=1e-05)
+    assert math.isclose(cube_root(-3.97), -1.5834226, rel_tol=1e-05, abs_tol=1e-05)
+
+
+def rtunittest_cubicsolver1():
+    # Fred test: verify that we can solve cubics
+    res = cubic_solver(1, -2, -11, 12)
+    assert len(res) == 3
+    res.sort()
+    assert math.isclose(res[0], -3)
+    assert math.isclose(res[1], 1)
+    assert math.isclose(res[2], 4)
+
+    res = cubic_solver(-3.2, 9, -7, 3)
+    assert len(res) == 1
+    assert math.isclose(res[0], 1.93114, rel_tol=1e-05, abs_tol=1e-05)
+
+    res = cubic_solver(1.1, 4.7, -19.7, -21)
+    res.sort()
+    assert len(res) == 3
+    assert math.isclose(res[0], -6.55933, rel_tol=1e-05, abs_tol=1e-05)
+    assert math.isclose(res[1], -0.910386, rel_tol=1e-05, abs_tol=1e-05)
+    assert math.isclose(res[2], 3.19699, rel_tol=1e-05, abs_tol=1e-05)
+
+    res = cubic_solver(1, 1, -1, -1)
+    res.sort()
+    assert len(res) == 2
+    assert math.isclose(res[0], -1)
+    assert math.isclose(res[1], 1)
+
+
+def rtunittest_quarticsolver0():
+    # Fred test: verify that we can solve quartics with no roots
+    res = quartic_solver(5, 0.1, 2, 0.3, 9)
+    assert len(res) == 0
+
+
+def rtunittest_quarticsolver1():
+    # Fred test: verify that we can solve quartics with 1 root
+    res = quartic_solver(13.0321, -27.436, 21.66, -7.6, 1)
+    assert len(res) == 1
+    assert math.isclose(res[0], 0.526315789474)
+
+
+def rtunittest_quarticsolver2():
+    # Fred test: verify that we can solve quartics with 2 roots
+    res = quartic_solver(1, 0, -2, 0, 1)
+    assert len(res) == 2
+    res.sort()
+    assert math.isclose(res[0], -1)
+    assert math.isclose(res[1], 1)
+
+    res = quartic_solver(36, -60, -47, 60, 36)
+    assert len(res) == 2
+    res.sort()
+    assert math.isclose(res[0], -2/3)
+    assert math.isclose(res[1], 1.5)
+
+
+def rtunittest_quarticsolver3():
+    # Fred test: verify that we can solve quartics with 3 roots
+    res = quartic_solver(1, -1, -2, 0, 0)
+    assert len(res) == 3
+    res.sort()
+    assert math.isclose(res[0], -1)
+    assert math.isclose(res[1], 0)
+    assert math.isclose(res[2], 2)
+
+    res = quartic_solver(1, 3.9, -4.06, -14.016, 13.8528)
+    assert len(res) == 3
+    res.sort()
+    assert math.isclose(res[0], -3.7)
+    assert math.isclose(res[1], -2.6)
+    assert math.isclose(res[2], 1.2, rel_tol=1e-05, abs_tol=1e-05)
+
+
+def rtunittest_quarticsolver4():
+    # Fred test: verify that we can solve quartics with 4 roots
+    res = quartic_solver(1, -2, -72, 18, 567)
+    assert len(res) == 4
+    res.sort()
+    assert math.isclose(res[0], -7)
+    assert math.isclose(res[1], -3)
+    assert math.isclose(res[2], 3)
+    assert math.isclose(res[3], 9)
