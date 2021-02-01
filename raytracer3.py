@@ -8,10 +8,11 @@ def render():
     GETPERFCOUNTERS = False
     ADAPTIVE = False
 
-    camera, w = demoscenes.dof_demo()
+    camera, w = demoscenes.torus_demo2()
 
     timestart = time.time()
-    rt.mp_render(camera, w, 100, 6, 5, ADAPTIVE, GETPERFCOUNTERS)
+    rt.mp_render(camera, w, 10, 6, 5, ADAPTIVE, GETPERFCOUNTERS)
+    # rt.debug_render_pixel(camera, w, 246, 39)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
     if GETPERFCOUNTERS:
@@ -30,7 +31,7 @@ def render():
             maxv = rt.save_raycount(camera.hsize, camera.vsize, 'raycount.ppm')
             print('Max rays per pixel: {}'.format(maxv))
 
-    rt.canvas_to_ppm('dof_demo.ppm')
+    rt.canvas_to_ppm('torus_demo2.ppm')
 
 
 if __name__ == '__main__':

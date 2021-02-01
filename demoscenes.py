@@ -2177,7 +2177,6 @@ def dof_demo(width=800, height=600):
     metal.shininess = 300
     metal.specular = 0.1 # 0.1
 
-
     group = rt.ObjectGroup()
     for x in [-2.0, -1, 0, 1, 2]:
         for z in [0, 0.5, 1, 1.5, 2, 2.5]:
@@ -2224,10 +2223,10 @@ def torus_demo(width=200, height=200):
     return camera, world
 
 
-def torus_demo2(width=400, height=200):
+def torus_demo2(width=400, height=400):
     w = rt.World()
-    cameratransform = rt.view_transform(rt.Point(8, 4.5, -9), rt.Point(0, 1, 0), rt.Vector(0, 1, 0))
-    camera = rt.Camera(width, height, 0.314, cameratransform)
+    cameratransform = rt.view_transform(rt.Point(8, 4.5, -9), rt.Point(0, 1.25, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/20, cameratransform)
 
     light = rt.PointLight(rt.Point(1, 6.9, -4.9), rt.Color(1, 1, 1))
     w.lights.append(light)
@@ -2239,14 +2238,18 @@ def torus_demo2(width=400, height=200):
     floor.material.pattern.color1 = rt.Color(0.5, 0.5, 0.5)
     floor.material.pattern.color2 = rt.Color(0.75, 0.75, 0.75)
     floor.material.pattern.transform = rt.chain_transforms(A, B)
-    floor.material.ambient = 0.2
-    floor.material.diffuse = 0.9
+    floor.material.ambient = 0.1
+    floor.material.diffuse = 0.8
+    floor.material.reflective = 0.1
     floor.material.specular = 0
     w.objects.append(floor)
 
-
+    plastic = rt.Material()
+    plastic.diffuse = 0.8
+    plastic.ambient = 0.2
 
     basesphere = rt.Sphere()
+    basesphere.material = deepcopy(plastic)
     basesphere.material.color = rt.Color(226/255, 1, 253/255)
     basecube = rt.Cube()
     basecube.transform = rt.translation(0, 0.2, 0)
@@ -2261,9 +2264,11 @@ def torus_demo2(width=400, height=200):
     cone = rt.Cone()
     cone.min_y = -2
     cone.max_y = -0.5
+    cone.material = deepcopy(plastic)
     cone.material.color = rt.Color(207/255, 207/255, 0)
     cone.transform = rt.scaling(0.1, 1.5, 0.1)
     ball = rt.Sphere()
+    ball.material = deepcopy(plastic)
     ball.material.color = rt.Color(207/255, 207/255, 0)
     ball.transform = rt.chain_transforms(rt.scaling(0.1, 0.1, 0.1), rt.translation(0, -0.75, 0))
     stick = rt.CSG('union', cone, ball)
@@ -2274,38 +2279,44 @@ def torus_demo2(width=400, height=200):
     redtorus = rt.Torus()
     redtorus.R = 0.4
     redtorus.r = 0.12
+    redtorus.material = deepcopy(plastic)
     redtorus.material.color = rt.Color(1, 0, 40/255)
-    redtorus.transform = rt.translation(0, -0.6, 0)
+    redtorus.transform = rt.translation(0, -0.67, 0)
 
     orangetorus = rt.Torus()
+    orangetorus.material = deepcopy(plastic)
     orangetorus.R = 0.35
     orangetorus.r = 0.12
     orangetorus.material.color = rt.Color(1, 175/255, 0)
-    orangetorus.transform = rt.translation(0, -0.36, 0)
+    orangetorus.transform = rt.translation(0, -0.43, 0)
 
     yellowtorus = rt.Torus()
+    yellowtorus.material = deepcopy(plastic)
     yellowtorus.R = 0.3
     yellowtorus.r = 0.12
     yellowtorus.material.color = rt.Color(0.961, 0.98, 0)
-    yellowtorus.transform = rt.translation(0, -0.12, 0)
+    yellowtorus.transform = rt.translation(0, -0.19, 0)
 
     greentorus = rt.Torus()
+    greentorus.material = deepcopy(plastic)
     greentorus.R = 0.25
     greentorus.r = 0.1
     greentorus.material.color = rt.Color(0, 0.812, 0.094)
-    greentorus.transform = rt.translation(0, 0.08, 0)
+    greentorus.transform = rt.translation(0, 0.01, 0)
 
     bluetorus = rt.Torus()
+    bluetorus.material = deepcopy(plastic)
     bluetorus.R = 0.2
     bluetorus.r = 0.1
     bluetorus.material.color = rt.Color(0, 0.518, 0.91)
-    bluetorus.transform = rt.translation(0, 0.28, 0)
+    bluetorus.transform = rt.translation(0, 0.21, 0)
 
     purpletorus = rt.Torus()
+    purpletorus.material = deepcopy(plastic)
     purpletorus.R = 0.15
     purpletorus.r = 0.1
     purpletorus.material.color = rt.Color(0.467, 0, 0.502)
-    purpletorus.transform = rt.translation(0, 0.48, 0)
+    purpletorus.transform = rt.translation(0, 0.41, 0)
 
     toy = rt.ObjectGroup()
     toy.addchild(base)
@@ -2316,11 +2327,7 @@ def torus_demo2(width=400, height=200):
     toy.addchild(bluetorus)
     toy.addchild(purpletorus)
 
-    # toy1 = rt.CSG('union', base, redtorus)
-
-
-
-    toy.transform = rt.chain_transforms(rt.rotation_y(math.pi/3), rt.translation(0, 1, 1))
+    toy.transform = rt.chain_transforms(rt.rotation_y(math.pi/3), rt.translation(-1, 1, 1))
     w.objects.append(toy)
 
     return camera, w

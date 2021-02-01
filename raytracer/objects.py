@@ -480,7 +480,6 @@ class Torus(HittableObject):
         self.__R = x
         self.boundingbox = None  # force recalculation next time it is needed
 
-
     def bounds_of(self):
         if self.boundingbox is None:
             self.boundingbox = rt.BoundingBox(rt.Point(-self.R - self.r, -self.r, -self.R - self.r),
@@ -497,9 +496,6 @@ class Torus(HittableObject):
         roz = ro.z
         roy = ro.y
         rdy = rd.y
-
-        res = []
-
 
         # Some common subterms
         dx2 = rdx * rdx
@@ -531,7 +527,6 @@ class Torus(HittableObject):
         for root in roots:
             res.append(Intersection(self, root))
         return res
-
 
     def local_normal_at(self, object_point, uv_intersection=None):
         # http://cosinekitty.com/raytrace/chapter13_torus.html

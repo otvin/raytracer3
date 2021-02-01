@@ -40,6 +40,7 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 
 
 * _dof_demo.ppm_ - simple demo of depth of field
+* _torus_demo2.ppm_ - showing a classic kid's ring stack toy
 
 While not included in the print copy, Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
 
@@ -58,3 +59,4 @@ While not included in the print copy, Jamis Buck posted details for the scenes s
 ![orrery_demo.ppm](saved_renders/orrery_demo.png)
 ![shadow_glamour_shot.ppm](saved_renders/shadow_glamour_shot.png)
 ![dof_demo.ppm](saved_renders/dof_demo.png)
+![torus_demo2.ppm](saved_renders/torus_demo2.png)

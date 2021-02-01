@@ -33,7 +33,6 @@ class Canvas():
         self.arr[startcell + 1] = color.arr[1]
         self.arr[startcell + 2] = color.arr[2]
 
-
     def pixel_at(self, x, y):
         startcell = (y * self.width * 3) + (x * 3)
         res = Color(self.arr[startcell], self.arr[startcell + 1], self.arr[startcell + 2])
@@ -155,7 +154,7 @@ def init_LHS_sample_list(numsamples):
         for i in range(1, j + 1):
             curlist.append((-0.5 + (i / (j + 1))))
         LHS_SAMPLE_LIST.append(curlist)
-        LHS_DELTA_LIST.append (1 / (2 + (j + 1)))
+        LHS_DELTA_LIST.append(1 / (2 + (j + 1)))
 
 
 def LHS_samples(x, y, numsamples):
@@ -272,3 +271,21 @@ def mp_render(camera, world, numsamples=10, numprocesses=1, maxdepth=5, adaptive
 
     for p in procArr:
         p.join()
+
+
+def debug_render_pixel(camera, world, x, y):
+    # renders the single pixel
+    global MPGLOBALWORLD
+    global MPGLOBALCAMERA
+    init_canvas(camera.hsize, camera.vsize)
+    init_LHS_sample_list(1)
+    MPGLOBALWORLD = world
+    MPGLOBALCAMERA = camera
+
+    c = Color(0, 0, 0)
+    samples = LHS_samples(x, y, 1)
+    for q in samples:
+        r = MPGLOBALCAMERA.ray_for_pixel(q[0], q[1], False)
+        c += MPGLOBALWORLD.color_at(r, 1, False)
+    c = c / len(samples)
+    write_pixel(x, y, c)
