@@ -1,6 +1,7 @@
 import math
 import raytracer as rt
 from .objects import EPSILON
+from .rttuple import random_in_unit_sphere
 from .perfcounters import increment_colortests, increment_objintersecttests, increment_objintersections, \
                         increment_reflectionrays, increment_refractionrays
 
@@ -35,15 +36,9 @@ class World:
     __slots__ = ['objects', 'lights']
 
     def __init__(self, objects=None, lights=None):
-        if objects is None:
-            self.objects = []
-        else:
-            self.objects = objects
+        self.objects = objects or []
+        self.lights = lights or []
 
-        if lights is None:
-            self.lights = []
-        else:
-            self.lights = lights
 
     def objectcount(self):
         # returns a tuple - number of groups, and number of other objects
@@ -97,6 +92,9 @@ class World:
         refracted = self.refracted_color(hitrecord, depth, perfcount)
         material = hitrecord.objhit.material
         if material.reflective > 0 and material.transparency > 0:
+            # TODO - in mpraytracer/materials.py line 92 - it only reflects if
+            # it can't refract and the schlick is greater than a random number from 0-1.
+            # Understand why.
             reflectance = schlick_reflectance(hitrecord)
             return surface + (reflected * reflectance) + (refracted * (1 - reflectance))
         else:
@@ -160,7 +158,24 @@ class World:
                 if perfcount:
                     increment_colortests()
                 return self.shade_hit(hitrecord, depth, perfcount)
-        return rt.Color(0, 0, 0)  # either no intersections or no positive t intersections
+        return self.background_color(ray)  # either no intersections or no positive t intersections
+
+    def background_color(self, ray):
+        return rt.Color(0, 0, 0)
+
+
+class WorldWithSky(World):
+    """ Provides a gradient background """
+    __slots__ = ['base_color', 'gradient_color']
+
+    def __init__(self, objects=None, lights=None, base_color=None, gradient_color=None):
+        super().__init__(objects, lights)
+        self.base_color = base_color or rt.Color(1, 1, 1)
+        self.gradient_color = gradient_color or rt.Color(0.5, 0.7, 1.0)
+
+    def background_color(self, ray):
+        t = 0.5 * (ray.direction.y + 1)
+        return (self.base_color * (1 - t)) + (self.gradient_color * t)
 
 
 class HitRecord:
@@ -210,6 +225,8 @@ def prepare_computations(i, r, xs):
     point = r.at(i.t)
     eyev = -r.direction
     normalv = i.objhit.normal_at(point, i)
+    if i.objhit.material.fuzz > 0:
+        normalv = rt.normalize(normalv + (random_in_unit_sphere() * i.objhit.material.fuzz))
     if rt.dot(normalv, eyev) < 0:
         inside = True
         normalv = -normalv

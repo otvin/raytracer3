@@ -221,7 +221,7 @@ def reflect(v, n):
 
 
 def random_vector():
-    return Vector(random.random(), random.random(), random.random())
+    return random_vector_range(-1.0, 1.0)
 
 
 def random_vector_range(rangemin, rangemax):
@@ -241,5 +241,18 @@ def random_in_unit_disk():
         y = random.uniform(-1.0, 1.0)
         if (x * x) + (y * y) < 1:
             p = Vector(x, y, 0)
+            done = True
+    return p
+
+
+def random_in_unit_sphere():
+    done = False
+    p = None
+    while not done:
+        x = random.uniform(-1.0, 1.0)
+        y = random.uniform(-1.0, 1.0)
+        z = random.uniform(-1.0, 1.0)
+        if (x * x) + (y * y) + (z * z) < 1:
+            p = Vector(x, y, z)
             done = True
     return p

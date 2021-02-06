@@ -8,7 +8,7 @@ def render():
     GETPERFCOUNTERS = False
     ADAPTIVE = False
 
-    camera, w = demoscenes.torus_demo2()
+    camera, w = demoscenes.spheres_demo1()
 
     timestart = time.time()
     rt.mp_render(camera, w, 10, 6, 5, ADAPTIVE, GETPERFCOUNTERS)
@@ -31,7 +31,7 @@ def render():
             maxv = rt.save_raycount(camera.hsize, camera.vsize, 'raycount.ppm')
             print('Max rays per pixel: {}'.format(maxv))
 
-    rt.canvas_to_ppm('torus_demo2.ppm')
+    rt.canvas_to_ppm('spheres_demo_0206.ppm')
 
 
 if __name__ == '__main__':

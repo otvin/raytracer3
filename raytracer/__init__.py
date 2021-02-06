@@ -12,7 +12,7 @@ from .transformations import translation, scaling, reflection, rotation_x, rotat
                         view_transform, do_transformray, do_transform, chain_transforms
 from .objects import Intersection, IntersectionWithUV, HittableObject, Sphere, Plane, Cube, Cylinder, \
                         Cone, Triangle, SmoothTriangle, ObjectGroup, CSG, Torus
-from .world import World, HitRecord
+from .world import World, WorldWithSky, HitRecord
 from .perfcounters import getcount_rayforpixel, getcount_objintersecttests, getcount_objintersections, \
                         getcount_colortests, getcount_reflectionrays, getcount_refractionrays, save_raycount
 from .objfile_reader import Parser, GroupInfo

@@ -203,10 +203,10 @@ class NestedCheckersPattern(BlendedPattern):
 
 class Material:
     __slots__ = ['color', 'pattern', 'ambient', 'diffuse', 'specular', 'shininess', 'reflective', 'transparency',
-                 'refractive_index']
+                 'refractive_index', 'fuzz']
 
     def __init__(self, color=None, ambient=0.1, diffuse=0.9, specular=0.9, shininess=200.0, reflective=0, pattern=None,
-                 transparency=0.0, refractive_index=1.0):
+                 transparency=0.0, refractive_index=1.0, fuzz=0.0):
         if color is None:
             self.color = rt.Color(1, 1, 1)
         else:
@@ -219,6 +219,7 @@ class Material:
         self.reflective = reflective
         self.transparency = transparency
         self.refractive_index = refractive_index
+        self.fuzz = fuzz
 
     def __eq__(self, other):
         # may only be needed for unit tests.  Ignores pattern because it's not needed for these tests.

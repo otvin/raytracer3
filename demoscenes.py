@@ -2026,80 +2026,17 @@ def spheres_demo1(width=800, height=533):
     cameratransform = rt.view_transform(rt.Point(6.5, 1.25, -3), rt.Point(0, 0, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, math.pi/2, cameratransform, 0.04, 6.27)
 
-    world = rt.World()
-    light = rt.PointLight(rt.Point(1, 10, 0), rt.Color(1, 1, 1))
-    # light = rt.PointLight(rt.Point(7, 10, -7), rt.Color(1, 1, 1))
-    # light = rt.AreaLight(rt.Point(-3, 10, -7), rt.Vector(6, 0, 0), 12, rt.Vector(0, 0, 6), 12, False, rt.Color(1, 1, 1))
-
+    world = rt.WorldWithSky()
+    # light = rt.PointLight(rt.Point(1, 10, 0), rt.Color(1, 1, 1))
+    light = rt.AreaLight(rt.Point(0.5, 10, -0.5), rt.Vector(1, 0, 0), 2, rt.Vector(0, 0, 1), 2, True, rt.Color(1, 1, 1))
     world.lights.append(light)
 
-    wallmaterial = rt.Material()
-    wallmaterial.shininess = 0
-    wallmaterial.specular = 0
-    wallmaterial.reflective = 0
-    wallmaterial.diffuse = 0
-    wallmaterial.ambient = 1
-
-    plane = rt.Plane()
-    plane.material = deepcopy(wallmaterial)
-    plane.material.diffuse = 0.8
-    plane.material.ambient = 0.2
-    plane.material.color = rt.Color(0.52, 0.6, 0.71)
-    world.objects.append(plane)
-
-    plane = rt.Plane()
-    plane.material = deepcopy(wallmaterial)
-    plane.material.color = rt.Color(0.87, 0.92, 1)
-    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.translation(-25, 0, 0))
-    world.objects.append(plane)
-
-    plane = rt.Plane()
-    plane.material = deepcopy(wallmaterial)
-    plane.material.color = rt.Color(0.87, 0.92, 1)
-    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi / 2), rt.translation(25, 0, 0))
-    world.objects.append(plane)
-
-    plane = rt.Plane()
-    plane.material = deepcopy(wallmaterial)
-    plane.material.color = rt.Color(0.87, 0.92, 1)
-    plane.transform = rt.translation(0, 25, 0)
-    world.objects.append(plane)
-
-    plane = rt.Plane()
-    plane.material = deepcopy(wallmaterial)
-    plane.material.color = rt.Color(0.87, 0.92, 1)
-    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.rotation_y(math.pi/2), rt.translation(0, 0, -25))
-    world.objects.append(plane)
-
-    plane = rt.Plane()
-    plane.material = deepcopy(wallmaterial)
-    plane.material.color = rt.Color(0.87, 0.92, 1)
-    plane.transform = rt.chain_transforms(rt.rotation_z(math.pi/2), rt.rotation_y(math.pi/2), rt.translation(0, 0, 25))
-    world.objects.append(plane)
-
     metal = rt.Material()
-    # metal.reflective = 0.6
-    # metal.diffuse = 0.4
-    # metal.shininess = 20
-    # metal.specular = 0.6
-    # metal.ambient = 0
-
-    # metal.diffuse = 0.1
-    # metal.specular = 0.9
-    # metal.shininess = 300
-    # metal.reflective = 0.9
-
-    # metal.reflective = 0.4
-    # metal.diffuse = 0.55
-    # metal.ambient = 0.15
-    # metal.shininess = 300
-    # metal.specular = 0.1
-
-    metal.reflective = 0.4  # 0.4
-    metal.diffuse = 0.4  # 0.55
-    metal.ambient = 0.2  # 0.15
+    metal.reflective = 0.4
+    metal.diffuse = 0.4
+    metal.ambient = 0.2
     metal.shininess = 300
-    metal.specular = 0.1  # 0.1
+    metal.specular = 0.1
 
     glass = rt.Material()
     glass.color = rt.Color(0.8, 0.8, 0.9)
@@ -2116,6 +2053,12 @@ def spheres_demo1(width=800, height=533):
     matte.reflective = 0
     matte.ambient = 0.2
     matte.diffuse = 0.8
+
+    ground = rt.Sphere()
+    ground.transform = rt.chain_transforms(rt.scaling(1000, 1000, 1000), rt.translation(0, -1000, 0))
+    ground.material = deepcopy(matte)
+    ground.material.color = rt.Color(0.5, 0.5, 0.5)
+    world.objects.append(ground)
 
     big_glass = rt.Sphere()
     big_glass.transform = rt.translation(1, 1, 0)
@@ -2148,6 +2091,7 @@ def spheres_demo1(width=800, height=533):
                                                  random.uniform(0.2, 1.0))
             elif mat < 0.9:
                 sphere.material = deepcopy(metal)
+                sphere.material.fuzz = random.uniform(0, 0.125)
                 sphere.material.color = rt.Color(random.uniform(0.5, 1.0), random.uniform(0.5, 1.0),
                                                  random.uniform(0.5, 1.0))
 
@@ -2331,3 +2275,55 @@ def torus_demo2(width=400, height=400):
     w.objects.append(toy)
 
     return camera, w
+
+
+def fuzzdemo1(width=400, height=225):
+
+    world = rt.WorldWithSky()
+    viewtransform = rt.view_transform(rt.Point(0, 0, 1), rt.Point(0, 0, -1), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/2, viewtransform)
+
+    light = rt.PointLight(rt.Point(0, 5, 3), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+    diffuse = rt.Material()
+    diffuse.ambient = 0.2
+    diffuse.diffuse = 0.8
+    diffuse.specular = 0
+    diffuse.shininess = 0
+
+    metal = rt.Material()
+    metal.ambient = 0.2
+    metal.diffuse = 0.4
+    metal.reflective = 0.4
+    metal.shininess = 300
+    metal.specular = 0.1
+
+
+    ground = rt.Sphere()
+    ground.transform = rt.chain_transforms(rt.scaling(100, 100, 100), rt.translation(0, -100.5, -1))
+    ground.material = deepcopy(diffuse)
+    ground.material.color = rt.Color(0.8, 0.8, 0)
+    world.objects.append(ground)
+
+    center = rt.Sphere()
+    center.transform = rt.chain_transforms(rt.scaling(0.5, 0.5, 0.5), rt.translation(0, 0, -1))
+    center.material = deepcopy(diffuse)
+    center.material.color = rt.Color(0.7, 0.3, 0.3)
+    world.objects.append(center)
+
+    left = rt.Sphere()
+    left.transform = rt.chain_transforms(rt.scaling(0.5, 0.5, 0.5), rt.translation(1, 0, -1))
+    left.material = deepcopy(metal)
+    left.material.color = rt.Color(0.8, 0.8, 0.8)
+    left.material.fuzz = 0.075
+    world.objects.append(left)
+
+    right = rt.Sphere()
+    right.transform = rt.chain_transforms(rt.scaling(0.5, 0.5, 0.5), rt.translation(-1, 0, -1))
+    right.material = deepcopy(metal)
+    right.material.color = rt.Color(0.8, 0.6, 0.2)
+    right.material.fuzz = 0.25
+    world.objects.append(right)
+
+    return camera, world
