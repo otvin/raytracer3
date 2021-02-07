@@ -2027,8 +2027,7 @@ def spheres_demo1(width=800, height=533):
     camera = rt.Camera(width, height, math.pi/2, cameratransform, 0.04, 6.27)
 
     world = rt.WorldWithSky()
-    # light = rt.PointLight(rt.Point(1, 10, 0), rt.Color(1, 1, 1))
-    light = rt.AreaLight(rt.Point(0.5, 10, -0.5), rt.Vector(1, 0, 0), 2, rt.Vector(0, 0, 1), 2, True, rt.Color(1, 1, 1))
+    light = rt.AreaLight(rt.Point(-1, 10, 0), rt.Vector(2, 0, 0), 4, rt.Vector(0, 0, 2), 4, True, rt.Color(1, 1, 1))
     world.lights.append(light)
 
     metal = rt.Material()
@@ -2057,7 +2056,7 @@ def spheres_demo1(width=800, height=533):
     ground = rt.Sphere()
     ground.transform = rt.chain_transforms(rt.scaling(1000, 1000, 1000), rt.translation(0, -1000, 0))
     ground.material = deepcopy(matte)
-    ground.material.color = rt.Color(0.5, 0.5, 0.5)
+    ground.material.color = rt.Color(0.5, 0.6, 0.7)
     world.objects.append(ground)
 
     big_glass = rt.Sphere()

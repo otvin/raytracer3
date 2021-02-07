@@ -11,7 +11,7 @@ def render():
     camera, w = demoscenes.spheres_demo1()
 
     timestart = time.time()
-    rt.mp_render(camera, w, 10, 6, 5, ADAPTIVE, GETPERFCOUNTERS)
+    rt.mp_render(camera, w, 150, 6, 20, ADAPTIVE, GETPERFCOUNTERS)
     # rt.debug_render_pixel(camera, w, 246, 39)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
