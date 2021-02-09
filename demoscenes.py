@@ -2381,6 +2381,11 @@ def spotlight_demo1(width=400, height=200):
 
 def lamp_demo(width=600, height=200):
     w = rt.World()
+    w.volumetric.particle.material.color = rt.Color(0.5, 0.5, 0.5)
+    w.volumetric.absorption_coefficient = 0
+    w.volumetric.scattering_coefficient = 0.0025
+    w.tmax = 10
+
     cameratransform = rt.view_transform(rt.Point(-6.0, 2.2, 1), rt.Point(.125, 1.75, -1.025), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, math.pi/2, cameratransform)
 

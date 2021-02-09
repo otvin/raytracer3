@@ -1,7 +1,9 @@
 import math
+import random
 from copy import deepcopy
 import raytracer as rt
-from .matrices import identity4
+from .matrices import identity4, inverse4x4, transpose4x4
+from .transformations import scaling
 from .quarticsolver import quartic_solver
 
 
@@ -44,8 +46,8 @@ class HittableObject:
     @transform.setter
     def transform(self, trans):
         self.__transform = trans
-        self.inversetransform = rt.inverse4x4(self.__transform)
-        self.__inversetransformtranspose = rt.transpose4x4(self.inversetransform)
+        self.inversetransform = inverse4x4(self.__transform)
+        self.__inversetransformtranspose = transpose4x4(self.inversetransform)
 
     def includes(self, obj):
         # used for CSGs.  An object always includes itself.  Overridden for ObjectGroups and CSGs
@@ -810,3 +812,71 @@ class CSG(HittableObject):
     def divide(self, threshold):
         self.left.divide(threshold)
         self.right.divide(threshold)
+
+
+class Volumetric():
+    __slots__ = ['__absorption_coefficient', '__scattering_coefficient', '__extinction_coefficient', 'particle',
+                 'absorbed_particle']
+
+    def __init__(self, absorption_coefficient=0, scattering_coefficient=0, particle=None):
+        self.__absorption_coefficient = 0
+        self.__scattering_coefficient = 0
+        self.absorption_coefficient = absorption_coefficient
+        self.scattering_coefficient = scattering_coefficient
+        if particle is None:
+            # really small sphere
+            self.particle = Sphere()
+            self.particle.transform = scaling(0.001, 0.001, 0.001)
+            self.particle.material.specular = 0
+            self.particle.material.ambient = 0
+            self.particle.material.diffuse = 0.8
+            self.particle.material.reflective = 0.2
+        else:
+            self.particle = particle
+        self.absorbed_particle = Sphere()
+        self.absorbed_particle.transform = scaling(0.0001, 0.0001, 0.0001)
+        self.absorbed_particle.material.color = rt.Color(0, 0, 0)
+        self.absorbed_particle.material.ambient = 0
+        self.absorbed_particle.material.diffuse = 0
+
+
+    @property
+    def absorption_coefficient(self):
+        return self.__absorption_coefficient
+
+    @absorption_coefficient.setter
+    def absorption_coefficient(self, c):
+        self.__absorption_coefficient = c
+        self.__extinction_coefficient = self.__absorption_coefficient + self.__scattering_coefficient
+
+    @property
+    def scattering_coefficient(self):
+        return self.__scattering_coefficient
+
+    @scattering_coefficient.setter
+    def scattering_coefficient(self, c):
+        self.__scattering_coefficient = c
+        self.__extinction_coefficient = self.__absorption_coefficient + self.__scattering_coefficient
+
+    def can_interact(self):
+        # will return True only if an interaction (scatter or absorption) is possible
+        return self.__extinction_coefficient > 0
+
+    def is_absorbed(self, t):
+        return False
+        if self.__absorption_coefficient > 0:
+            prob = 1 - (math.exp(-t * self.__absorption_coefficient))
+            if random.random() < prob:
+                return True
+            else:
+                return False
+        return False
+
+    def is_scattered(self, t):
+        if self.__scattering_coefficient > 0:
+            prob = 1 - (math.exp(-t * self.__scattering_coefficient))
+            if random.random() < prob:
+                return True
+            else:
+                return False
+        return False

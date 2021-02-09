@@ -1,5 +1,4 @@
 from .rttuple import RT_Tuple, Point, Vector, Color, BLACK, WHITE, Ray, normalize, dot, cross, reflect
-from .canvas import Canvas, mp_render, canvas_to_ppm, canvas_from_ppm, debug_render_pixel
 from .camera import Camera
 from .lights import Light, PointLight, AreaLight, SpotLight
 from .materials import Pattern, TestPattern, StripePattern, GradientPattern, RingPattern, CheckersPattern, \
@@ -11,8 +10,9 @@ from .matrices import matmul4x4, identity4, transpose4x4, inverse4x4, matmul4x1,
 from .transformations import translation, scaling, reflection, rotation_x, rotation_y, rotation_z, skew, \
                         view_transform, do_transformray, do_transform, chain_transforms
 from .objects import Intersection, IntersectionWithUV, HittableObject, Sphere, Plane, Cube, Cylinder, \
-                        Cone, Triangle, SmoothTriangle, ObjectGroup, CSG, Torus
+                        Cone, Triangle, SmoothTriangle, ObjectGroup, CSG, Torus, Volumetric
 from .world import World, WorldWithSky, HitRecord
+from .canvas import Canvas, mp_render, canvas_to_ppm, canvas_from_ppm, debug_render_pixel
 from .perfcounters import getcount_rayforpixel, getcount_objintersecttests, getcount_objintersections, \
                         getcount_colortests, getcount_reflectionrays, getcount_refractionrays, save_raycount
 from .objfile_reader import Parser, GroupInfo

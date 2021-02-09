@@ -1,10 +1,10 @@
 import math
+import random
 import raytracer as rt
-from .objects import EPSILON
+from .objects import EPSILON, Volumetric
 from .rttuple import random_in_unit_sphere
 from .perfcounters import increment_colortests, increment_objintersecttests, increment_objintersections, \
                         increment_reflectionrays, increment_refractionrays
-
 
 def objectcount_recurse(obj):
     # returns a tuple, number of group objects inside and number of other objects
@@ -33,11 +33,13 @@ def objectcount_recurse(obj):
 
 
 class World:
-    __slots__ = ['objects', 'lights']
+    __slots__ = ['objects', 'lights', 'volumetric', 'tmax']
 
-    def __init__(self, objects=None, lights=None):
+    def __init__(self, objects=None, lights=None, volumetric=None, tmax=50):
         self.objects = objects or []
         self.lights = lights or []
+        self.volumetric = volumetric or Volumetric()
+        self.tmax = tmax
 
 
     def objectcount(self):
@@ -62,7 +64,25 @@ class World:
             if perfcount:
                 increment_objintersections(len(ints))
             res.extend(ints)
+
         res.sort(key=lambda x: x.t)
+        if self.volumetric.can_interact():
+            # find first intersection with positive t, if there are any
+            firstobj = None
+            for i in res:
+                if i.t > 0:
+                    firstobj = i
+                    break
+            if firstobj is None:
+                testt = self.tmax
+            else:
+                testt = firstobj.t
+
+            if self.volumetric.is_absorbed(testt):
+                res.append(rt.Intersection(self.volumetric.absorbed_particle, random.random() * testt))
+            elif self.volumetric.is_scattered(testt):
+                res.append(rt.Intersection(self.volumetric.particle, random.random() * testt))
+            res.sort(key=lambda x: x.t)
         return res
 
     def is_shadowed(self, point, light_position):
