@@ -104,6 +104,12 @@ class RT_Tuple(object):
         a2 = self.arr[2]
         return math.sqrt(a0 * a0 + a1 * a1 + a2 * a2)
 
+    def magnitudesquared(self):
+        a0 = self.arr[0]
+        a1 = self.arr[1]
+        a2 = self.arr[2]
+        return a0 * a0 + a1 * a1 + a2 * a2
+
 
 class Point(RT_Tuple):
     def __init__(self, x=0.0, y=0.0, z=0.0):
@@ -218,6 +224,17 @@ def cross(vec1, vec2):
 
 def reflect(v, n):
     return v - (n * (dot(v, n) * 2))
+
+
+def tuples_are_close(tup1, tup2, abs_tol=1e-05, rel_tol=1e-05):
+    ret = True
+    if not math.isclose(tup1.x, tup2.x, abs_tol=abs_tol, rel_tol=rel_tol):
+        ret = False
+    elif not math.isclose(tup1.y, tup2.y, abs_tol=abs_tol, rel_tol=rel_tol):
+        ret = False
+    elif not math.isclose(tup1.z, tup2.z, abs_tol=abs_tol, rel_tol=rel_tol):
+        ret = False
+    return ret
 
 
 def random_vector():

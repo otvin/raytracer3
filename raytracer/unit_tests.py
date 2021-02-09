@@ -2,7 +2,7 @@ import math
 import time
 import os
 import raytracer as rt
-from .rttuple import random_in_unit_disk
+from .rttuple import random_in_unit_disk, tuples_are_close
 from .transformations import do_transform, do_transformray, translation, scaling, reflection, rotation_x, rotation_y, \
                             rotation_z, skew, view_transform
 from .world import prepare_computations, schlick_reflectance
@@ -3323,7 +3323,6 @@ def rtunittest_torus5():
     assert math.isclose(xs[2].t, 3)
 
 
-
 def rtunittest_torus6():
     # Fred test: a ray hits a torus in the middle, so there are four intersections
     t = rt.Torus()
@@ -3335,3 +3334,38 @@ def rtunittest_torus6():
     assert math.isclose(xs[1].t, 1.25)
     assert math.isclose(xs[2].t, 2.75)
     assert math.isclose(xs[3].t, 3.25)
+
+
+def rtunittest_spotlight1():
+    # Fred test: a spotlight has direction, totalwidth and falloffstart
+    t = 1 / math.sqrt(2)
+    l = rt.SpotLight(direction=rt.Vector(t, t, 0), totalwidth=math.pi/4, falloffstart=math.pi/8)
+    assert math.isclose(l.totalwidth, math.pi/4)
+    assert math.isclose(l.falloffstart, math.pi/8)
+    assert math.isclose(l.direction.x, t)
+    assert math.isclose(l.direction.y, t)
+    assert math.isclose(l.direction.z, 0)
+
+
+def rtunittest_spotlight2():
+    # Fred test: a spotlight has intensity that varies by position:
+    w = rt.World()
+    l = rt.SpotLight()
+    l.position = rt.Point(0, 0, 0)
+    l.direction = rt.Vector(0, 1, 0)
+    l.totalwidth = math.pi/2
+    l.falloffstart = math.pi/4
+
+    #each test has a point and an expected intensity
+    tests = [
+        (rt.Point(0, -1, 2), 0),  # behind the light
+        (rt.Point(0, 1, 15), 0),  # outside the cone
+        (rt.Point(0, 1, 1.732), 0), # 60 degrees, outside the cone because we use width/2 for each side
+        (rt.Point(0, 2.641, 1), 1),  # 22.5 degrees, so on the line before falloff
+        (rt.Point(0, 7, 0), 1),  # 0 degrees, so no falloff
+        (rt.Point(0, 1.732, 1), 0.73308)  # 30 degrees so proportional falloff
+    ]
+
+    for test in tests:
+        intensity = l.intensity_at(w, test[0])
+        assert math.isclose(intensity, test[1], abs_tol=1e-05, rel_tol=1e-05)

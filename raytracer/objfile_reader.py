@@ -80,7 +80,9 @@ class Parser:
         while line:
             linesplit = line.split()
             if len(linesplit) > 0:
-                if linesplit[0] == 'g':
+                # TODO - technically objects ('o') can be made up of groups ('g').
+                # however, we will treat objects and groups as synonyms for right now.
+                if linesplit[0] in ('g', 'o'):
                     assert len(linesplit) >= 2
                     # group name
                     current_groupname = linesplit[1]

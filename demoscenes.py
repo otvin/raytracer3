@@ -331,7 +331,12 @@ def chap13_demo(width=400, height=200):
     cameratransform = rt.view_transform(rt.Point(8, 3.5, -9), rt.Point(0, 0.3, 0), rt.Vector(0, 1, 0))
     camera = rt.Camera(width, height, 0.314, cameratransform)
 
-    light = rt.PointLight(rt.Point(1, 6.9, -4.9), rt.Color(1, 1, 1))
+    # light = rt.PointLight(rt.Point(1, 6.9, -4.9), rt.Color(1, 1, 1))
+
+    # point it at the concentric circles
+    vec = rt.Point(1, 0, 0) - rt.Point(1, 6.9, -4.9)
+    light = rt.SpotLight(rt.Point(1, 6.9, -4.9), vec, math.pi/6, math.pi/12, rt.Color(1, 1, 1))
+
     w.lights.append(light)
 
     floor = rt.Plane()
@@ -2326,3 +2331,125 @@ def fuzzdemo1(width=400, height=225):
     world.objects.append(right)
 
     return camera, world
+
+
+def spotlight_demo1(width=400, height=200):
+
+    world = rt.World()
+    camera_transform = rt.view_transform(rt.Point(2, 1, 0), rt.Point(1, 0.75, 0), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/2, camera_transform)
+
+    light = rt.PointLight(rt.Point(-1, 5, 0), rt.Color(0.1, 0.1, 0.1))
+    # world.lights.append(light)
+    light = rt.PointLight(rt.Point(-1, 0.99, 0.01), rt.Color(1, 1, 1))
+    world.lights.append(light)
+
+
+    left = rt.Sphere()
+    left.material.color = rt.Color(1, 1, 0)
+    left.material.transparency = 0.6
+    left.material.refractive_index = 1.5
+    left.material.ambient = 0.1
+    left.material.diffuse = 0.4
+    left.material.reflective = 0.4
+
+    right = rt.Cube()
+    right.transform = rt.translation(0, 0, 1)
+
+    semisphere = rt.CSG('difference', left, right)
+    semisphere.transform = rt.chain_transforms(rt.scaling(0.25, 0.25, 0.5), rt.rotation_x(math.pi/4), rt.translation(-1, 1, 0))
+    world.objects.append(semisphere)
+
+
+    sphere = rt.Sphere()
+    sphere.material.color = rt.Color(1, 0, 1)
+    sphere.material.reflective = 0.2
+    sphere.material.diffuse = 0.8
+    sphere.material.ambient = 0.1
+    sphere.transform = rt.chain_transforms(rt.scaling(0.25, 0.25, 0.25), rt.translation(-1, 0, 1))
+    world.objects.append(sphere)
+
+    plane = rt.Plane()
+    plane.material.color = rt.Color(0.5, 0.5, 0.5)
+    plane.material.diffuse = 1
+    plane.material.ambient = 0
+    plane.transform = rt.translation(0, -1, 0)
+    world.objects.append(plane)
+
+    return camera, world
+
+
+def lamp_demo(width=600, height=200):
+    w = rt.World()
+    cameratransform = rt.view_transform(rt.Point(-6.0, 2.2, 1), rt.Point(.125, 1.75, -1.025), rt.Vector(0, 1, 0))
+    camera = rt.Camera(width, height, math.pi/2, cameratransform)
+
+    light = rt.PointLight(rt.Point(-1, 2, -3.5), rt.Color(0.1, 0.1, 0.1))
+    w.lights.append(light)
+    vec = rt.Point(0.15 , 2.45, -1.85) - rt.Point(-1, 2, -3.5)
+    light2 = rt.SpotLight(rt.Point(-3, 2, -3.5), vec, math.pi/5, math.pi/7.5, rt.Color(0.8, 0.8, 0.8))
+    w.lights.append(light2)
+
+    vec = rt.Point(-0.2, 0.35, -1.5) - rt.Point(0.1, 1.7, -0.2)
+    light3 = rt.SpotLight(rt.Point(0.1, 1.7, -0.2), vec, math.pi/2, math.pi/4, rt.Color(0.2, 0.2, 0.2), True, 1.0 / (16 * math.pi))
+    w.lights.append(light3)
+    light4 = rt.PointLight(rt.Point(0.1, 1.7, -0.2) + (vec * 0.1), rt.Color(0.7, 0.7, 0.7), True, 1.0 / (16 * math.pi))
+    w.lights.append(light4)
+
+    # big lamp
+    vec = rt.Point(-0.2, 0.1, 0.6) - rt.Point(0.15, 2.35, -1.85)
+    light5 = rt.SpotLight(rt.Point(0.15, 2.35, -1.85), vec, math.pi/2, math.pi/4, rt.Color(0.2, 0.2, 0.2), True, 1.0 / (16 * math.pi))
+    w.lights.append(light5)
+    light6 = rt.PointLight(rt.Point(0.15, 2.35, -1.85) + (vec * 0.1), rt.Color(0.7, 0.7, 0.7), True, 1.0 / (16 * math.pi))
+    w.lights.append(light6)
+
+    parser = rt.Parser()
+    # lamp downloaded from: https://free3d.com/3d-model/lamp-37276.html
+    parser.parse_obj_file('raytracer/test_obj_files/lamp.obj')
+    g = parser.get_group_by_name('Circle')
+    # g.transform = rt.chain_transforms(rt.rotation_y(math.pi), rt.translation(0, 1, 0.5))
+    g.transform = rt.chain_transforms(rt.translation(0, 1, -0.3), rt.rotation_y(math.pi))
+    g.material.color = rt.Color(0.47, 0.49, 0.64)
+    g.material.ambient = 0.2
+    g.material.diffuse = 1.4
+    g.material.shininess = 200
+    g.material.specular = 0.4
+    g.material.reflective = 0.2
+    g.push_material_to_children()
+    g.divide(10)
+    w.objects.append(g)
+
+    g2 = deepcopy(g)
+    g2.transform = rt.chain_transforms(rt.scaling(1.5, 1.5, 1.5), rt.translation(0, 1.45, -2.5) )
+    w.objects.append(g2)
+
+    ball = rt.Sphere()
+    ball.transform = rt.chain_transforms(rt.scaling(0.25, 0.25, 0.25), rt.translation(-0.2, 0.35, -1.5) )#, rt.rotation_x(-math.pi/4), rt.rotation_y(-math.pi/4))
+    ball.material.diffuse = 0.9
+    ball.material.specular = 0.1
+    ball.material.shininess = 10
+    ball.material.ambient = 0.1
+    # image is from http://mdinfotech.net/images/luxo.png
+    ball.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/luxo.ppm', rt.spherical_map)
+    w.objects.append(ball)
+
+    table = rt.Cube()
+    table.transform = rt.chain_transforms(rt.scaling(5, 0.1, 5), rt.translation(0, 0, 0))
+    table.material.diffuse = 0.9
+    table.material.ambient = 0.1
+    table.material.specular = 0
+    table.material.reflective = 0.1
+    table.material.pattern = rt.UVImagePattern('raytracer/test_ppm_files/woodgrain.ppm', rt.planar_map)
+    table.material.pattern.transform = rt.scaling(0.5, 0.5, 0.5)
+    w.objects.append(table)
+
+    '''
+    r = rt.Sphere()
+    r.transform = rt.chain_transforms(rt.scaling(0.1, 0.2, 0.1), rt.translation(0.15 , 2.45, -1.85))
+    r.material.ambient = 1
+    r.material.color = rt.Color(1, 0, 0)
+    w.objects.append(r)
+    '''
+
+    return camera, w
+
