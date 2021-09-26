@@ -2383,7 +2383,7 @@ def lamp_demo(width=600, height=200):
     w = rt.World()
     w.volumetric.particle.material.color = rt.Color(0.5, 0.5, 0.5)
     w.volumetric.absorption_coefficient = 0
-    w.volumetric.scattering_coefficient = 0.0025
+    w.volumetric.scattering_coefficient = 0.004
     w.tmax = 10
 
     cameratransform = rt.view_transform(rt.Point(-6.0, 2.2, 1), rt.Point(.125, 1.75, -1.025), rt.Vector(0, 1, 0))
@@ -2398,7 +2398,7 @@ def lamp_demo(width=600, height=200):
     vec = rt.Point(-0.2, 0.35, -1.5) - rt.Point(0.1, 1.7, -0.2)
     light3 = rt.SpotLight(rt.Point(0.1, 1.7, -0.2), vec, math.pi/2, math.pi/4, rt.Color(0.2, 0.2, 0.2), True, 1.0 / (16 * math.pi))
     w.lights.append(light3)
-    light4 = rt.PointLight(rt.Point(0.1, 1.7, -0.2) + (vec * 0.1), rt.Color(0.7, 0.7, 0.7), True, 1.0 / (16 * math.pi))
+    light4 = rt.PointLight(rt.Point(0.1, 1.7, -0.2) + (vec * 0.05), rt.Color(0.7, 0.7, 0.7), True, 1.0 / (16 * math.pi))
     w.lights.append(light4)
 
     # big lamp

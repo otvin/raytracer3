@@ -8,10 +8,10 @@ def render():
     GETPERFCOUNTERS = False
     ADAPTIVE = False
 
-    camera, w = demoscenes.spheres_demo1()
+    camera, w = demoscenes.lamp_demo()
 
     timestart = time.time()
-    rt.mp_render(camera, w, 150, 6, 20, ADAPTIVE, GETPERFCOUNTERS)
+    rt.mp_render(camera, w, 25, 6, 5, ADAPTIVE, GETPERFCOUNTERS)
     # rt.debug_render_pixel(camera, w, 246, 39)
     timeend = time.time()
     print('Elapsed time: {} seconds'.format(timeend - timestart))
@@ -31,7 +31,7 @@ def render():
             maxv = rt.save_raycount(camera.hsize, camera.vsize, 'raycount.ppm')
             print('Max rays per pixel: {}'.format(maxv))
 
-    rt.canvas_to_ppm('spheres_demo_0206.ppm')
+    rt.canvas_to_ppm('lamp_demo.ppm')
 
 
 if __name__ == '__main__':

@@ -45,6 +45,8 @@ The "saved_renders" folder contains samples from the end of each chapter, once w
 * _torus_demo2.ppm_ - showing a classic kid's ring stack toy
 * _spheres_demo.ppm_ - The final project from mpraytracer, implemented here.  Shows depth of field, "sky" background, and fuzz on the metal (which is subtle)
 
+
+* _lamp_demo2.ppm_ - demo scene I created trying to get a volumeteric (dust) to be rendered in the scene.
 While not included in the print copy, Jamis Buck posted details for the scenes shown in the book for chapters 11-14 and 16 on-line.  Links can be found in demoscenes.py.
 
 ![chap11_demo.ppm](saved_renders/chap11_demo.png)
@@ -64,3 +66,4 @@ While not included in the print copy, Jamis Buck posted details for the scenes s
 ![dof_demo.ppm](saved_renders/dof_demo.png)
 ![torus_demo2.ppm](saved_renders/torus_demo2.png)
 ![sphere_demo.ppm](saved_renders/spheres_demo.png)
+![lamp_demo2.ppm](saved_renders/lamp_demo2.png)
